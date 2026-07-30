@@ -3,7 +3,7 @@ services:
     name: dialysave
     runtime: node
     plan: free
-    buildCommand: npm ci --prefix frontend && npm run build --prefix frontend && npm ci --omit=dev --prefix backend
+    buildCommand: npm install --prefix frontend --include=dev && npm run build --prefix frontend && npm install --omit=dev --prefix backend
     startCommand: npm start
     healthCheckPath: /api/health
     autoDeployTrigger: commit

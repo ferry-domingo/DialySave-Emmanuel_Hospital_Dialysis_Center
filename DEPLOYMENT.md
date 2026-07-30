@@ -39,7 +39,7 @@ available at the service's `onrender.com` URL.
 
 - Root directory: repository root
 - Runtime: `Node`
-- Build command: `npm ci --prefix frontend && npm run build --prefix frontend && npm ci --omit=dev --prefix backend`
+- Build command: `npm install --prefix frontend --include=dev && npm run build --prefix frontend && npm install --omit=dev --prefix backend`
 - Start command: `npm start`
 - Health check path: `/api/health`
 
