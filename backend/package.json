@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --exec \"node --use-system-ca\" server.js",
-    "start": "node --use-system-ca server.js",
+    "dev": "nodemon server.js",
+    "start": "node server.js",
     "test": "node --test src/tests/auth.test.js",
     "seed:admin": "node src/scripts/seedAdmin.js"
   },
