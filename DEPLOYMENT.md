@@ -1,4 +1,4 @@
-# DialySAVE production deployment
+# DialySAVE production deployment on Render
 
 The application is configured for a single Node.js service: Express serves the
 production Vite build, the `/api` routes, and Socket.IO from one public URL.
@@ -21,15 +21,43 @@ Optional email variables:
 `CLIENT_URL` can remain blank for the recommended same-origin deployment. Set it
 to the exact frontend URL only when hosting frontend and backend separately.
 
-## Hosting commands
+## Recommended: Render Blueprint
+
+The root `render.yaml` creates one Node Web Service for the React frontend,
+Express API, and Socket.IO server.
+
+1. Push this repository to GitHub.
+2. In Render, choose **New > Blueprint**.
+3. Connect the repository and select `render.yaml`.
+4. Enter `MONGO_URI` and `ADMIN_EMAIL` when prompted.
+5. Apply the Blueprint and wait for `/api/health` to become healthy.
+
+Render generates `JWT_SECRET` automatically. The deployed application is
+available at the service's `onrender.com` URL.
+
+## Manual Render settings
 
 - Root directory: repository root
-- Build command: `npm run build`
+- Runtime: `Node`
+- Build command: `npm ci --prefix frontend && npm run build --prefix frontend && npm ci --omit=dev --prefix backend`
 - Start command: `npm start`
 - Health check path: `/api/health`
 
-The hosting platform must use Node.js 20.19 or newer and provide its port through
-the standard `PORT` environment variable.
+Set `NODE_VERSION=20.19.5`. Render provides `PORT` automatically.
+
+## Vercel frontend
+
+The root `vercel.json` deploys the Vite frontend only. In Vercel, leave the Root
+Directory at the repository root and remove any Build, Output, and Install
+overrides so Vercel uses `vercel.json`.
+
+Deploy the backend as a persistent Node service, then add these variables to the
+Vercel project and redeploy:
+
+- `VITE_API_URL=https://your-backend.example.com/api`
+- `VITE_SOCKET_URL=https://your-backend.example.com`
+
+On the backend host, set `CLIENT_URL` to the exact Vercel production URL.
 
 ## MongoDB Atlas
 
