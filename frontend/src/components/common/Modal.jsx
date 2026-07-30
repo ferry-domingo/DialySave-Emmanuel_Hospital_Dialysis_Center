@@ -1,0 +1,41 @@
+import { X } from "lucide-react";
+
+const Modal = ({
+  isOpen,
+  title,
+  children,
+  onClose,
+  maxWidth = "max-w-xl",
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+
+      <div className={`max-h-[90vh] w-full ${maxWidth} overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl`}>
+
+        <div className="mb-5 flex items-center justify-between">
+
+          <h2 className="text-lg font-bold text-slate-900">
+            {title}
+          </h2>
+
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+          >
+            <X size={18} />
+          </button>
+
+        </div>
+
+        {children}
+
+      </div>
+
+    </div>
+  );
+};
+
+export default Modal;
