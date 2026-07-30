@@ -2,10 +2,14 @@ import nodemailer from "nodemailer";
 
 const smtpConfig = () => {
   const port = Number(process.env.SMTP_PORT || 587);
+  if (![465, 587].includes(port)) {
+    throw new Error("SMTP_PORT must be 587 (STARTTLS) or 465 (TLS).");
+  }
   return {
     host: process.env.SMTP_HOST,
     port,
     secure: port === 465,
+    requireTLS: port === 587,
     connectionTimeout: 10000,
     greetingTimeout: 10000,
     socketTimeout: 15000,
@@ -16,7 +20,12 @@ const smtpConfig = () => {
 };
 
 export const sendEmailVerificationCode = async ({ email, name, code }) => {
-  if (!process.env.SMTP_HOST || !process.env.MAIL_FROM) {
+  if (
+    !process.env.SMTP_HOST ||
+    !process.env.SMTP_USER ||
+    !process.env.SMTP_PASS ||
+    !process.env.MAIL_FROM
+  ) {
     throw new Error("Email delivery is not configured.");
   }
 

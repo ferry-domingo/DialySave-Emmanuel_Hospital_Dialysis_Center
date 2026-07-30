@@ -228,6 +228,7 @@ export const requestEmailChange = async (req, res) => {
     });
   } catch (error) {
     const configurationError = error.message === "Email delivery is not configured.";
+    const portConfigurationError = error.message.startsWith("SMTP_PORT must be");
     const authenticationError = error.code === "EAUTH";
     const connectionError = ["ETIMEDOUT", "ECONNECTION", "ESOCKET", "ECONNREFUSED"].includes(error.code);
     console.error("Email verification delivery failed:", {
@@ -235,10 +236,12 @@ export const requestEmailChange = async (req, res) => {
       command: error.command || "",
       message: error.message,
     });
-    return res.status(configurationError || authenticationError || connectionError ? 503 : 500).json({
+    return res.status(configurationError || portConfigurationError || authenticationError || connectionError ? 503 : 500).json({
       success: false,
       message: configurationError
         ? "Email verification is not configured. Ask the system administrator to configure SMTP."
+        : portConfigurationError
+          ? "Invalid SMTP port. Use port 587 for STARTTLS or port 465 for TLS."
         : authenticationError
           ? "SMTP authentication failed. Check the SMTP user and app password in Render."
           : connectionError
