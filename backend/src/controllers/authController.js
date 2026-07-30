@@ -228,10 +228,21 @@ export const requestEmailChange = async (req, res) => {
     });
   } catch (error) {
     const configurationError = error.message === "Email delivery is not configured.";
-    return res.status(configurationError ? 503 : 500).json({
+    const authenticationError = error.code === "EAUTH";
+    const connectionError = ["ETIMEDOUT", "ECONNECTION", "ESOCKET", "ECONNREFUSED"].includes(error.code);
+    console.error("Email verification delivery failed:", {
+      code: error.code || "UNKNOWN",
+      command: error.command || "",
+      message: error.message,
+    });
+    return res.status(configurationError || authenticationError || connectionError ? 503 : 500).json({
       success: false,
       message: configurationError
         ? "Email verification is not configured. Ask the system administrator to configure SMTP."
+        : authenticationError
+          ? "SMTP authentication failed. Check the SMTP user and app password in Render."
+          : connectionError
+            ? "The email server could not be reached. Check the SMTP host and port, then try again."
         : "Could not send the verification email.",
     });
   }

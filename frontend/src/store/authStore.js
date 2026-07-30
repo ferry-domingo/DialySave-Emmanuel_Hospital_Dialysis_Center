@@ -68,7 +68,7 @@ export const useAuthStore = create((set) => ({
   },
 
   requestEmailChange: async (email) => {
-    const res = await axios.post("/auth/me/email/request", { email });
+    const res = await axios.post("/auth/me/email/request", { email }, { timeout: 20000 });
     return res.data;
   },
 
