@@ -18,6 +18,19 @@ Optional email variables:
 - `SMTP_PASS`
 - `MAIL_FROM`
 
+These variables are required if users need to change and verify their login
+email. For Gmail SMTP, use:
+
+- `SMTP_HOST=smtp.gmail.com`
+- `SMTP_PORT=587`
+- `SMTP_USER=your-mailbox@gmail.com`
+- `SMTP_PASS=your-16-character-Google-app-password`
+- `MAIL_FROM=EHDC <your-mailbox@gmail.com>`
+
+Use a Google App Password, not the mailbox's regular password. Existing Render
+services must add these values manually under **Environment**, then save and
+redeploy.
+
 `CLIENT_URL` can remain blank for the recommended same-origin deployment. Set it
 to the exact frontend URL only when hosting frontend and backend separately.
 
