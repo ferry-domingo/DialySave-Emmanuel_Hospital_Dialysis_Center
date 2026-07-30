@@ -12,11 +12,22 @@ production Vite build, the `/api` routes, and Socket.IO from one public URL.
 
 Optional email variables:
 
+- `RESEND_API_KEY` (recommended on Render Free)
 - `SMTP_HOST`
 - `SMTP_PORT`
 - `SMTP_USER`
 - `SMTP_PASS`
 - `MAIL_FROM`
+
+Render Free blocks outbound SMTP ports. To enable verification emails without
+upgrading Render, create a Resend API key and set:
+
+- `RESEND_API_KEY=re_your_api_key`
+- `MAIL_FROM=EHDC <verification@your-verified-domain.example>`
+
+The application prefers Resend when `RESEND_API_KEY` is present and falls back
+to SMTP otherwise. Resend requires the sender domain used by `MAIL_FROM` to be
+verified. For initial account testing, follow Resend's test-sender restrictions.
 
 These variables are required if users need to change and verify their login
 email. For Gmail SMTP, use:
