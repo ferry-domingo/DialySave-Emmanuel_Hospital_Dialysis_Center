@@ -19,45 +19,22 @@ const smtpConfig = () => {
   };
 };
 
-const sendWithResend = async (message) => {
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(message),
-    signal: AbortSignal.timeout(15000),
-  });
-
-  if (!response.ok) {
-    const result = await response.json().catch(() => ({}));
-    const error = new Error(result.message || `Email API returned ${response.status}.`);
-    error.code = "EEMAILAPI";
-    throw error;
-  }
-};
-
 export const sendEmailVerificationCode = async ({ email, name, code }) => {
-  if (!process.env.MAIL_FROM) throw new Error("Email delivery is not configured.");
+  if (
+    !process.env.SMTP_HOST ||
+    !process.env.SMTP_USER ||
+    !process.env.SMTP_PASS ||
+    !process.env.MAIL_FROM
+  ) {
+    throw new Error("Email delivery is not configured.");
+  }
 
-  const message = {
+  const transporter = nodemailer.createTransport(smtpConfig());
+  await transporter.sendMail({
     from: process.env.MAIL_FROM,
     to: email,
     subject: "Verify your EHDC login email",
     text: `Hello ${name || "there"},\n\nYour EHDC email verification code is ${code}. It expires in 10 minutes.\n\nIf you did not request this change, ignore this email.`,
     html: `<p>Hello ${name || "there"},</p><p>Your EHDC email verification code is:</p><p style="font-size:28px;font-weight:700;letter-spacing:6px">${code}</p><p>This code expires in 10 minutes. If you did not request this change, ignore this email.</p>`,
-  };
-
-  if (process.env.RESEND_API_KEY) {
-    await sendWithResend(message);
-    return;
-  }
-
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    throw new Error("Email delivery is not configured.");
-  }
-
-  const transporter = nodemailer.createTransport(smtpConfig());
-  await transporter.sendMail(message);
+  });
 };
