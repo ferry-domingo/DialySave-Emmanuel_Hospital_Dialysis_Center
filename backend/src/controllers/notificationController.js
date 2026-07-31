@@ -3,9 +3,17 @@ import User from "../models/User.js";
 import { emitToUser } from "../socket.js";
 import { recordActivity } from "../utils/activityLog.js";
 import { normalizeRole, ROLES } from "../utils/roles.js";
+import { Patient } from "../models/Patient.js";
 
 const canManageAlerts = (user) =>
-  [ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER].includes(normalizeRole(user?.role));
+  [ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.DOCTOR].includes(normalizeRole(user?.role));
+
+const doctorIdFor = (user) => user?.doctor?._id || user?.doctor;
+
+const doctorCanAccessPatient = async (user, patientId) => {
+  if (normalizeRole(user?.role) !== ROLES.DOCTOR) return true;
+  return Boolean(await Patient.exists({ _id: patientId, doctor: doctorIdFor(user) }));
+};
 
 const populateNotification = (query) => query
   .populate("patient", "patient_id first_name middle_name last_name")
@@ -25,10 +33,14 @@ export const createNotification = async (req, res) => {
     }
 
     if (patientId === "all") {
+      const doctorId = doctorIdFor(req.user);
+      const assignedPatientIds = normalizeRole(req.user.role) === ROLES.DOCTOR
+        ? await Patient.find({ doctor: doctorId }).distinct("_id")
+        : null;
       const recipients = await User.find({
         role: ROLES.PATIENT,
         status: "Active",
-        patient: { $ne: null },
+        patient: assignedPatientIds ? { $in: assignedPatientIds } : { $ne: null },
       }).select("_id patient");
 
       if (recipients.length === 0) {
@@ -67,6 +79,10 @@ export const createNotification = async (req, res) => {
         message: `Alert sent to ${notifications.length} patients.`,
         data: notifications,
       });
+    }
+
+    if (!await doctorCanAccessPatient(req.user, patientId)) {
+      return res.status(403).json({ success: false, message: "You can only alert patients assigned to you." });
     }
 
     const recipient = await User.findOne({ role: "Patient", patient: patientId });
@@ -109,11 +125,17 @@ export const updateNotification = async (req, res) => {
     if (type === "Dialysis Schedule" && !scheduledFor) {
       return res.status(400).json({ success: false, message: "Select the next dialysis schedule." });
     }
+    if (!await doctorCanAccessPatient(req.user, patientId)) {
+      return res.status(403).json({ success: false, message: "You can only alert patients assigned to you." });
+    }
     const recipient = await User.findOne({ role: "Patient", patient: patientId });
     if (!recipient) return res.status(404).json({ success: false, message: "No patient account was found." });
 
     const existing = await Notification.findById(req.params.id);
     if (!existing) return res.status(404).json({ success: false, message: "Alert not found." });
+    if (normalizeRole(req.user.role) === ROLES.DOCTOR && String(existing.createdBy) !== String(req.user._id)) {
+      return res.status(403).json({ success: false, message: "You can only edit alerts you created." });
+    }
     const previousRecipient = existing.recipient;
     existing.recipient = recipient._id;
     existing.patient = patientId;
@@ -137,7 +159,10 @@ export const updateNotification = async (req, res) => {
 
 export const deleteNotification = async (req, res) => {
   try {
-    const notification = await Notification.findByIdAndDelete(req.params.id);
+    const filter = normalizeRole(req.user.role) === ROLES.DOCTOR
+      ? { _id: req.params.id, createdBy: req.user._id }
+      : { _id: req.params.id };
+    const notification = await Notification.findOneAndDelete(filter);
     if (!notification) return res.status(404).json({ success: false, message: "Alert not found." });
     emitToUser(notification.recipient, "notification:changed", { id: notification._id });
     return res.json({ success: true, message: "Alert deleted." });
@@ -149,7 +174,9 @@ export const deleteNotification = async (req, res) => {
 export const getNotifications = async (req, res) => {
   try {
     const isManager = canManageAlerts(req.user);
-    const filter = isManager ? {} : { recipient: req.user._id };
+    const filter = normalizeRole(req.user.role) === ROLES.DOCTOR
+      ? { createdBy: req.user._id }
+      : isManager ? {} : { recipient: req.user._id };
     const notifications = await populateNotification(Notification.find(filter).sort({ createdAt: -1 }));
     const unread = isManager ? 0 : await Notification.countDocuments({ ...filter, isRead: false });
     return res.json({ success: true, total: notifications.length, unread, data: notifications });

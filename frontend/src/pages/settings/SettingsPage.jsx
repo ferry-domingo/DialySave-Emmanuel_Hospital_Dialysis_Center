@@ -6,6 +6,7 @@ import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 import { useAuthStore } from "../../store/authStore";
 import UserAvatar from "../../components/common/UserAvatar";
+import { ROLES } from "../../utils/roles";
 
 const prepareProfilePicture = (file) => new Promise((resolve, reject) => {
   if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return reject(new Error("Choose a JPG, PNG, or WebP image."));
@@ -62,7 +63,7 @@ const SettingsPage = () => {
 
   const saveProfile = async (event) => {
     event.preventDefault();
-    if (user?.role !== "Patient" && name.trim().length < 2) return toast.error("Name must be at least 2 characters.");
+    if (![ROLES.PATIENT, ROLES.DOCTOR].includes(user?.role) && name.trim().length < 2) return toast.error("Name must be at least 2 characters.");
     setProfileSaving(true);
     try {
       const result = await updateProfile({ name: name.trim(), profilePicture });
@@ -149,10 +150,10 @@ const SettingsPage = () => {
                 </div>
               </div>
             </div>
-            {user?.role === "Patient" ? (
+            {[ROLES.PATIENT, ROLES.DOCTOR].includes(user?.role) ? (
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs font-bold uppercase text-slate-400">Patient name</p><p className="mt-1 font-semibold text-slate-800">{user?.name || user?.username || "—"}</p></div>
-                <div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs font-bold uppercase text-slate-400">Login Patient ID</p><p className="mt-1 font-semibold text-slate-800">{user?.loginId || user?.patient?.patient_id || "—"}</p></div>
+                <div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs font-bold uppercase text-slate-400">{user.role} name</p><p className="mt-1 font-semibold text-slate-800">{user?.name || user?.username || "—"}</p></div>
+                <div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs font-bold uppercase text-slate-400">Login {user.role} ID</p><p className="mt-1 font-semibold text-slate-800">{user?.loginId || user?.patient?.patient_id || user?.doctor?.doctor_id || "—"}</p></div>
               </div>
             ) : (
               <>
@@ -168,7 +169,7 @@ const SettingsPage = () => {
         </form>
 
         <div className="space-y-6">
-        {user?.role !== "Patient" && (
+        {![ROLES.PATIENT, ROLES.DOCTOR].includes(user?.role) && (
           <section className="rounded-3xl bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-center gap-3">
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-violet-50 text-violet-600"><MailCheck size={21} /></span>

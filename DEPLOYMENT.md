@@ -3,6 +3,33 @@
 The application is configured for a single Node.js service: Express serves the
 production Vite build, the `/api` routes, and Socket.IO from one public URL.
 
+## Switching modes locally
+
+Run both the Vite frontend and Express backend with live reload:
+
+```powershell
+npm run dev
+```
+
+Development URLs:
+
+- Application: `http://localhost:5173`
+- API: `http://localhost:5000/api`
+
+Run the application exactly like production (build Vite, then serve it through
+Express):
+
+```powershell
+npm run prod
+```
+
+Production-mode URL: `http://localhost:5000`.
+
+Both commands work on Windows, macOS, and Linux. Keep local database and secret
+settings in `backend/.env`; `NODE_ENV` is selected automatically by the command.
+The shorter `npm run dev` and `npm run prod` commands are aliases for
+`npm run mode:dev` and `npm run mode:prod`.
+
 ## Required environment variables
 
 - `NODE_ENV=production`
@@ -82,9 +109,7 @@ the Atlas connection string in `MONGO_URI`. Do not upload `backend/.env`.
 From the project root:
 
 ```powershell
-npm run build
-$env:NODE_ENV="production"
-npm start
+npm run prod
 ```
 
 Then open `http://localhost:5000`. The health endpoint is

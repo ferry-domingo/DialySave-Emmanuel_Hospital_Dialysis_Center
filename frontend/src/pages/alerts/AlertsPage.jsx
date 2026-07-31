@@ -9,6 +9,7 @@ import { useAuthStore } from "../../store/authStore";
 import { usePatientStore } from "../../store/patientStore";
 import { useNotificationStore } from "../../store/notificationStore";
 import { normalizeRole, ROLES } from "../../utils/roles";
+import { useDoctorPortalStore } from "../../store/doctorPortalStore";
 
 const PAGE_SIZE = 10;
 
@@ -34,8 +35,16 @@ const getPatientName = (patient) =>
 
 const AlertsPage = () => {
   const user = useAuthStore((state) => state.user);
-  const isManager = [ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER].includes(normalizeRole(user?.role));
-  const { patients, fetchPatients } = usePatientStore();
+  const role = normalizeRole(user?.role);
+  const isDoctor = role === ROLES.DOCTOR;
+  const isManager = [ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.DOCTOR].includes(role);
+  const { patients: operationalPatients, fetchPatients } = usePatientStore();
+  const doctorPortal = useDoctorPortalStore((state) => state.data);
+  const fetchDoctorPortal = useDoctorPortalStore((state) => state.fetchPortal);
+  const patients = useMemo(
+    () => isDoctor ? doctorPortal?.patients || [] : operationalPatients,
+    [doctorPortal?.patients, isDoctor, operationalPatients]
+  );
   const { notifications, unreadCount, loading, fetchNotifications, sendNotification, updateNotification, deleteNotification, markRead, markAllRead } = useNotificationStore();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -47,8 +56,9 @@ const AlertsPage = () => {
 
   useEffect(() => {
     fetchNotifications();
-    if (isManager) fetchPatients();
-  }, [fetchNotifications, fetchPatients, isManager]);
+    if (isDoctor) fetchDoctorPortal().catch(() => {});
+    else if (isManager) fetchPatients();
+  }, [fetchNotifications, fetchPatients, fetchDoctorPortal, isDoctor, isManager]);
 
   const submitAlert = async (event) => {
     event.preventDefault();
@@ -171,7 +181,7 @@ const AlertsPage = () => {
                   <div className="absolute z-20 mt-2 max-h-72 w-full overflow-y-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl">
                     {!editingId && (
                       <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={selectAllPatients} className="w-full rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-900 hover:bg-slate-100">
-                        All Patients
+                        {isDoctor ? "All Assigned Patients" : "All Patients"}
                       </button>
                     )}
                     {patientMatches.map((patient) => (

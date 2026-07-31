@@ -33,6 +33,7 @@ app.get("/api/health", (req, res) => {
   res.json({
     success: true,
     message: "DialySAVE API is running.",
+    mode: isProduction ? "production" : "development",
   });
 });
 
@@ -60,7 +61,7 @@ const startServer = async () => {
     await connectDB();
 
     httpServer.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      console.log(`Server running in ${isProduction ? "production" : "development"} mode on port ${PORT}`);
     });
   } catch (error) {
     console.error("Failed to connect to MongoDB:", error);

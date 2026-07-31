@@ -19,6 +19,9 @@ import ActivityLogsPage from "../pages/activityLogs/ActivityLogsPage";
 import SettingsPage from "../pages/settings/SettingsPage";
 import MessagesPage from "../pages/messages/MessagesPage";
 import AlertsPage from "../pages/alerts/AlertsPage";
+import DoctorDashboardPage from "../pages/doctors/DoctorDashboardPage";
+import DoctorPatientsPage from "../pages/doctors/DoctorPatientsPage";
+import DoctorSessionsPage from "../pages/doctors/DoctorSessionsPage";
 
 const AppRoutes = () => {
   return (
@@ -37,6 +40,9 @@ const AppRoutes = () => {
           <Route path="/patients" element={<RoleRoute allowedRoles={[ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER]}><PatientPage /></RoleRoute>} />
           <Route path="/patient-portal" element={<RoleRoute allowedRoles={[ROLES.PATIENT]}><PatientPortalPage /></RoleRoute>} />
           <Route path="/patient-sessions" element={<RoleRoute allowedRoles={[ROLES.PATIENT]}><PatientSessionsPage /></RoleRoute>} />
+          <Route path="/doctor-dashboard" element={<RoleRoute allowedRoles={[ROLES.DOCTOR]}><DoctorDashboardPage /></RoleRoute>} />
+          <Route path="/doctor-patients" element={<RoleRoute allowedRoles={[ROLES.DOCTOR]}><DoctorPatientsPage /></RoleRoute>} />
+          <Route path="/doctor-sessions" element={<RoleRoute allowedRoles={[ROLES.DOCTOR]}><DoctorSessionsPage /></RoleRoute>} />
           <Route path="/doctors" element={<RoleRoute allowedRoles={[ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER]}><DoctorPage /></RoleRoute>} />
           <Route path="/sessions" element={<RoleRoute allowedRoles={[ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER]}><DialysisSessionPage /></RoleRoute>} />
           <Route path="/monitoring" element={<RoleRoute allowedRoles={[ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER]}><MonitoringPage /></RoleRoute>} />
@@ -45,7 +51,7 @@ const AppRoutes = () => {
           <Route path="/activity-logs" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><ActivityLogsPage /></RoleRoute>} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/messages" element={<MessagesPage />} />
-          <Route path="/alerts" element={<RoleRoute allowedRoles={[ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.PATIENT]}><AlertsPage /></RoleRoute>} />
+          <Route path="/alerts" element={<RoleRoute allowedRoles={[ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.PATIENT, ROLES.DOCTOR]}><AlertsPage /></RoleRoute>} />
         </Route>
       </Routes>
     </BrowserRouter>

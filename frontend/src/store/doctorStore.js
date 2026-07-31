@@ -25,34 +25,48 @@ export const useDoctorStore = create((set) => ({
   },
 
   createDoctor: async (data) => {
-    const res = await doctorApi.createDoctor(data);
-
-    set((state) => ({
-      doctors: [res.data.data, ...state.doctors],
-    }));
-
-    return res;
+    set({ loading: true, error: null });
+    try {
+      const res = await doctorApi.createDoctor(data);
+      set((state) => ({
+        doctors: [res.data.data, ...state.doctors],
+        loading: false,
+      }));
+      return res;
+    } catch (error) {
+      set({ loading: false, error: error.response?.data?.message || error.message });
+      throw error;
+    }
   },
 
   updateDoctor: async (id, data) => {
-    const res = await doctorApi.updateDoctor(id, data);
-
-    set((state) => ({
-      doctors: state.doctors.map((doctor) =>
-        doctor._id === id ? res.data.data : doctor
-      ),
-    }));
-
-    return res;
+    set({ loading: true, error: null });
+    try {
+      const res = await doctorApi.updateDoctor(id, data);
+      set((state) => ({
+        doctors: state.doctors.map((doctor) =>
+          doctor._id === id ? res.data.data : doctor
+        ),
+        loading: false,
+      }));
+      return res;
+    } catch (error) {
+      set({ loading: false, error: error.response?.data?.message || error.message });
+      throw error;
+    }
   },
 
   deleteDoctor: async (id) => {
-    await doctorApi.deleteDoctor(id);
-
-    set((state) => ({
-      doctors: state.doctors.filter(
-        (doctor) => doctor._id !== id
-      ),
-    }));
+    set({ loading: true, error: null });
+    try {
+      await doctorApi.deleteDoctor(id);
+      set((state) => ({
+        doctors: state.doctors.filter((doctor) => doctor._id !== id),
+        loading: false,
+      }));
+    } catch (error) {
+      set({ loading: false, error: error.response?.data?.message || error.message });
+      throw error;
+    }
   },
 }));

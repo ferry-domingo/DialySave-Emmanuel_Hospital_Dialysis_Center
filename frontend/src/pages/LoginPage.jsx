@@ -31,7 +31,7 @@ const LoginPage = () => {
 
           <form onSubmit={handleSubmit} className="login-form">
             <div className="login-field">
-              <label htmlFor="loginId">E-mail or Patient ID:</label>
+              <label htmlFor="loginId">E-mail, Patient ID, or Doctor ID:</label>
               <input
                 id="loginId"
                 type="text"

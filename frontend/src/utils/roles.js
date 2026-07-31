@@ -4,6 +4,7 @@ export const ROLES = {
   LEGACY_PHIC_STAFF: "PHIC Staff",
   CASHIER: "Cashier",
   PATIENT: "Patient",
+  DOCTOR: "Doctor",
 };
 
 export const normalizeRole = (role) =>
@@ -15,6 +16,8 @@ export const defaultPathForRole = (role) => {
       return "/users";
     case ROLES.PATIENT:
       return "/patient-portal";
+    case ROLES.DOCTOR:
+      return "/doctor-dashboard";
     default:
       return "/";
   }

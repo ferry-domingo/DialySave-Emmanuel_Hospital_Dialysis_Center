@@ -56,6 +56,14 @@ const Sidebar = () => {
   const role = normalizeRole(user?.role);
   const items = role === ROLES.PATIENT
     ? [{ name: "My Portal", icon: Users, path: "/patient-portal" }, { name: "My Sessions", icon: Activity, path: "/patient-sessions" }, alertsMenu, messageMenu]
+    : role === ROLES.DOCTOR
+      ? [
+        { name: "My Dashboard", icon: LayoutDashboard, path: "/doctor-dashboard" },
+        { name: "My Patients", icon: Users, path: "/doctor-patients" },
+        { name: "Patient Sessions", icon: Activity, path: "/doctor-sessions" },
+        alertsMenu,
+        messageMenu,
+      ]
     : role === ROLES.ADMIN
       ? [...adminMenus, messageMenu, alertsMenu]
       : role === ROLES.PHILHEALTH_OFFICER

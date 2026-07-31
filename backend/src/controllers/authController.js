@@ -1,22 +1,38 @@
 import User from "../models/User.js";
 import crypto from "crypto";
-import { createAuthToken, hashPassword, verifyPassword } from "../utils/auth.js";
+import { createAuthToken, generateTemporaryPassword, hashPassword, verifyPassword } from "../utils/auth.js";
 import { recordActivity } from "../utils/activityLog.js";
 import { sendEmailVerificationCode } from "../utils/email.js";
 import { normalizeRole, ROLES } from "../utils/roles.js";
+import { Doctor } from "../models/Doctor.js";
 
 const patientName = (patient) =>
   [patient?.first_name, patient?.middle_name, patient?.last_name].filter(Boolean).join(" ");
+const doctorName = (doctor) =>
+  [doctor?.first_name, doctor?.middle_name, doctor?.last_name].filter(Boolean).join(" ");
 
 const publicUser = (user) => ({
   id: user._id,
-  username: user.role === "Patient" ? patientName(user.patient) || user.name || user.username : user.name || user.username,
-  name: user.role === "Patient" ? patientName(user.patient) || user.name : user.name,
+  username: user.role === ROLES.PATIENT
+    ? patientName(user.patient) || user.name || user.username
+    : user.role === ROLES.DOCTOR
+      ? doctorName(user.doctor) || user.name || user.username
+      : user.name || user.username,
+  name: user.role === ROLES.PATIENT
+    ? patientName(user.patient) || user.name
+    : user.role === ROLES.DOCTOR
+      ? doctorName(user.doctor) || user.name
+      : user.name,
   email: user.email || "",
-  loginId: user.role === "Patient" ? user.patient?.patient_id || user.username : user.email || user.username,
+  loginId: user.role === ROLES.PATIENT
+    ? user.patient?.patient_id || user.username
+    : user.role === ROLES.DOCTOR
+      ? user.doctor?.doctor_id || user.username
+      : user.email || user.username,
   role: normalizeRole(user.role),
   status: user.status,
   patient: user.patient,
+  doctor: user.doctor,
   profilePicture: user.profilePicture,
   createdAt: user.createdAt,
 });
@@ -25,20 +41,58 @@ export const loginUser = async (req, res) => {
   try {
     const { loginId: submittedLoginId, password } = req.body;
     const loginId = String(submittedLoginId || "").trim();
+    const portalLoginId = /^(?:PAT|DOC)-/i.test(loginId) ? loginId.toUpperCase() : loginId;
 
     if (!loginId || !password) {
       return res.status(400).json({
         success: false,
-        message: "Email or patient ID and password are required.",
+        message: "Email, patient ID, or doctor ID and password are required.",
       });
     }
 
-    const user = await User.findOne({
+    let user = await User.findOne({
       $or: [
         { email: loginId.toLowerCase() },
-        { username: loginId, role: ROLES.PATIENT },
+        { username: portalLoginId, role: { $in: [ROLES.PATIENT, ROLES.DOCTOR] } },
       ],
-    }).populate("patient", "patient_id first_name middle_name last_name");
+    })
+      .populate("patient", "patient_id first_name middle_name last_name")
+      .populate("doctor", "doctor_id first_name middle_name last_name status");
+
+    // Backfill portal accounts for doctors created before doctor login was introduced.
+    if (!user) {
+      const doctor = await Doctor.findOne({ doctor_id: portalLoginId });
+      if (doctor) {
+        const expectedPassword = generateTemporaryPassword(doctor.last_name, doctor.birthdate);
+        if (password === expectedPassword) {
+          user = await User.create({
+            username: doctor.doctor_id,
+            name: doctorName(doctor),
+            password: await hashPassword(expectedPassword),
+            role: ROLES.DOCTOR,
+            doctor: doctor._id,
+            status: doctor.status,
+          });
+          user.doctor = doctor;
+        }
+      }
+    }
+
+    if (user?.role === ROLES.DOCTOR) {
+      let linkedDoctor = user.doctor;
+      if (!linkedDoctor) {
+        linkedDoctor = await Doctor.findOne({ doctor_id: user.username });
+        if (linkedDoctor) {
+          user.doctor = linkedDoctor._id;
+          await user.save();
+          user.doctor = linkedDoctor;
+        }
+      }
+      if (linkedDoctor && user.status !== linkedDoctor.status) {
+        user.status = linkedDoctor.status;
+        await user.save();
+      }
+    }
 
     if (!user) {
       await recordActivity({
@@ -93,6 +147,7 @@ export const loginUser = async (req, res) => {
       username: user.username,
       role: user.role,
       patient: user.patient,
+      doctor: user.doctor,
     });
 
     await recordActivity({ req, actor: user, action: "USER_LOGIN", target: user, details: "User signed in." });
@@ -158,8 +213,10 @@ export const updateMyProfile = async (req, res) => {
       });
     }
 
-    const user = await User.findById(req.user._id).populate("patient", "patient_id first_name middle_name last_name");
-    if (user.role !== "Patient") {
+    const user = await User.findById(req.user._id)
+      .populate("patient", "patient_id first_name middle_name last_name")
+      .populate("doctor", "doctor_id first_name middle_name last_name status");
+    if (![ROLES.PATIENT, ROLES.DOCTOR].includes(user.role)) {
       user.name = name;
     }
     if (profilePicture !== undefined) user.profilePicture = profilePicture;
@@ -188,8 +245,8 @@ export const updateMyProfile = async (req, res) => {
 
 export const requestEmailChange = async (req, res) => {
   try {
-    if (req.user.role === "Patient") {
-      return res.status(403).json({ success: false, message: "Patient accounts use a Patient ID to sign in." });
+    if ([ROLES.PATIENT, ROLES.DOCTOR].includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: "Portal accounts use an assigned ID to sign in." });
     }
 
     const email = String(req.body.email || "").trim().toLowerCase();
@@ -260,7 +317,8 @@ export const verifyEmailChange = async (req, res) => {
 
     const user = await User.findById(req.user._id)
       .select("+emailVerificationCodeHash +emailVerificationExpiresAt")
-      .populate("patient", "patient_id first_name middle_name last_name");
+      .populate("patient", "patient_id first_name middle_name last_name")
+      .populate("doctor", "doctor_id first_name middle_name last_name status");
     const codeHash = crypto.createHash("sha256").update(code).digest("hex");
     const validCode = user.pendingEmail &&
       user.emailVerificationCodeHash &&

@@ -4,6 +4,7 @@ export const ROLES = {
   LEGACY_PHIC_STAFF: "PHIC Staff",
   CASHIER: "Cashier",
   PATIENT: "Patient",
+  DOCTOR: "Doctor",
 };
 
 export const normalizeRole = (role) =>

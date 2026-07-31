@@ -55,6 +55,7 @@ const UserSchema = new mongoose.Schema(
         "PHIC Staff",
         "Cashier",
         "Patient",
+        "Doctor",
       ],
       required: true,
     },
@@ -69,6 +70,12 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "Active",
       trim: true,
+    },
+
+    doctor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Doctor",
+      default: null,
     },
 
     profilePicture: {
