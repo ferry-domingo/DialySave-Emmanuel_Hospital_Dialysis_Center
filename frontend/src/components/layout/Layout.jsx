@@ -34,12 +34,19 @@ const Layout = () => {
     if (!token) return undefined;
 
     const socket = connectSocket(token);
+    const syncMessages = () => {
+      fetchConversations();
+      const activeConversationId = useMessageStore.getState().activeConversationId;
+      if (activeConversationId) useMessageStore.getState().loadMessages(activeConversationId);
+    };
+    const handleNewMessage = (message) => receiveMessage(message, false);
     socket.on("online-users", setOnlineUserIds);
-    socket.on("message:new", receiveMessage);
+    socket.on("connect", syncMessages);
+    socket.on("message:new", handleNewMessage);
     socket.on("message:updated", replaceMessage);
     socket.on("message:unsent", replaceMessage);
     socket.on("message:read", applyReadReceipt);
-    socket.on("conversation:new", fetchConversations);
+    socket.on("conversation:new", syncMessages);
     socket.on("notification:new", receiveNotification);
     const handleDataChange = ({ resource }) => {
       const role = normalizeRole(useAuthStore.getState().user?.role);
@@ -83,11 +90,12 @@ const Layout = () => {
 
     return () => {
       socket.off("online-users", setOnlineUserIds);
-      socket.off("message:new", receiveMessage);
+      socket.off("connect", syncMessages);
+      socket.off("message:new", handleNewMessage);
       socket.off("message:updated", replaceMessage);
       socket.off("message:unsent", replaceMessage);
       socket.off("message:read", applyReadReceipt);
-      socket.off("conversation:new", fetchConversations);
+      socket.off("conversation:new", syncMessages);
       socket.off("notification:new", receiveNotification);
       socket.off("data:changed", handleDataChange);
       disconnectSocket();

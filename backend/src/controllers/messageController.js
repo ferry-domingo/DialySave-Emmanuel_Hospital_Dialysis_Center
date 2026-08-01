@@ -241,7 +241,7 @@ export const sendMessage = async (req, res) => {
     message = await Message.findById(message._id)
       .populate("sender", "username name role profilePicture")
       .populate({ path: "replyTo", select: "text sender isUnsent", populate: { path: "sender", select: "username name role profilePicture" } });
-    notifyOtherParticipants(conversation, req.user._id, "message:new", message);
+    notifyOtherParticipants(conversation, req.user._id, "message:new", message.toObject());
 
     return res.status(201).json({ success: true, data: message });
   } catch (error) {
@@ -369,7 +369,7 @@ export const forwardMessage = async (req, res) => {
     await targetConversation.save();
 
     forwardedMessage = await Message.findById(forwardedMessage._id).populate("sender", "username name role profilePicture");
-    notifyOtherParticipants(targetConversation, req.user._id, "message:new", forwardedMessage);
+    notifyOtherParticipants(targetConversation, req.user._id, "message:new", forwardedMessage.toObject());
 
     return res.status(201).json({
       success: true,

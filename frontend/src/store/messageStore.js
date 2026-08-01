@@ -216,9 +216,10 @@ export const useMessageStore = create((set, get) => ({
       };
     });
 
+    const conversationExists = get().conversations.some((item) => item._id === conversationId);
     if (!isOwn && get().activeConversationId === conversationId) {
       get().markRead(conversationId);
-    } else if (!isOwn && !get().conversations.some((item) => item._id === conversationId)) {
+    } else if (!isOwn && !conversationExists) {
       get().fetchConversations();
     }
   },
