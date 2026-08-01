@@ -28,8 +28,8 @@ const LoginPage = () => {
       <section className="login-card" aria-label="Account login">
         <div className="login-form-panel">
           <h1>Login</h1>
-          <h2>Raff</h2>
 
+          <h2>raff</h2>
           <form onSubmit={handleSubmit} className="login-form">
             <div className="login-field">
               <label htmlFor="loginId">E-mail, Patient ID, or Doctor ID:</label>
