@@ -93,6 +93,16 @@ const DialysisSessionPage = () => {
     setCalendarOpen(false);
   };
 
+  const handlePrint = () => {
+    const pageStyle = document.createElement("style");
+    pageStyle.textContent = "@media print { @page { size: A4 landscape; margin: 0 0.2in; } }";
+    document.head.appendChild(pageStyle);
+    const cleanup = () => pageStyle.remove();
+    window.addEventListener("afterprint", cleanup, { once: true });
+    window.print();
+    window.setTimeout(cleanup, 1000);
+  };
+
   return (
     <div className="space-y-3">
 
@@ -176,7 +186,7 @@ const DialysisSessionPage = () => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={handlePrint}
             className="flex items-center justify-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             <Printer size={14} />

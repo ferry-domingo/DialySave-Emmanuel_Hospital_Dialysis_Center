@@ -30,7 +30,7 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
   const handlePrint = () => {
     const pageStyle = document.createElement("style");
     pageStyle.dataset.agreementPrint = "true";
-    pageStyle.textContent = "@media print { @page { size: A4 portrait; margin: 0.35in; } }";
+    pageStyle.textContent = "@media print { @page { size: 8in 13in; margin: 0.2in 0.8in 0; } }";
     document.head.appendChild(pageStyle);
 
     const cleanup = () => pageStyle.remove();
