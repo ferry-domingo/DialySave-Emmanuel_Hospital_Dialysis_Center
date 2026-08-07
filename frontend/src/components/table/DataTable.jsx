@@ -11,7 +11,7 @@ const DataTable = ({
   return (
     <div className="overflow-x-auto bg-white rounded-xl shadow">
 
-      <table className="w-full">
+      <table className="w-full text-xs">
 
         <thead className="bg-slate-100">
 
@@ -19,7 +19,7 @@ const DataTable = ({
             {columns.map((column) => (
               <th
                 key={column.accessor}
-                className="px-5 py-3 text-left"
+                className="px-2.5 py-1.5 text-left text-[10px] uppercase"
               >
                 {column.header}
               </th>
@@ -48,7 +48,7 @@ const DataTable = ({
                 {columns.map((column) => (
                   <td
                     key={column.accessor}
-                    className="px-5 py-3"
+                    className="px-2.5 py-1.5"
                   >
                     {column.render
                       ? column.render(row)

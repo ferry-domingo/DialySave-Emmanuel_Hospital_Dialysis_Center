@@ -10,11 +10,11 @@ const Modal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-3">
 
-      <div className={`max-h-[90vh] w-full ${maxWidth} overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl`}>
+      <div className={`max-h-[96vh] w-full ${maxWidth} overflow-y-auto rounded-2xl bg-white p-3 shadow-2xl`}>
 
-        <div className="mb-5 flex items-center justify-between">
+        <div className="mb-2 flex items-center justify-between">
 
           <h2 className="text-lg font-bold text-slate-900">
             {title}

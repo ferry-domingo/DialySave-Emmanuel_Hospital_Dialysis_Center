@@ -15,9 +15,9 @@ import {
   Settings as SettingsIcon,
   Stethoscope,
   UserCog,
+  UserRoundSearch,
   Users,
   X,
-  Zap,
 } from "lucide-react";
 import { useState } from "react";
 import { useAuthStore } from "../../store/authStore";
@@ -25,21 +25,15 @@ import UserAvatar from "../common/UserAvatar";
 import { normalizeRole, ROLES } from "../../utils/roles";
 
 const operationalMenus = [
-  { name: "Dashboard", icon: LayoutDashboard, path: "/" },
+  { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { name: "Dialysis Sessions", icon: Activity, path: "/sessions" },
   { name: "Patients", icon: Users, path: "/patients" },
   { name: "Doctors", icon: Stethoscope, path: "/doctors" },
-  { name: "Monitoring", icon: Zap, path: "/monitoring" },
+  { name: "Monitoring", icon: UserRoundSearch, path: "/monitoring" },
 ];
 const admissionMenu = { name: "Admission Report", icon: IdCard, path: "/admission-report" };
-const cashierMenus = [
-  { name: "Dashboard", icon: LayoutDashboard, path: "/" },
-  { name: "Dialysis Sessions", icon: Activity, path: "/sessions" },
-  { name: "Patients", icon: Users, path: "/patients" },
-  { name: "Cash Monitoring", icon: Zap, path: "/monitoring" },
-];
 const adminMenus = [
-  { name: "Dashboard", icon: LayoutDashboard, path: "/" },
+  { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { name: "Users", icon: UserCog, path: "/users" },
   { name: "Activity Logs", icon: ClipboardList, path: "/activity-logs" },
 ];
@@ -66,9 +60,9 @@ const Sidebar = () => {
       ]
     : role === ROLES.ADMIN
       ? [...adminMenus, messageMenu, alertsMenu]
-      : role === ROLES.PHILHEALTH_OFFICER
+      : [ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER].includes(role)
         ? [...operationalMenus, admissionMenu, alertsMenu, messageMenu]
-        : [...cashierMenus, messageMenu];
+        : [messageMenu];
 
   const handleLogout = async () => {
     setProfileOpen(false);
@@ -83,11 +77,11 @@ const Sidebar = () => {
   };
 
   const linkClass = ({ isActive }) =>
-    `group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition ${isActive ? "bg-slate-950 text-white shadow-md" : "text-black hover:bg-slate-100"
+    `group flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition ${isActive ? "bg-slate-950 text-white shadow-md" : "text-black hover:bg-slate-100"
     } ${collapsed ? "md:justify-center md:bg-transparent md:p-0 md:shadow-none md:hover:bg-transparent" : ""}`;
 
   const iconBadgeClass = (isActive) =>
-    `grid h-10 w-10 shrink-0 place-items-center rounded-xl transition ${isActive ? "bg-white/10 text-white" : "bg-slate-100 text-black group-hover:bg-white"
+    `grid h-8 w-8 shrink-0 place-items-center rounded-lg transition ${isActive ? "bg-white/10 text-white" : "bg-slate-100 text-black group-hover:bg-white"
     } ${collapsed ? (isActive ? "md:h-11 md:w-11 md:rounded-full md:bg-slate-950 md:text-white" : "md:h-11 md:w-11 md:rounded-full") : ""}`;
 
   return <>
@@ -100,13 +94,13 @@ const Sidebar = () => {
     </header>
     {open && <button aria-label="Close navigation" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm md:hidden" />}
     <aside
-      className={`${open ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-50 flex w-72 flex-col overflow-hidden rounded-r-3xl bg-white text-slate-900 shadow-2xl transition-all duration-200 md:sticky md:top-0 md:left-auto md:inset-y-auto md:h-screen md:translate-x-0 md:rounded-none md:border-r md:border-slate-100 md:shadow-none ${collapsed ? "md:w-24" : "md:w-72"
+      className={`${open ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-50 flex w-72 flex-col overflow-hidden rounded-r-3xl bg-white text-slate-900 shadow-2xl transition-all duration-200 md:sticky md:top-0 md:left-auto md:inset-y-auto md:h-screen md:translate-x-0 md:rounded-none md:border-r md:border-slate-200/70 md:shadow-none ${collapsed ? "md:w-16" : "md:w-52"
         }`}
     >
-      <div className={`flex items-center gap-3 border-b border-slate-100 px-5 py-5 md:px-4 ${collapsed ? "md:flex-col md:items-center md:gap-3" : "justify-between"}`}>
+      <div className={`flex items-center gap-2 border-b border-slate-100 px-4 py-3 ${collapsed ? "md:flex-col md:items-center md:gap-2" : "justify-between"}`}>
         <div className="flex items-center gap-3">
-          <img src="/images/logo.png" alt="EHDC" className="h-14 w-14 shrink-0 object-contain" />
-          <p className={`text-3xl font-extrabold tracking-tight text-slate-900 ${collapsed ? "md:hidden" : ""}`}>EHDC</p>
+          <img src="/images/logo.png" alt="EHDC" className="h-10 w-10 shrink-0 object-contain" />
+          <p className={`text-2xl font-extrabold tracking-tight text-slate-900 ${collapsed ? "md:hidden" : ""}`}>EHDC</p>
         </div>
         <button
           onClick={() => setCollapsed(!collapsed)}
@@ -117,15 +111,15 @@ const Sidebar = () => {
         </button>
       </div>
 
-      <p className={`px-6 pt-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 ${collapsed ? "md:hidden" : ""}`}>Main menu</p>
+      <p className={`px-4 pt-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400 ${collapsed ? "md:hidden" : ""}`}>Main menu</p>
 
-      <nav className="flex-1 space-y-1.5 overflow-y-auto px-4 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {items.map(({ name, icon: Icon, path }) => (
           <NavLink key={path} to={path} onClick={() => setOpen(false)} className={linkClass}>
             {({ isActive }) => (
               <>
                 <span className={iconBadgeClass(isActive)}>
-                  <Icon size={18} />
+                  <Icon size={16} />
                 </span>
                 <span className={collapsed ? "md:hidden" : ""}>{name}</span>
               </>
@@ -135,7 +129,7 @@ const Sidebar = () => {
 
       </nav>
 
-      <div className="border-t border-slate-100 p-4">
+      <div className="border-t border-slate-100 p-2.5">
         {profileOpen && (
           <div className={`mb-2 space-y-1 rounded-2xl border border-slate-100 bg-white p-2 shadow-lg ${collapsed ? "md:px-1" : ""}`}>
             <button type="button" onClick={openSettings} title="Settings" className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 ${collapsed ? "md:justify-center md:px-2" : ""}`}>
@@ -146,13 +140,13 @@ const Sidebar = () => {
             </button>
           </div>
         )}
-        <button type="button" onClick={() => setProfileOpen((value) => !value)} aria-expanded={profileOpen} className={`flex w-full items-center gap-3 rounded-2xl p-2 text-left transition hover:bg-slate-50 ${collapsed ? "md:justify-center" : ""}`}>
-          <UserAvatar user={user} className="h-11 w-11 text-sm" />
+        <button type="button" onClick={() => setProfileOpen((value) => !value)} aria-expanded={profileOpen} className={`flex w-full items-center gap-2 rounded-xl p-1.5 text-left transition hover:bg-slate-50 ${collapsed ? "md:justify-center" : ""}`}>
+          <UserAvatar user={user} className="h-9 w-9 text-xs" />
           <div className={`min-w-0 ${collapsed ? "md:hidden" : ""}`}>
-            <p className="truncate text-sm font-bold uppercase text-slate-900">{user?.username || "User"}</p>
-            <p className="text-xs text-slate-400">{user?.role || "Role"}</p>
+            <p className="truncate text-[11px] font-bold uppercase leading-tight text-slate-900">{user?.username || "User"}</p>
+            <p className="truncate text-[10px] leading-tight text-slate-400">{user?.role || "Role"}</p>
           </div>
-          <span className={`ml-auto text-slate-400 ${collapsed ? "md:hidden" : ""}`}>{profileOpen ? <ChevronDown size={17} /> : <ChevronUp size={17} />}</span>
+          <span className={`ml-auto text-slate-400 ${collapsed ? "md:hidden" : ""}`}>{profileOpen ? <ChevronDown size={14} /> : <ChevronUp size={14} />}</span>
         </button>
       </div>
     </aside>

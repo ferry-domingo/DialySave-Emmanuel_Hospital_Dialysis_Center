@@ -41,7 +41,7 @@ router.get('/:identifier', protect, roleOrOwnPatient(), async (req, res) => {
 
     const sessions = await DialysisSession.find({ patient: patient._id })
       .populate('patient', 'patient_id first_name last_name blood_type')
-      .populate('doctor', 'doctor_id first_name last_name')
+      .populate('doctor', 'doctor_id first_name last_name gender')
       .sort({ createdAt: -1 });
 
     const monitoringResult = await runController(getPatientMonitoring, {

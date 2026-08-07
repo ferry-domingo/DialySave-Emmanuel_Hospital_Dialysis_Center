@@ -6,15 +6,15 @@ const Mark = ({ ok }) => (
 );
 
 const PageHeader = () => (
-  <img src="/images/header.png" alt="" className="mx-auto w-[75%]" />
+  <img src="/images/header.png" alt="" className="mx-auto mb-6 w-[84%]" />
 );
 
 const PageFooter = () => (
-  <img src="/images/footer.png" alt="" className="h-6" />
+  <img src="/images/footer.png" alt="" className="h-8" />
 );
 
 const FormTitle = () => (
-  <div className="text-center leading-none">
+  <div className="mb-4 text-center leading-none">
     <p className="text-[12px] font-bold">PHILHEALTH HEMODIALYSIS BENEFITS PACKAGE</p>
     <p className="text-[12px] font-bold">AGREEMENT FORM</p>
   </div>

@@ -28,7 +28,7 @@ export const useDialysisSessionStore = create((set) => ({
     const res = await sessionApi.createDialysisSession(data);
 
     set((state) => ({
-      sessions: [res.data.data, ...state.sessions],
+      sessions: [...state.sessions, res.data.data],
     }));
 
     return res;

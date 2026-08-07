@@ -46,28 +46,29 @@ const ActivityLogsPage = () => {
   const term = search.trim().toLowerCase();
   const filteredLogs = activityLogs.filter((log) =>
     [actorName(log), log.actor?.role, log.actorUsername, log.action, LABELS[log.action], accountName(log.target, log.targetUsername), log.target?.role, log.details]
-      .some((value) => String(value || "").toLowerCase().includes(term))
+      .some((value) => String(value || "").toLowerCase().includes(term)) ||
+    JSON.stringify(log).toLowerCase().includes(term)
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <Topbar title="Activity Logs" />
-      <div className="flex flex-col gap-3 rounded-3xl bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 sm:w-96">
+      <div className="flex flex-col gap-2 rounded-xl bg-white p-2 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 sm:w-56">
           <Search size={16} className="text-slate-400" />
-          <input placeholder="Search user, role, activity, or details..." value={search} onChange={(event) => setSearch(event.target.value)} className="w-full bg-transparent text-sm text-black outline-none placeholder:text-slate-400" />
+          <input placeholder="Search activity..." value={search} onChange={(event) => setSearch(event.target.value)} className="w-full bg-transparent text-[10px] text-black outline-none placeholder:text-slate-400" />
         </div>
-        <button onClick={() => setArchived((value) => !value)} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+        <button onClick={() => setArchived((value) => !value)} className="inline-flex items-center justify-center gap-1 rounded-md bg-slate-950 px-2 py-1 text-[10px] font-semibold text-white hover:bg-slate-800">
           {archived ? <List size={16} /> : <Archive size={16} />}
           {archived ? "View active logs" : "View archive"}
         </button>
       </div>
-      <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
+      <div className="rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs text-slate-500">
         {archived ? "Archived activity older than one month." : "Active activity from the last month. Older records are archived automatically."}
       </div>
-      <div className="overflow-x-auto rounded-3xl bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead><tr className="border-b border-slate-200 text-xs font-bold uppercase tracking-wide text-slate-700">
+      <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
+        <table className="w-full text-left text-xs [&_td]:!px-2.5 [&_td]:!py-1.5 [&_th]:!px-2.5 [&_th]:!py-1.5">
+          <thead><tr className="border-b border-slate-200 text-[10px] font-bold uppercase tracking-wide text-slate-700">
             <th className="px-4 py-3">Date & time</th><th className="px-4 py-3">User</th>
             <th className="px-4 py-3">Activity</th><th className="px-4 py-3">Target</th><th className="px-4 py-3">Details</th>
           </tr></thead>
@@ -80,7 +81,7 @@ const ActivityLogsPage = () => {
                 <p className="font-bold text-slate-900">{actorName(log)}</p>
                 <p className="mt-0.5 text-xs text-slate-400">{log.actor?.role || "System"}</p>
               </td>
-              <td className="px-4 py-3"><span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">{LABELS[log.action] || log.action}</span></td>
+              <td className="px-4 py-3"><span className="rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-bold text-blue-700">{LABELS[log.action] || log.action}</span></td>
               <td className="px-4 py-3">
                 <p className="font-semibold text-slate-700">{accountName(log.target, log.targetUsername)}</p>
                 {(log.target?.role || log.targetUsername) && <p className="mt-0.5 text-xs text-slate-400">{log.target?.role || "Account"}</p>}

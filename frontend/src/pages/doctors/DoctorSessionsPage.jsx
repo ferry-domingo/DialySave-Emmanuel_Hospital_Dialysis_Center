@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { Activity, CalendarDays, Check, Circle, FlaskConical, Search, Syringe, X } from "lucide-react";
 import Topbar from "../../components/layout/Topbar";
 import { useDoctorPortalStore } from "../../store/doctorPortalStore";
+import { formatDoctorName } from "../../utils/doctorName";
 
 const fullName = (patient) =>
   [patient?.first_name, patient?.middle_name, patient?.last_name].filter(Boolean).join(" ");
 
-const doctorName = (doctor) =>
-  [doctor?.first_name, doctor?.middle_name, doctor?.last_name].filter(Boolean).join(" ");
+const doctorName = (doctor) => formatDoctorName(doctor);
 
 const DoctorSessionsPage = () => {
   const { data, loading, error, fetchPortal } = useDoctorPortalStore();
@@ -46,7 +46,8 @@ const DoctorSessionsPage = () => {
           fullName(session.patient).toLowerCase().includes(term) ||
           String(session.sessionNumber) === term ||
           `session ${session.sessionNumber}`.includes(term) ||
-          `#${session.sessionNumber}` === term)
+          `#${session.sessionNumber}` === term ||
+          JSON.stringify(session).toLowerCase().includes(term))
       );
   }, [data, patientId, search]);
 

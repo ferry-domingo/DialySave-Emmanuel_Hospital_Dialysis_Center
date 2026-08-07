@@ -18,7 +18,7 @@ export const protect = async (req, res, next) => {
     const user = await User.findById(decoded.id)
       .select("-password")
       .populate("patient", "patient_id first_name middle_name last_name")
-      .populate("doctor", "doctor_id first_name middle_name last_name status");
+      .populate("doctor", "doctor_id first_name middle_name last_name gender status");
 
     if (!user) {
       return res.status(401).json({

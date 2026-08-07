@@ -28,12 +28,12 @@ const AdmissionReportTable = ({
 
   return (
 
-    <div className="overflow-x-auto rounded-3xl bg-white shadow-sm">
+    <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
 
-      <table className="w-full min-w-[1000px] text-left text-sm">
+      <table className="w-full min-w-[900px] text-left text-xs [&_td]:!px-2.5 [&_td]:!py-1.5 [&_th]:!px-2.5 [&_th]:!py-1.5">
 
         <thead>
-          <tr className="border-b border-slate-200 text-xs font-bold uppercase tracking-wide text-slate-700">
+          <tr className="border-b border-slate-200 text-[10px] font-bold uppercase tracking-wide text-slate-700">
             <th className="px-4 py-3">Patient ID</th>
             <th className="px-4 py-3">Name</th>
             <th className="px-4 py-3">Admission</th>
@@ -80,7 +80,7 @@ const AdmissionReportTable = ({
                 </td>
                 <td className="px-4 py-3">
                   <span
-                    className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                    className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
                       STATUS_STYLES[patient.status] || "bg-slate-100 text-slate-600"
                     }`}
                   >
@@ -95,9 +95,9 @@ const AdmissionReportTable = ({
                         setOpenModal(true);
                       }}
                       aria-label="Edit info relayed"
-                      className="grid h-8 w-8 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                      className="grid h-5 w-5 place-items-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
                     >
-                      <Pencil size={16} />
+                      <Pencil size={11} />
                     </button>
                   </div>
                 </td>

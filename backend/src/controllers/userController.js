@@ -82,6 +82,33 @@ export const getUsers = async (req, res) => {
   }
 };
 
+// SAFE USER DIRECTORY FOR ONLINE-PRESENCE DISPLAYS
+export const getOnlineDirectory = async (req, res) => {
+  try {
+    const requesterRole = normalizeRole(req.user?.role);
+    const visibilityFilter = requesterRole === ROLES.PATIENT
+      ? { role: { $in: [ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.LEGACY_PHIC_STAFF, ROLES.CASHIER] } }
+      : {};
+
+    const users = await User.find({ ...visibilityFilter, status: "Active" })
+      .select("name username role patient profilePicture")
+      .populate("patient", "patient_id first_name last_name")
+      .sort({ name: 1, username: 1 })
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      data: users.map((user) => ({ ...user, role: normalizeRole(user.role) })),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve the online user directory.",
+      error: error.message,
+    });
+  }
+};
+
 export const updateUserStatus = async (req, res) => {
   try {
     const { status } = req.body;

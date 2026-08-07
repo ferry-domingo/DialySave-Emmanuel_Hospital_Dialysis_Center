@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Topbar from "../../components/layout/Topbar";
 import api from "../../api/axios";
 import { useAuthStore } from "../../store/authStore";
+import { formatDoctorName } from "../../utils/doctorName";
 
 const formatDate = (value) => value
   ? new Intl.DateTimeFormat("en-PH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value))
@@ -78,7 +79,9 @@ const PatientSessionsPage = () => {
       .map((session, index) => ({ session, number: sortedSessions.length - index }))
       .filter(
         ({ session, number }) =>
-          String(number).includes(term) || formatDate(session.createdAt).toLowerCase().includes(term)
+          String(number).includes(term) ||
+          formatDate(session.createdAt).toLowerCase().includes(term) ||
+          JSON.stringify(session).toLowerCase().includes(term)
       );
   }, [search, sortedSessions]);
 
@@ -182,7 +185,7 @@ const PatientSessionsPage = () => {
               <Detail
                 icon={HeartPulse}
                 label="Attending doctor"
-                value={displayedSession.doctor ? `${displayedSession.doctor.first_name || ""} ${displayedSession.doctor.last_name || ""}`.trim() : "Not assigned"}
+                value={formatDoctorName(displayedSession.doctor) || "Not assigned"}
               />
               <Detail icon={Syringe} label="Injection" value={displayedSession.injections?.name} payment={displayedSession.injections?.payment_type} />
               <Detail icon={Circle} label="Dialyzer" value={displayedSession.dialyzer?.name} payment={displayedSession.dialyzer?.payment_type} />

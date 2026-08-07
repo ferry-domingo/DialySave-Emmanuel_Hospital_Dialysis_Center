@@ -29,13 +29,9 @@ const PatientPage = () => {
   }, []);
 
   const filteredPatients = patients.filter((patient) => {
-    const fullname =
-      `${patient.first_name} ${patient.last_name}`.toLowerCase();
-
-    return (
-      fullname.includes(search.toLowerCase()) ||
-      patient.patient_id.toLowerCase().includes(search.toLowerCase())
-    );
+    const term = search.trim().toLowerCase();
+    if (!term) return true;
+    return JSON.stringify(patient).toLowerCase().includes(term);
   });
   const totalPages = Math.max(1, Math.ceil(filteredPatients.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -57,27 +53,27 @@ const PatientPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
 
       <Topbar title="Patients" />
 
-      <div className="flex flex-col gap-4 rounded-3xl bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-2 rounded-xl bg-white p-2 shadow-sm sm:flex-row sm:items-center sm:justify-between">
 
-        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 sm:w-80">
+        <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 sm:w-52">
           <Search size={16} className="text-slate-400" />
           <input
             placeholder="Search patient..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full bg-transparent text-sm text-black outline-none placeholder:text-slate-400"
+            className="w-full bg-transparent text-[10px] text-black outline-none placeholder:text-slate-400"
           />
         </div>
 
         <button
           onClick={handleAdd}
-          className="flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+          className="flex items-center justify-center gap-1 rounded-md bg-slate-950 px-2 py-1 text-[10px] font-semibold text-white transition hover:bg-slate-800"
         >
-          <Plus size={16} />
+          <Plus size={14} />
           Add Patient
         </button>
 

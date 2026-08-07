@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Stethoscope, UserRound } from "lucide-react";
+import { Search, UserRound } from "lucide-react";
 import toast from "react-hot-toast";
 
 import Button from "../common/Button";
@@ -10,6 +10,7 @@ import DateInput from "../common/DateInput";
 
 import { usePatientStore } from "../../store/patientStore";
 import { useDoctorStore } from "../../store/doctorStore";
+import { formatDoctorName } from "../../utils/doctorName";
 
 const GENDER_OPTIONS = [
   { value: "Male", label: "Male" },
@@ -28,11 +29,11 @@ const STATUS_OPTIONS = [
 ];
 
 const SectionHeader = ({ icon: Icon, title }) => (
-  <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-500">
-      <Icon size={14} />
+  <div className="flex items-center gap-1.5 rounded-md bg-blue-100 px-2 py-1 text-blue-950">
+    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/80 text-slate-500">
+      <Icon size={12} />
     </span>
-    <h3 className="text-sm font-bold text-slate-900">{title}</h3>
+    <h3 className="text-xs font-bold text-slate-900">{title}</h3>
   </div>
 );
 
@@ -64,9 +65,21 @@ const PatientForm = ({ patient, onClose }) => {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm({
     defaultValues: DEFAULT_VALUES,
+  });
+
+  const [doctorSearch, setDoctorSearch] = useState("");
+  const [doctorSearchOpen, setDoctorSearchOpen] = useState(false);
+  const selectedDoctorId = watch("doctor");
+  const selectedDoctor = doctors.find((doctor) => doctor._id === selectedDoctorId) || null;
+  const filteredDoctors = doctors.filter((doctor) => {
+    const name = `${doctor.first_name} ${doctor.last_name}`.toLowerCase();
+    const term = doctorSearch.trim().toLowerCase().replace(/^dra?\.\s*/, "");
+    return name.includes(term);
   });
 
   useEffect(() => {
@@ -86,8 +99,10 @@ const PatientForm = ({ patient, onClose }) => {
         contact_number: patient.contact_number,
         status: patient.status,
       });
+      setDoctorSearch(formatDoctorName(patient.doctor));
     } else {
       reset(DEFAULT_VALUES);
+      setDoctorSearch("");
     }
   }, [patient, doctors, reset]);
 
@@ -108,12 +123,12 @@ const PatientForm = ({ patient, onClose }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
 
-      <div className="space-y-4">
+      <section className="space-y-2 rounded-lg border border-blue-200 bg-white p-2">
         <SectionHeader icon={UserRound} title="Personal Information" />
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <Input
             label="First Name"
             required
@@ -127,9 +142,6 @@ const PatientForm = ({ patient, onClose }) => {
             error={errors.last_name?.message}
             {...register("last_name", { required: "Last name is required" })}
           />
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Input label="Middle Name" {...register("middle_name")} />
 
           <Select
@@ -139,9 +151,6 @@ const PatientForm = ({ patient, onClose }) => {
             options={GENDER_OPTIONS}
             {...register("gender", { required: "Gender is required" })}
           />
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <DateInput
             label="Birthdate"
             required
@@ -156,45 +165,69 @@ const PatientForm = ({ patient, onClose }) => {
             options={BLOOD_TYPE_OPTIONS}
             {...register("blood_type", { required: "Blood type is required" })}
           />
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <SectionHeader icon={Stethoscope} title="Care & Contact" />
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Select
-            label="Doctor"
-            options={doctors.map((doctor) => ({
-              value: doctor._id,
-              label: `${doctor.first_name} ${doctor.last_name}`,
-            }))}
-            {...register("doctor")}
+          <Input
+            label="Contact Number"
+            required
+            error={errors.contact_number?.message}
+            {...register("contact_number", {
+              required: "Contact number is required",
+              pattern: {
+                value: /^09\d{9}$/,
+                message: "Invalid contact number",
+              },
+            })}
           />
-
+          <div className="relative space-y-0.5">
+            <label className="text-[9px] font-bold uppercase tracking-wide text-blue-700">Doctor</label>
+            <div className="relative">
+              <Search size={12} className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                value={doctorSearch}
+                onChange={(event) => {
+                  setDoctorSearch(event.target.value);
+                  setDoctorSearchOpen(true);
+                  setValue("doctor", "", { shouldDirty: true });
+                }}
+                onFocus={() => setDoctorSearchOpen(true)}
+                onBlur={() => {
+                  setDoctorSearchOpen(false);
+                  setDoctorSearch(formatDoctorName(selectedDoctor));
+                }}
+                placeholder="Search doctor..."
+                className="h-6 w-full rounded-md border border-slate-200 py-0 pl-6 pr-2 text-xs text-black outline-none focus:border-slate-400"
+                style={{ fontSize: "12px" }}
+              />
+              <input type="hidden" {...register("doctor")} />
+            </div>
+            {doctorSearchOpen && (
+              <div onMouseDown={(event) => event.preventDefault()} className="absolute z-20 mt-0.5 max-h-24 w-full overflow-y-auto rounded-md bg-white shadow-md">
+                {filteredDoctors.length ? filteredDoctors.map((doctor) => (
+                  <button
+                    key={doctor._id}
+                    type="button"
+                    onClick={() => {
+                      setValue("doctor", doctor._id, { shouldDirty: true });
+                      setDoctorSearch(formatDoctorName(doctor));
+                      setDoctorSearchOpen(false);
+                    }}
+                    className="block w-full border-b border-slate-100 px-1.5 py-0.5 text-left text-xs font-medium text-slate-700 last:border-0 hover:bg-blue-50"
+                    style={{ fontSize: "12px" }}
+                  >
+                    {formatDoctorName(doctor)}
+                  </button>
+                )) : <p className="px-2 py-1.5 text-[10px] text-slate-400">No matching doctor.</p>}
+              </div>
+            )}
+          </div>
           <Select
             label="Status"
             options={STATUS_OPTIONS}
             {...register("status")}
           />
         </div>
+      </section>
 
-        <Input
-          label="Contact Number"
-          required
-          error={errors.contact_number?.message}
-          placeholder="09XXXXXXXXX"
-          {...register("contact_number", {
-            required: "Contact number is required",
-            pattern: {
-              value: /^09\d{9}$/,
-              message: "Invalid contact number",
-            },
-          })}
-        />
-      </div>
-
-      <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
+      <div className="flex justify-end gap-2 border-t border-slate-100 pt-2">
         <Button type="button" variant="secondary" onClick={onClose}>
           Cancel
         </Button>

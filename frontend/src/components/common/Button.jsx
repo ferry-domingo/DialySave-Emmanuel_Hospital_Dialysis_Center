@@ -14,7 +14,7 @@ const Button = ({
   return (
     <button
       type={type}
-      className={`rounded-2xl px-5 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${VARIANTS[variant]} ${className}`}
+      className={`rounded-md px-2.5 py-0.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${VARIANTS[variant]} ${className}`}
       {...props}
     >
       {children}

@@ -13,12 +13,12 @@ export const normalizeRole = (role) =>
 export const defaultPathForRole = (role) => {
   switch (normalizeRole(role)) {
     case ROLES.ADMIN:
-      return "/users";
+      return "/dashboard";
     case ROLES.PATIENT:
       return "/patient-portal";
     case ROLES.DOCTOR:
       return "/doctor-dashboard";
     default:
-      return "/";
+      return "/dashboard";
   }
 };

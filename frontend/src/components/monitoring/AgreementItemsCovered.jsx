@@ -23,7 +23,7 @@ const CheckBadge = ({ covered }) =>
     </span>
   );
 
-const AgreementItemsCovered = ({ session, onUpdated }) => {
+const AgreementItemsCovered = ({ session, onHeparinChange }) => {
   const [savingHeparin, setSavingHeparin] = useState(false);
 
   if (!session) return null;
@@ -36,12 +36,15 @@ const AgreementItemsCovered = ({ session, onUpdated }) => {
   const injection = (name) => agreementInjectionMatches(session.injection?.name, name);
   const selectHeparin = async (heparin) => {
     if (savingHeparin || heparin === selectedHeparin) return;
+    const previousHeparin = selectedHeparin;
+
+    onHeparinChange?.(session.sessionId, heparin);
     setSavingHeparin(true);
     try {
       await updateAgreementHeparin(session.sessionId, heparin);
-      await onUpdated?.();
       toast.success("Heparin selection updated.");
     } catch (error) {
+      onHeparinChange?.(session.sessionId, previousHeparin);
       toast.error(error.response?.data?.message || "Failed to update Heparin selection.");
     } finally {
       setSavingHeparin(false);

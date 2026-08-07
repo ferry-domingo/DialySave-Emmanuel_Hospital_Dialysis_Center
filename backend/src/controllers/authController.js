@@ -57,7 +57,7 @@ export const loginUser = async (req, res) => {
       ],
     })
       .populate("patient", "patient_id first_name middle_name last_name")
-      .populate("doctor", "doctor_id first_name middle_name last_name status");
+      .populate("doctor", "doctor_id first_name middle_name last_name gender status");
 
     // Backfill portal accounts for doctors created before doctor login was introduced.
     if (!user) {
@@ -215,7 +215,7 @@ export const updateMyProfile = async (req, res) => {
 
     const user = await User.findById(req.user._id)
       .populate("patient", "patient_id first_name middle_name last_name")
-      .populate("doctor", "doctor_id first_name middle_name last_name status");
+      .populate("doctor", "doctor_id first_name middle_name last_name gender status");
     if (![ROLES.PATIENT, ROLES.DOCTOR].includes(user.role)) {
       user.name = name;
     }
@@ -318,7 +318,7 @@ export const verifyEmailChange = async (req, res) => {
     const user = await User.findById(req.user._id)
       .select("+emailVerificationCodeHash +emailVerificationExpiresAt")
       .populate("patient", "patient_id first_name middle_name last_name")
-      .populate("doctor", "doctor_id first_name middle_name last_name status");
+      .populate("doctor", "doctor_id first_name middle_name last_name gender status");
     const codeHash = crypto.createHash("sha256").update(code).digest("hex");
     const validCode = user.pendingEmail &&
       user.emailVerificationCodeHash &&

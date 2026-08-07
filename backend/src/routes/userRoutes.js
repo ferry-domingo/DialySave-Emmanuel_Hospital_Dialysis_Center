@@ -1,10 +1,12 @@
 import express from "express";
-import { createUser, getUsers, updateUserPassword, updateUserStatus } from "../controllers/userController.js";
+import { createUser, getOnlineDirectory, getUsers, updateUserPassword, updateUserStatus } from "../controllers/userController.js";
 import { adminOnly, protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.use(protect, adminOnly);
+router.use(protect);
+router.get("/online-directory", getOnlineDirectory);
+router.use(adminOnly);
 router.post("/", createUser);
 router.get("/", getUsers);
 router.patch("/:id/status", updateUserStatus);

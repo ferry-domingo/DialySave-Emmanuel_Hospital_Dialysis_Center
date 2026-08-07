@@ -8,11 +8,11 @@ export const useDashboardStore = create((set) => ({
   loading: false,
   error: null,
 
-  fetchSummary: async () => {
+  fetchSummary: async (date) => {
     set({ loading: true, error: null });
 
     try {
-      const res = await dashboardApi.getDashboardSummary();
+      const res = await dashboardApi.getDashboardSummary(date);
 
       set({
         summary: res.data.data,

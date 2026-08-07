@@ -3,29 +3,28 @@ import { CalendarDays, FlaskConical, HeartPulse, IdCard, Stethoscope } from "luc
 import Topbar from "../../components/layout/Topbar";
 import { useAuthStore } from "../../store/authStore";
 import api from "../../api/axios";
+import { formatDoctorName } from "../../utils/doctorName";
 
 const InfoTile = ({ label, value }) => (
-  <div className="rounded-2xl bg-slate-50 p-4">
-    <p className="text-xs font-bold uppercase tracking-wide text-slate-400">{label}</p>
-    <p className="mt-2 font-semibold text-slate-900">{value || "—"}</p>
+  <div className="rounded-lg bg-slate-50 p-2.5">
+    <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
+    <p className="mt-1 truncate font-semibold text-slate-900">{value || "—"}</p>
   </div>
 );
 
 const StatTile = ({ icon: Icon, label, value }) => (
-  <div className="rounded-3xl bg-white p-5 shadow-sm">
+  <div className="rounded-xl bg-white p-2.5 shadow-sm">
     <div className="flex items-center gap-2 text-sm font-semibold text-slate-500">
       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-600">
         <Icon size={16} />
       </span>
       {label}
     </div>
-    <p className="mt-3 text-2xl font-extrabold text-slate-900">{value}</p>
+    <p className="mt-1 truncate text-lg font-extrabold text-slate-900">{value}</p>
   </div>
 );
 
-const doctorName = (doctor) => doctor
-  ? `Dr. ${`${doctor.first_name || ""} ${doctor.last_name || ""}`.trim()}`
-  : "Not assigned";
+const doctorName = (doctor) => formatDoctorName(doctor) || "Not assigned";
 
 const PatientPortalPage = () => {
   const { user } = useAuthStore();
@@ -92,7 +91,7 @@ const PatientPortalPage = () => {
   }, [portalData]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2.5 md:flex md:h-full md:flex-col md:overflow-hidden">
 
       <Topbar title="My Portal" />
 
@@ -110,14 +109,14 @@ const PatientPortalPage = () => {
 
       {!loading && !error && (
         <>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-2.5 sm:grid-cols-3">
             <StatTile icon={IdCard} label="Patient ID" value={portalData?.profile?.patientId} />
             <StatTile icon={HeartPulse} label="Sessions" value={portalData?.summary?.sessionCount || 0} />
             <StatTile icon={Stethoscope} label="Primary Doctor" value={portalData?.profile?.doctorName} />
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-[1.35fr_0.9fr]">
-            <div className="rounded-3xl bg-white p-6 shadow-sm">
+          <div className="grid gap-2.5 lg:grid-cols-[1.35fr_0.9fr]">
+            <div className="rounded-xl bg-white p-3 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h2 className="text-base font-bold text-slate-900">Patient Details</h2>
@@ -128,7 +127,7 @@ const PatientPortalPage = () => {
                 </span>
               </div>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 <InfoTile label="Full Name" value={portalData?.profile?.fullName} />
                 <InfoTile label="Doctor" value={portalData?.profile?.doctorName} />
                 <InfoTile
@@ -139,7 +138,7 @@ const PatientPortalPage = () => {
               </div>
             </div>
 
-            <div className="rounded-3xl bg-white p-6 shadow-sm">
+            <div className="rounded-xl bg-white p-3 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h2 className="text-base font-bold text-slate-900">Latest Session</h2>
@@ -148,10 +147,10 @@ const PatientPortalPage = () => {
               </div>
 
               {latestSession ? (
-                <div className="mt-5 space-y-3">
+                <div className="mt-3 grid grid-cols-2 gap-2">
                   <InfoTile label="Session ID" value={latestSession.session_id} />
                   <InfoTile label="Date" value={new Date(latestSession.createdAt).toLocaleDateString()} />
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="contents">
                     <InfoTile label="Payment" value={latestSession.payment_type || "N/A"} />
                     <InfoTile
                       label="Labs"
@@ -169,8 +168,8 @@ const PatientPortalPage = () => {
             </div>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="rounded-3xl bg-white p-6 shadow-sm">
+          <div className="grid min-h-0 flex-1 gap-2.5 lg:grid-cols-2">
+            <div className="rounded-xl bg-white p-3 shadow-sm">
               <div className="flex items-center gap-2">
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-600">
                   <FlaskConical size={16} />
@@ -178,14 +177,14 @@ const PatientPortalPage = () => {
                 <h2 className="text-base font-bold text-slate-900">Monitoring Summary</h2>
               </div>
 
-              <div className="mt-4 grid gap-3">
+              <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
                 <InfoTile label="PHIC Sessions" value={portalData.monitoring?.phic?.total || 0} />
                 <InfoTile label="CASH Sessions" value={portalData.monitoring?.cash?.total || 0} />
                 <InfoTile label="Dialyzer Sessions" value={portalData.monitoring?.dialyzer?.total || 0} />
               </div>
             </div>
 
-            <div className="rounded-3xl bg-white p-6 shadow-sm">
+            <div className="rounded-xl bg-white p-3 shadow-sm">
               <div className="flex items-center gap-2">
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-600">
                   <CalendarDays size={16} />
@@ -194,7 +193,7 @@ const PatientPortalPage = () => {
               </div>
 
               {portalData?.admissionReport ? (
-                <div className="mt-4 grid gap-3">
+                <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
                   <InfoTile label="Status" value={portalData.admissionReport.status} />
                   <InfoTile
                     label="Admission Date"

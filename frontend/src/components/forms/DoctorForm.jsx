@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Stethoscope } from "lucide-react";
+import { Search, Stethoscope } from "lucide-react";
 import toast from "react-hot-toast";
 
 import Button from "../common/Button";
@@ -20,12 +20,20 @@ const STATUS_OPTIONS = [
   { value: "Inactive", label: "Inactive" },
 ];
 
+const MEDICAL_EXPERTISE_OPTIONS = [
+  "Nephrologist",
+  "Internal Medicine Physician (Internist)",
+  "Cardiologist",
+  "Vascular Surgeon",
+  "Urologist",
+];
+
 const SectionHeader = ({ icon: Icon, title }) => (
-  <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-500">
-      <Icon size={14} />
+  <div className="flex items-center gap-1.5 rounded-md bg-blue-100 px-2 py-1 text-blue-950">
+    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/80 text-slate-500">
+      <Icon size={12} />
     </span>
-    <h3 className="text-sm font-bold text-slate-900">{title}</h3>
+    <h3 className="text-xs font-bold text-slate-900">{title}</h3>
   </div>
 );
 
@@ -36,6 +44,7 @@ const DEFAULT_VALUES = {
   birthdate: "",
   gender: "",
   contact_number: "",
+  medical_expertise: "",
   status: "Active",
 };
 
@@ -50,10 +59,16 @@ const DoctorForm = ({ doctor, onClose }) => {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: DEFAULT_VALUES,
   });
+  const [expertiseSearch, setExpertiseSearch] = useState("");
+  const [expertiseOpen, setExpertiseOpen] = useState(false);
+  const filteredExpertise = MEDICAL_EXPERTISE_OPTIONS.filter((expertise) =>
+    expertise.toLowerCase().includes(expertiseSearch.trim().toLowerCase())
+  );
 
   useEffect(() => {
     if (doctor) {
@@ -64,10 +79,13 @@ const DoctorForm = ({ doctor, onClose }) => {
         birthdate: doctor.birthdate?.substring(0, 10),
         gender: doctor.gender,
         contact_number: doctor.contact_number,
+        medical_expertise: doctor.medical_expertise || "",
         status: doctor.status,
       });
+      setExpertiseSearch(doctor.medical_expertise || "");
     } else {
       reset(DEFAULT_VALUES);
+      setExpertiseSearch("");
     }
   }, [doctor, reset]);
 
@@ -102,32 +120,12 @@ const DoctorForm = ({ doctor, onClose }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
 
-      <div className="space-y-4">
+      <section className="space-y-2 rounded-lg border border-blue-200 bg-white p-2">
         <SectionHeader icon={Stethoscope} title="Doctor Information" />
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Input
-            label="Doctor ID"
-            value={doctor?.doctor_id || "Assigned automatically"}
-            disabled
-            className="cursor-not-allowed bg-slate-100 font-semibold text-slate-500"
-          />
-
-          <Select
-            label="Status"
-            options={STATUS_OPTIONS}
-            {...register("status")}
-          />
-        </div>
-        {!doctor && (
-          <p className="rounded-2xl bg-blue-50 px-4 py-3 text-xs font-semibold text-blue-700">
-            The system will generate an ID such as DOC-{new Date().getFullYear()}-0001. The initial password is Surname + birthday in MMDDYYYY format.
-          </p>
-        )}
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <Input
             label="First Name"
             required
@@ -149,9 +147,6 @@ const DoctorForm = ({ doctor, onClose }) => {
               validate: (value) => value.trim().length >= 2 || "Enter at least 2 characters",
             })}
           />
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Input label="Middle Name" autoComplete="additional-name" {...register("middle_name")} />
 
           <Select
@@ -161,9 +156,6 @@ const DoctorForm = ({ doctor, onClose }) => {
             options={GENDER_OPTIONS}
             {...register("gender", { required: "Gender is required" })}
           />
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <DateInput
             label="Birthdate"
             required
@@ -179,7 +171,6 @@ const DoctorForm = ({ doctor, onClose }) => {
             label="Contact Number"
             required
             error={errors.contact_number?.message}
-            placeholder="09XXXXXXXXX"
             inputMode="numeric"
             autoComplete="tel"
             maxLength={11}
@@ -191,10 +182,57 @@ const DoctorForm = ({ doctor, onClose }) => {
               },
             })}
           />
+          <div className="relative space-y-0.5">
+            <label className="text-[9px] font-bold uppercase tracking-wide text-blue-700">Medical Expertise</label>
+            <div className="relative">
+              <Search size={12} className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                value={expertiseSearch}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setExpertiseSearch(value);
+                  setValue("medical_expertise", value, { shouldDirty: true });
+                  setExpertiseOpen(true);
+                }}
+                onFocus={() => setExpertiseOpen(true)}
+                onBlur={() => setExpertiseOpen(false)}
+                placeholder="Select or enter expertise"
+                className="h-6 w-full rounded-md border border-slate-200 py-0 pl-6 pr-2 text-xs text-black outline-none focus:border-slate-400"
+                style={{ fontSize: "12px" }}
+              />
+              <input type="hidden" {...register("medical_expertise")} />
+            </div>
+            {expertiseOpen && (
+              <div onMouseDown={(event) => event.preventDefault()} className="absolute z-20 mt-0.5 max-h-28 w-full overflow-y-auto rounded-md bg-white shadow-md">
+                {filteredExpertise.length ? filteredExpertise.map((expertise) => (
+                  <button
+                    key={expertise}
+                    type="button"
+                    onClick={() => {
+                      setExpertiseSearch(expertise);
+                      setValue("medical_expertise", expertise, { shouldDirty: true });
+                      setExpertiseOpen(false);
+                    }}
+                    className="block w-full border-b border-slate-100 px-1.5 py-0.5 text-left text-xs font-medium text-slate-700 last:border-0 hover:bg-blue-50"
+                    style={{ fontSize: "12px" }}
+                  >
+                    {expertise}
+                  </button>
+                )) : (
+                  <p className="px-2 py-1.5 text-[10px] text-slate-400">Press Save to use this custom expertise.</p>
+                )}
+              </div>
+            )}
+          </div>
+          <Select
+            label="Status"
+            options={STATUS_OPTIONS}
+            {...register("status")}
+          />
         </div>
-      </div>
+      </section>
 
-      <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
+      <div className="flex justify-end gap-2 border-t border-slate-100 pt-2">
         <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting || loading}>
           Cancel
         </Button>

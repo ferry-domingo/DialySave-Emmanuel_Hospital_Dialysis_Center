@@ -9,9 +9,9 @@ const Select = ({
   ...props
 }) => {
   return (
-    <div className="space-y-1">
+    <div className="space-y-0.5">
       {label && (
-        <label className="text-xs font-bold uppercase tracking-wide text-slate-400">
+        <label className="text-[9px] font-bold uppercase tracking-wide text-blue-700">
           {label}
           {required && <span className="ml-0.5 text-red-500">*</span>}
         </label>
@@ -19,10 +19,11 @@ const Select = ({
 
       <div className="relative">
         <select
-          className={`w-full appearance-none rounded-2xl border bg-white px-3.5 py-2.5 pr-9 text-sm text-black outline-none transition focus:border-slate-400 ${
+          className={`h-6 w-full appearance-none rounded-md border bg-white px-2 py-0 pr-6 text-xs text-black outline-none transition focus:border-slate-400 ${
             error ? "border-red-300" : "border-slate-200"
           } ${className}`}
           {...props}
+          style={{ ...props.style, fontSize: "12px" }}
         >
           <option value="">Select</option>
 
@@ -37,8 +38,8 @@ const Select = ({
         </select>
 
         <ChevronDown
-          size={16}
-          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+          size={14}
+          className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
         />
       </div>
 

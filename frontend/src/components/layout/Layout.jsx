@@ -57,7 +57,6 @@ const Layout = () => {
         "dialysis-sessions": () => canUseOperationalPages && useDialysisSessionStore.getState().fetchSessions(),
         dashboard: () => {
           if (role === ROLES.ADMIN) return useDashboardStore.getState().fetchAdminSummary();
-          if (role === ROLES.CASHIER) return useDashboardStore.getState().fetchCashierSummary();
           if (canUseOperationalPages) return useDashboardStore.getState().fetchSummary();
         },
         monitoring: () => {
@@ -65,7 +64,7 @@ const Layout = () => {
           const store = useMonitoringStore.getState();
           if (store.activePatientId) store.fetchMonitoring(store.activePatientId);
         },
-        "admission-report": () => role === ROLES.PHILHEALTH_OFFICER && useAdmissionReportStore.getState().fetchReports(),
+        "admission-report": () => canUseOperationalPages && useAdmissionReportStore.getState().fetchReports(),
         users: () => {
           useAuthStore.getState().loadUser();
           if (role === ROLES.ADMIN) {
@@ -104,11 +103,11 @@ const Layout = () => {
   }, [token, setOnlineUserIds, fetchConversations, receiveMessage, replaceMessage, applyReadReceipt, clearMessages, fetchNotifications, receiveNotification]);
 
   return (
-    <div className="min-h-screen bg-slate-100 md:flex">
+    <div className="min-h-screen bg-[#f4f7f5] md:flex">
       <Sidebar />
 
-      <div className="min-w-0 flex-1 md:h-[calc(100vh-2rem)] md:overflow-hidden">
-        <main className="min-h-[calc(100vh-4.5rem)] md:h-full md:overflow-y-auto md:p-6 lg:p-8">
+      <div className="min-w-0 flex-1 md:h-screen md:overflow-hidden">
+        <main className="min-h-[calc(100vh-4.5rem)] px-2 py-2 sm:px-3 md:h-full md:overflow-y-auto md:px-3 md:py-2 lg:px-4">
           <Outlet />
         </main>
       </div>

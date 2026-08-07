@@ -187,7 +187,8 @@ const MessagesPage = () => {
     const participant = otherParticipant(conversation, currentUserId);
     return (showArchived ? conversation.archived : (!conversation.archived || Boolean(term))) && (!term ||
       conversationName(conversation, currentUserId).toLowerCase().includes(term) ||
-      participant?.role?.toLowerCase().includes(term));
+      participant?.role?.toLowerCase().includes(term) ||
+      JSON.stringify(conversation).toLowerCase().includes(term));
   }).sort((first, second) =>
     Number(Boolean(second.pinned)) - Number(Boolean(first.pinned)) ||
     new Date(second.lastMessageAt) - new Date(first.lastMessageAt)
@@ -196,7 +197,8 @@ const MessagesPage = () => {
     if (!term) return true;
     return displayName(contact).toLowerCase().includes(term) ||
       contact.username?.toLowerCase().includes(term) ||
-      contact.role?.toLowerCase().includes(term);
+      contact.role?.toLowerCase().includes(term) ||
+      JSON.stringify(contact).toLowerCase().includes(term);
   }), [contacts, term]);
   const forwardContacts = contacts.filter((contact) => {
     const forwardTerm = forwardSearch.trim().toLowerCase();
@@ -352,10 +354,10 @@ const MessagesPage = () => {
   };
 
   return (
-    <div className="flex h-[calc(100dvh-4.5rem)] min-h-0 flex-col overflow-hidden md:h-full">
+    <div className="flex h-[calc(100dvh-4.5rem)] min-h-0 flex-col gap-2 overflow-hidden md:h-full">
       <Topbar title="Messages" />
 
-      <div className="flex min-h-0 flex-1 overflow-hidden rounded-t-3xl bg-white shadow-sm md:rounded-3xl">
+      <div className="flex min-h-0 flex-1 overflow-hidden rounded-xl bg-white shadow-sm">
         <aside className={`${activeConversationId ? "hidden md:flex" : "flex"} w-full flex-col border-r border-slate-100 md:w-80 lg:w-96`}>
           <div className="border-b border-slate-100 p-4">
             <div className="flex items-center justify-between">

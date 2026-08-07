@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { FlaskConical, Search, Stethoscope, Syringe, TestTube, Users, Waves, X } from "lucide-react";
+import { Search, Stethoscope, Syringe, TestTube, Users, X } from "lucide-react";
 import toast from "react-hot-toast";
 
 import Button from "../common/Button";
@@ -8,6 +8,7 @@ import Select from "../common/Select";
 
 import { usePatientStore } from "../../store/patientStore";
 import { useDialysisSessionStore } from "../../store/dialysisSessionStore";
+import { formatDoctorName } from "../../utils/doctorName";
 
 const INJECTIONS = [
   "2000 IU / 0.5 mL pre-filled syringe",
@@ -19,6 +20,8 @@ const INJECTIONS = [
   "2000 IU / 0.3 mL pre-filled syringe",
   "5000 IU / 0.3 mL pre-filled syringe",
   "10000 IU / 0.6 mL pre-filled syringe",
+  "Eposino",
+  "Flu-vaccine",
 ];
 
 const DIALYZERS = ["Low Flux", "High Flux"];
@@ -63,9 +66,9 @@ const DEFAULT_VALUES = {
 };
 
 const SectionHeader = ({ icon: Icon, title }) => (
-  <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-500">
-      <Icon size={14} />
+  <div className="flex items-center gap-1.5 border-b border-slate-100 pb-1">
+    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-500">
+      <Icon size={12} />
     </span>
     <h3 className="text-sm font-bold text-slate-900">{title}</h3>
   </div>
@@ -167,17 +170,17 @@ const DialysisSessionForm = ({
 
   return (
 
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-2 lg:grid-cols-3">
+      <section className="space-y-1.5 rounded-lg border border-blue-200 bg-blue-50/50 p-2">
         <SectionHeader icon={Users} title="Session Details" />
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="relative space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wide text-slate-400">Patient</label>
+          <div className="relative space-y-0.5">
+            <label className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Patient</label>
 
             <div className="relative">
-              <Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search size={12} className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 value={patientSearch}
                 onChange={(e) => {
@@ -190,7 +193,8 @@ const DialysisSessionForm = ({
                   setPatientSearch(selectedPatient ? `${selectedPatient.first_name} ${selectedPatient.last_name}` : "");
                 }}
                 placeholder="Search patient name or ID..."
-                className="w-full rounded-2xl border border-slate-200 py-2.5 pl-9 pr-9 text-sm text-black outline-none transition focus:border-slate-400"
+                className="w-full rounded-md border border-slate-200 py-0.5 pl-6 pr-6 text-xs text-black outline-none transition focus:border-slate-400"
+                style={{ fontSize: "12px" }}
               />
               {selectedPatient && !patientSearchOpen && (
                 <button
@@ -198,9 +202,9 @@ const DialysisSessionForm = ({
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={handleClearPatient}
                   aria-label="Clear selected patient"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
                 >
-                  <X size={15} />
+                  <X size={12} />
                 </button>
               )}
             </div>
@@ -208,20 +212,20 @@ const DialysisSessionForm = ({
             {patientSearchOpen && (
               <div
                 onMouseDown={(e) => e.preventDefault()}
-                className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-2xl bg-white shadow-lg"
+                className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg"
               >
                 {filteredPatients.length === 0 ? (
-                  <p className="px-4 py-3 text-sm text-slate-400">No matching patient.</p>
+                  <p className="px-2 py-2 text-[11px] text-slate-400">No matching patient.</p>
                 ) : (
                   filteredPatients.map((patient) => (
                     <button
                       key={patient._id}
                       type="button"
                       onClick={() => handlePickPatient(patient)}
-                      className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-sm transition hover:bg-slate-50"
+                      className="grid w-full grid-cols-[minmax(0,1fr)_5.5rem] items-stretch border-b border-slate-100 text-left transition last:border-b-0 hover:brightness-95"
                     >
-                      <span className="font-semibold text-slate-900">{patient.first_name} {patient.last_name}</span>
-                      <span className="text-xs text-slate-400">{patient.patient_id}</span>
+                      <span className="bg-blue-50 px-2 py-1.5 text-[11px] font-semibold leading-tight text-slate-900">{patient.first_name} {patient.last_name}</span>
+                      <span className="border-l border-slate-200 bg-slate-50 px-1.5 py-1.5 text-[9px] font-semibold leading-tight text-blue-700">{patient.patient_id}</span>
                     </button>
                   ))
                 )}
@@ -229,30 +233,27 @@ const DialysisSessionForm = ({
             )}
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wide text-slate-400">Doctor</label>
-            <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm">
-              <Stethoscope size={15} className="shrink-0 text-slate-400" />
-              <span className={selectedPatient?.doctor ? "font-semibold text-black" : "text-slate-400"}>
+          <div className="space-y-0.5">
+            <label className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Doctor</label>
+            <div className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs">
+              <Stethoscope size={12} className="shrink-0 text-slate-400" />
+              <span className={selectedPatient?.doctor ? "font-bold text-black" : "text-slate-400"} style={{ fontSize: "12px" }}>
                 {selectedPatient?.doctor
-                  ? `${selectedPatient.doctor.first_name} ${selectedPatient.doctor.last_name}`
+                  ? formatDoctorName(selectedPatient.doctor)
                   : "Select a patient first"}
               </span>
             </div>
           </div>
-        </div>
+          <Select
+            label="Payment Type"
+            options={SESSION_PAYMENT_OPTIONS}
+            {...register("payment_type")}
+          />
+      </section>
 
-        <Select
-          label="Payment Type"
-          options={SESSION_PAYMENT_OPTIONS}
-          {...register("payment_type")}
-        />
-      </div>
-
-      <div className="space-y-4">
-        <SectionHeader icon={Syringe} title="Injection" />
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <section className="space-y-1.5 rounded-lg border border-indigo-200 bg-indigo-50/50 p-2">
+        <SectionHeader icon={Syringe} title="Treatments" />
+        <div className="grid grid-cols-[minmax(0,1fr)_5rem] gap-1.5">
           <Select
             label="Injection"
             options={INJECTIONS.map((item) => ({ value: item, label: item }))}
@@ -260,17 +261,12 @@ const DialysisSessionForm = ({
           />
 
           <Select
-            label="Injection Payment"
+            label="Payment"
             options={PAYMENT_OPTIONS}
             {...register("injections.payment_type")}
           />
         </div>
-      </div>
-
-      <div className="space-y-4">
-        <SectionHeader icon={Waves} title="Dialyzer" />
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-[minmax(0,1fr)_5rem] gap-1.5">
           <Select
             label="Dialyzer"
             options={DIALYZERS.map((item) => ({ value: item, label: item }))}
@@ -278,57 +274,53 @@ const DialysisSessionForm = ({
           />
 
           <Select
-            label="Dialyzer Payment"
+            label="Payment"
             options={PAYMENT_OPTIONS}
             {...register("dialyzer.payment_type")}
           />
         </div>
-      </div>
-
-      <div className="space-y-4">
-        <SectionHeader icon={FlaskConical} title="Intravenous Iron" />
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-[minmax(0,1fr)_5rem] gap-1.5">
           <Select
-            label="Intravenous Iron"
+            label="IV Iron"
             options={IV_IRONS.map((item) => ({ value: item, label: item }))}
             {...register("intravenous_iron.name")}
           />
 
           <Select
-            label="IV Iron Payment"
+            label="Payment"
             options={PAYMENT_OPTIONS}
             {...register("intravenous_iron.payment_type")}
           />
         </div>
-      </div>
+      </section>
 
-      <div className="space-y-4">
+      <section className="space-y-1.5 rounded-lg border border-emerald-200 bg-emerald-50/50 p-2">
         <SectionHeader icon={TestTube} title="Laboratory Results" />
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-1">
           {LAB_TESTS.map((lab, index) => (
             <Controller
               key={lab}
               control={control}
               name={`laboratory_results.${index}.done`}
               render={({ field }) => (
-                <label className="flex cursor-pointer items-center gap-2.5 rounded-2xl bg-slate-50 px-4 py-3">
+                <label className="flex cursor-pointer items-center gap-1 rounded border border-emerald-100 bg-white/80 px-1.5 py-0.5">
                   <input
                     type="checkbox"
                     checked={field.value}
                     onChange={field.onChange}
-                    className="h-4 w-4 accent-slate-950"
+                    className="h-3 w-3 accent-slate-950"
                   />
-                  <span className="text-sm font-medium text-slate-700">{lab}</span>
+                  <span className="truncate text-[9px] font-medium text-slate-700" title={lab}>{lab}</span>
                 </label>
               )}
             />
           ))}
         </div>
+      </section>
       </div>
 
-      <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
+      <div className="flex justify-end gap-2 border-t border-slate-100 pt-2">
         <Button type="button" variant="secondary" onClick={onClose}>
           Cancel
         </Button>

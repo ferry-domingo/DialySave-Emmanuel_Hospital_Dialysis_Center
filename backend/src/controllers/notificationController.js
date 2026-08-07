@@ -6,7 +6,7 @@ import { normalizeRole, ROLES } from "../utils/roles.js";
 import { Patient } from "../models/Patient.js";
 
 const canManageAlerts = (user) =>
-  [ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.DOCTOR].includes(normalizeRole(user?.role));
+  [ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER, ROLES.DOCTOR].includes(normalizeRole(user?.role));
 
 const doctorIdFor = (user) => user?.doctor?._id || user?.doctor;
 
@@ -178,7 +178,9 @@ export const getNotifications = async (req, res) => {
       ? { createdBy: req.user._id }
       : isManager ? {} : { recipient: req.user._id };
     const notifications = await populateNotification(Notification.find(filter).sort({ createdAt: -1 }));
-    const unread = isManager ? 0 : await Notification.countDocuments({ ...filter, isRead: false });
+    const archiveCutoff = new Date();
+    archiveCutoff.setMonth(archiveCutoff.getMonth() - 1);
+    const unread = isManager ? 0 : await Notification.countDocuments({ ...filter, isRead: false, createdAt: { $gte: archiveCutoff } });
     return res.json({ success: true, total: notifications.length, unread, data: notifications });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to retrieve alerts." });

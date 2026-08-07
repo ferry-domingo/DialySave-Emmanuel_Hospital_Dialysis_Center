@@ -15,6 +15,7 @@ export const createDoctor = async (req, res) => {
       birthdate,
       gender,
       contact_number,
+      medical_expertise,
       status,
     } = req.body;
     if (!first_name || !last_name || !birthdate || !gender) {
@@ -36,6 +37,7 @@ export const createDoctor = async (req, res) => {
           birthdate,
           gender,
           contact_number,
+          medical_expertise,
           status,
         });
         break;
@@ -147,6 +149,7 @@ export const updateDoctor = async (req, res) => {
       birthdate,
       gender,
       contact_number,
+      medical_expertise,
       status,
     } = req.body;
     const credentialsChanged =
@@ -159,6 +162,7 @@ export const updateDoctor = async (req, res) => {
     doctor.birthdate = birthdate ?? doctor.birthdate;
     doctor.gender = gender ?? doctor.gender;
     doctor.contact_number = contact_number ?? doctor.contact_number;
+    doctor.medical_expertise = medical_expertise ?? doctor.medical_expertise;
     doctor.status = status ?? doctor.status;
 
     await doctor.save();
@@ -254,7 +258,7 @@ export const getMyDoctorDashboard = async (req, res) => {
       : { doctor: doctorId };
     const sessions = await DialysisSession.find(sessionScope)
       .populate("patient", "patient_id first_name middle_name last_name birthdate gender blood_type contact_number status")
-      .populate("doctor", "doctor_id first_name middle_name last_name")
+      .populate("doctor", "doctor_id first_name middle_name last_name gender")
       .sort({ createdAt: -1 });
 
     return res.json({

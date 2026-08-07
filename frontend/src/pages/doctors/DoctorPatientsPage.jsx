@@ -23,9 +23,7 @@ const DoctorPatientsPage = () => {
   const patients = useMemo(() => {
     const term = search.trim().toLowerCase();
     return (data?.patients || []).filter((patient) =>
-      !term ||
-      fullName(patient).toLowerCase().includes(term) ||
-      patient.patient_id?.toLowerCase().includes(term)
+      !term || JSON.stringify(patient).toLowerCase().includes(term)
     );
   }, [data, search]);
 

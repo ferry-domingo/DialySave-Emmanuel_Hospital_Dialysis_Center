@@ -12,6 +12,7 @@ import {
 import api from "../../api/axios";
 import Topbar from "../../components/layout/Topbar";
 import { Link } from "react-router-dom";
+import { formatDoctorName } from "../../utils/doctorName";
 
 const formatDate = (value) =>
   value ? new Intl.DateTimeFormat("en-PH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—";
@@ -66,7 +67,7 @@ const DoctorDashboardPage = () => {
   const patients = useMemo(() => {
     const term = search.trim().toLowerCase();
     return (data?.patients || []).filter((patient) =>
-      !term || patientName(patient).toLowerCase().includes(term) || patient.patient_id?.toLowerCase().includes(term)
+      !term || JSON.stringify(patient).toLowerCase().includes(term)
     );
   }, [data, search]);
 
@@ -89,7 +90,7 @@ const DoctorDashboardPage = () => {
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-semibold text-slate-400">Welcome back</p>
-                <h2 className="mt-1 text-2xl font-extrabold">Dr. {patientName(data.doctor)}</h2>
+                <h2 className="mt-1 text-2xl font-extrabold">{formatDoctorName(data.doctor)}</h2>
                 <p className="mt-2 text-sm text-slate-300">Doctor ID: {data.doctor.doctor_id}</p>
               </div>
               <span className="grid h-16 w-16 place-items-center rounded-3xl bg-white/10"><Stethoscope size={30} /></span>

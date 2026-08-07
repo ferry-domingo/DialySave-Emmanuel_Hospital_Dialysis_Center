@@ -24,15 +24,15 @@ const ACTION_LABELS = {
 };
 
 const AdminMetric = ({ icon: Icon, label, value, note, tone }) => (
-  <div className="rounded-3xl border border-slate-200/70 bg-white p-5 shadow-sm">
+  <div className="rounded-xl border border-slate-200/70 bg-white p-2.5 shadow-sm">
     <div className="flex items-start justify-between gap-3">
       <div>
-        <p className="text-sm font-semibold text-slate-500">{label}</p>
-        <p className="mt-2 text-3xl font-black tracking-tight text-slate-950">{value ?? "—"}</p>
+        <p className="text-xs font-semibold text-slate-500">{label}</p>
+        <p className="mt-1 text-2xl font-black tracking-tight text-slate-950">{value ?? "—"}</p>
       </div>
-      <span className={`grid h-11 w-11 place-items-center rounded-2xl ${tone}`}><Icon size={20} /></span>
+      <span className={`grid h-8 w-8 place-items-center rounded-lg ${tone}`}><Icon size={16} /></span>
     </div>
-    <p className="mt-4 border-t border-slate-100 pt-3 text-xs font-medium text-slate-400">{note}</p>
+    <p className="mt-2 truncate border-t border-slate-100 pt-2 text-[11px] font-medium text-slate-400">{note}</p>
   </div>
 );
 
@@ -55,31 +55,31 @@ const AdminDashboard = () => {
     + (attention?.securityEventsToday ?? 0);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-2.5 md:h-full md:overflow-hidden">
       <Topbar title="Admin Dashboard" />
 
-      <section className="relative overflow-hidden rounded-[2rem] bg-slate-950 p-6 text-white shadow-lg sm:p-8">
+      <section className="relative overflow-hidden rounded-xl bg-slate-950 px-4 py-2.5 text-white shadow-sm">
         <div className="absolute -right-16 -top-24 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl" />
         <div className="absolute bottom-0 right-1/3 h-24 w-40 rounded-full bg-blue-500/10 blur-2xl" />
-        <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+        <div className="relative flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
           <div>
-            <div className="mb-4 flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-bold text-emerald-300">
+            <div className="mb-1 flex w-fit items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
               <ShieldCheck size={14} /> Administrator control center
             </div>
-            <h1 className="max-w-2xl text-2xl font-black tracking-tight sm:text-3xl">
+            <h1 className="max-w-2xl text-lg font-black tracking-tight">
               Good day, {user?.name || user?.username || "Administrator"}
             </h1>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">
+            <p className="mt-0.5 max-w-xl text-xs text-slate-300">
               Review account health, security events, and recent system activity from one place.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:flex">
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-              <p className="text-2xl font-black">{onlineUserIds.length}</p>
+            <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5">
+              <p className="text-xl font-black">{onlineUserIds.length}</p>
               <p className="text-xs font-semibold text-slate-400">Online now</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-              <p className="text-2xl font-black">{activeRate}%</p>
+            <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5">
+              <p className="text-xl font-black">{activeRate}%</p>
               <p className="text-xs font-semibold text-slate-400">Active accounts</p>
             </div>
           </div>
@@ -88,17 +88,17 @@ const AdminDashboard = () => {
 
       {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{error}</div>}
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-2 gap-2.5 xl:grid-cols-4">
         <AdminMetric icon={Users} label="Total accounts" value={stats?.totalUsers} note={`${stats?.newUsersThisWeek ?? 0} created in the last 7 days`} tone="bg-slate-100 text-slate-700" />
         <AdminMetric icon={UserCheck} label="Active accounts" value={stats?.activeUsers} note={`${stats?.inactiveUsers ?? 0} inactive accounts`} tone="bg-emerald-50 text-emerald-600" />
         <AdminMetric icon={Activity} label="Activity today" value={stats?.activityToday} note="Recorded audit events since midnight" tone="bg-blue-50 text-blue-600" />
         <AdminMetric icon={CircleAlert} label="Security events" value={stats?.failedLoginsToday} note="Failed or blocked sign-ins today" tone={stats?.failedLoginsToday ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"} />
       </section>
 
-      <section className="overflow-hidden rounded-3xl border border-amber-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-amber-100 bg-amber-50/70 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <section className="overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm">
+        <div className="flex flex-col gap-2 border-b border-amber-100 bg-amber-50/70 p-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-amber-100 text-amber-700"><ShieldAlert size={21} /></span>
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-amber-100 text-amber-700"><ShieldAlert size={16} /></span>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="font-extrabold text-slate-900">Needs attention</h2>
@@ -107,27 +107,27 @@ const AdminDashboard = () => {
               <p className="mt-0.5 text-xs text-slate-500">{attentionTotal ? "Items that may require an administrator review" : "No account or security issues require action"}</p>
             </div>
           </div>
-          <Link to="/activity-logs" className="inline-flex items-center gap-1 self-start rounded-xl bg-white px-3 py-2 text-xs font-bold text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 sm:self-auto">Review activity <ChevronRight size={14} /></Link>
+          <Link to="/activity-logs" className="inline-flex items-center gap-1 self-start rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-bold text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 sm:self-auto">Review activity <ChevronRight size={13} /></Link>
         </div>
         <div className="grid grid-cols-1 divide-y divide-slate-100 md:grid-cols-3 md:divide-x md:divide-y-0">
-          <Link to="/users" className="group flex items-center gap-3 p-5 hover:bg-slate-50">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-red-50 text-red-600"><UserX size={18} /></span>
-            <div><p className="text-2xl font-black text-slate-900">{attention?.inactiveAccounts ?? 0}</p><p className="text-xs font-semibold text-slate-500">Inactive accounts</p></div>
+          <Link to="/users" className="group flex items-center gap-3 px-4 py-2 hover:bg-slate-50">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-red-50 text-red-600"><UserX size={16} /></span>
+            <div><p className="text-xl font-black text-slate-900">{attention?.inactiveAccounts ?? 0}</p><p className="text-[11px] font-semibold text-slate-500">Inactive accounts</p></div>
             <ChevronRight className="ml-auto text-slate-300 group-hover:text-slate-600" size={18} />
           </Link>
-          <Link to="/activity-logs" className="group flex items-center gap-3 p-5 hover:bg-slate-50">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-amber-50 text-amber-600"><CircleAlert size={18} /></span>
-            <div><p className="text-2xl font-black text-slate-900">{attention?.securityEventsToday ?? 0}</p><p className="text-xs font-semibold text-slate-500">Security events today</p></div>
+          <Link to="/activity-logs" className="group flex items-center gap-3 px-4 py-2 hover:bg-slate-50">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-amber-50 text-amber-600"><CircleAlert size={16} /></span>
+            <div><p className="text-xl font-black text-slate-900">{attention?.securityEventsToday ?? 0}</p><p className="text-[11px] font-semibold text-slate-500">Security events today</p></div>
             <ChevronRight className="ml-auto text-slate-300 group-hover:text-slate-600" size={18} />
           </Link>
-          <Link to="/users" className="group flex items-center gap-3 p-5 hover:bg-slate-50">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-blue-600"><MailWarning size={18} /></span>
-            <div><p className="text-2xl font-black text-slate-900">{attention?.pendingEmailChanges ?? 0}</p><p className="text-xs font-semibold text-slate-500">Pending email changes</p></div>
+          <Link to="/users" className="group flex items-center gap-3 px-4 py-2 hover:bg-slate-50">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-blue-50 text-blue-600"><MailWarning size={16} /></span>
+            <div><p className="text-xl font-black text-slate-900">{attention?.pendingEmailChanges ?? 0}</p><p className="text-[11px] font-semibold text-slate-500">Pending email changes</p></div>
             <ChevronRight className="ml-auto text-slate-300 group-hover:text-slate-600" size={18} />
           </Link>
         </div>
         {(attention?.recentSecurityEvents?.length ?? 0) > 0 && (
-          <div className="border-t border-slate-100 px-5 py-4">
+          <div className="border-t border-slate-100 px-5 py-4 md:hidden">
             <p className="mb-3 text-xs font-black uppercase tracking-wider text-slate-400">Latest security events</p>
             <div className="grid gap-2 lg:grid-cols-2">
               {attention.recentSecurityEvents.slice(0, 4).map((event) => (
@@ -142,13 +142,13 @@ const AdminDashboard = () => {
         )}
       </section>
 
-      <section className="grid grid-cols-1 gap-4 xl:grid-cols-5">
-        <div className="rounded-3xl bg-white p-5 shadow-sm xl:col-span-3">
+      <section className="grid grid-cols-1 gap-2.5 xl:grid-cols-5">
+        <div className="rounded-xl bg-white p-3 shadow-sm xl:col-span-3">
           <div className="flex items-start justify-between">
             <div><h2 className="font-extrabold text-slate-900">System activity</h2><p className="mt-1 text-xs text-slate-400">Audit and security events over the last 7 days</p></div>
             <Link to="/activity-logs" className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-900">All logs <ChevronRight size={14} /></Link>
           </div>
-          <div className="mt-5 h-64">
+          <div className="mt-1 h-32">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={adminSummary?.activityTrend ?? []} margin={{ left: -24, right: 4 }}>
                 <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" vertical={false} />
@@ -162,10 +162,10 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="rounded-3xl bg-white p-5 shadow-sm xl:col-span-2">
+        <div className="rounded-xl bg-white p-3 shadow-sm xl:col-span-2">
           <div><h2 className="font-extrabold text-slate-900">Accounts by role</h2><p className="mt-1 text-xs text-slate-400">{roleTotal} registered accounts</p></div>
           <div className="mt-3 flex flex-col items-center gap-3 sm:flex-row xl:flex-col 2xl:flex-row">
-            <div className="relative h-44 w-44 shrink-0">
+            <div className="relative h-28 w-28 shrink-0">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={roles.length ? roles : [{ role: "No users", count: 1 }]} dataKey="count" nameKey="role" innerRadius={52} outerRadius={78} stroke="none">
@@ -188,7 +188,7 @@ const AdminDashboard = () => {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+      <section className="grid grid-cols-1 gap-2.5 md:hidden xl:grid-cols-3">
         <div className="overflow-hidden rounded-3xl bg-white shadow-sm xl:col-span-2">
           <div className="flex items-center justify-between border-b border-slate-100 p-5">
             <div><h2 className="font-extrabold text-slate-900">Recent activity</h2><p className="mt-1 text-xs text-slate-400">Latest account and system events</p></div>

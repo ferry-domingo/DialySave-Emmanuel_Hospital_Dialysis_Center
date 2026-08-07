@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Layout from "../components/layout/Layout";
+import PublicLayout from "../components/public/PublicLayout";
 import ProtectedRoute from "../components/layout/ProtectedRoute";
 import RoleRoute from "../components/layout/RoleRoute";
 import { ROLES } from "../utils/roles";
@@ -22,11 +23,20 @@ import AlertsPage from "../pages/alerts/AlertsPage";
 import DoctorDashboardPage from "../pages/doctors/DoctorDashboardPage";
 import DoctorPatientsPage from "../pages/doctors/DoctorPatientsPage";
 import DoctorSessionsPage from "../pages/doctors/DoctorSessionsPage";
+import LandingPage from "../pages/public/LandingPage";
+import { AboutPage, ContactPage, ServicesPage, TechnologyPage } from "../pages/public/PublicInfoPages";
 
 const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/technology" element={<TechnologyPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+        </Route>
         <Route path="/login" element={<LoginPage />} />
 
         <Route
@@ -36,7 +46,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         >
-          <Route path="/" element={<RoleRoute allowedRoles={[ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER]}><HomeDashboard /></RoleRoute>} />
+          <Route path="/dashboard" element={<RoleRoute allowedRoles={[ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER]}><HomeDashboard /></RoleRoute>} />
           <Route path="/patients" element={<RoleRoute allowedRoles={[ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER]}><PatientPage /></RoleRoute>} />
           <Route path="/patient-portal" element={<RoleRoute allowedRoles={[ROLES.PATIENT]}><PatientPortalPage /></RoleRoute>} />
           <Route path="/patient-sessions" element={<RoleRoute allowedRoles={[ROLES.PATIENT]}><PatientSessionsPage /></RoleRoute>} />
@@ -46,12 +56,12 @@ const AppRoutes = () => {
           <Route path="/doctors" element={<RoleRoute allowedRoles={[ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER]}><DoctorPage /></RoleRoute>} />
           <Route path="/sessions" element={<RoleRoute allowedRoles={[ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER]}><DialysisSessionPage /></RoleRoute>} />
           <Route path="/monitoring" element={<RoleRoute allowedRoles={[ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER]}><MonitoringPage /></RoleRoute>} />
-          <Route path="/admission-report" element={<RoleRoute allowedRoles={[ROLES.PHILHEALTH_OFFICER]}><AdmissionReportPage /></RoleRoute>} />
+          <Route path="/admission-report" element={<RoleRoute allowedRoles={[ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER]}><AdmissionReportPage /></RoleRoute>} />
           <Route path="/users" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><UsersPage /></RoleRoute>} />
           <Route path="/activity-logs" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><ActivityLogsPage /></RoleRoute>} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/messages" element={<MessagesPage />} />
-          <Route path="/alerts" element={<RoleRoute allowedRoles={[ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.PATIENT, ROLES.DOCTOR]}><AlertsPage /></RoleRoute>} />
+          <Route path="/alerts" element={<RoleRoute allowedRoles={[ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER, ROLES.PATIENT, ROLES.DOCTOR]}><AlertsPage /></RoleRoute>} />
         </Route>
       </Routes>
     </BrowserRouter>

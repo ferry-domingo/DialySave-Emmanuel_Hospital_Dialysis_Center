@@ -79,4 +79,31 @@ export const useMonitoringStore = create((set, get) => ({
       };
     }),
 
+  setAgreementHeparin: (sessionId, heparin) =>
+    set((state) => {
+      if (!state.monitoring?.agreement?.sessions) return state;
+
+      const sessions = state.monitoring.agreement.sessions.map((session) =>
+        session.sessionId === sessionId
+          ? {
+              ...session,
+              agreement: {
+                ...session.agreement,
+                heparin,
+              },
+            }
+          : session
+      );
+
+      return {
+        monitoring: {
+          ...state.monitoring,
+          agreement: {
+            ...state.monitoring.agreement,
+            sessions,
+          },
+        },
+      };
+    }),
+
 }));

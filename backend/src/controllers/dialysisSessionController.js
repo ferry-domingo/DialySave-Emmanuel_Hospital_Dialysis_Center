@@ -51,7 +51,7 @@ export const createDialysisSession = async (req, res) => {
 
     const populatedSession = await DialysisSession.findById(session._id)
       .populate("patient", "patient_id first_name last_name blood_type")
-      .populate("doctor", "doctor_id first_name last_name");
+      .populate("doctor", "doctor_id first_name last_name gender");
 
     return res.status(201).json({
       success: true,
@@ -73,8 +73,8 @@ export const getDialysisSessions = async (req, res) => {
   try {
     const sessions = await DialysisSession.find()
       .populate("patient", "patient_id first_name last_name blood_type")
-      .populate("doctor", "doctor_id first_name last_name")
-      .sort({ createdAt: -1 });
+      .populate("doctor", "doctor_id first_name last_name gender")
+      .sort({ createdAt: 1 });
 
     return res.status(200).json({
       success: true,
@@ -97,7 +97,7 @@ export const getDialysisSessionById = async (req, res) => {
   try {
     const session = await DialysisSession.findById(req.params.id)
       .populate("patient", "patient_id first_name last_name blood_type")
-      .populate("doctor", "doctor_id first_name last_name");
+      .populate("doctor", "doctor_id first_name last_name gender");
 
     if (!session) {
       return res.status(404).json({
@@ -159,7 +159,7 @@ export const updateDialysisSession = async (req, res) => {
 
     const updatedSession = await DialysisSession.findById(session._id)
       .populate("patient", "patient_id first_name last_name blood_type")
-      .populate("doctor", "doctor_id first_name last_name");
+      .populate("doctor", "doctor_id first_name last_name gender");
 
     return res.status(200).json({
       success: true,

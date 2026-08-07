@@ -42,6 +42,12 @@ const doctorSchema = new mongoose.Schema(
       trim: true,
     },
 
+    medical_expertise: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
     status: {
       type: String,
       default: "Active",

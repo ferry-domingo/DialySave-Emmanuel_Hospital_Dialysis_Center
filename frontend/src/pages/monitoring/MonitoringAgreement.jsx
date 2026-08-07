@@ -25,7 +25,19 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
   const [selectedSession, setSelectedSession] = useState(0);
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const { fetchMonitoring } = useMonitoringStore();
+  const { fetchMonitoring, setAgreementHeparin } = useMonitoringStore();
+
+  const handlePrint = () => {
+    const pageStyle = document.createElement("style");
+    pageStyle.dataset.agreementPrint = "true";
+    pageStyle.textContent = "@media print { @page { size: A4 portrait; margin: 0.35in; } }";
+    document.head.appendChild(pageStyle);
+
+    const cleanup = () => pageStyle.remove();
+    window.addEventListener("afterprint", cleanup, { once: true });
+    window.print();
+    window.setTimeout(cleanup, 1000);
+  };
 
   useEffect(() => {
     if (agreement?.sessions?.length) {
@@ -47,6 +59,10 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
     if (patientId) return fetchMonitoring(patientId);
   };
 
+  const handleHeparinChange = (sessionId, heparin) => {
+    setAgreementHeparin(sessionId, heparin);
+  };
+
   const filteredResults = agreement.sessions
     .map((s, index) => ({ session: s, index }))
     .filter(({ session: s }) => {
@@ -55,7 +71,8 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
       return (
         String(s.sessionNo).includes(term) ||
         `session ${s.sessionNo}`.includes(term) ||
-        formatSessionDate(s.date).toLowerCase().includes(term)
+        formatSessionDate(s.date).toLowerCase().includes(term) ||
+        JSON.stringify(s).toLowerCase().includes(term)
       );
     });
 
@@ -132,7 +149,7 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
           </div>
 
           <button
-            onClick={() => window.print()}
+            onClick={handlePrint}
             className="flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
           >
             <Printer size={16} />
@@ -146,7 +163,7 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
       <div className="no-print space-y-6">
         <AgreementHeader session={session} />
         <AgreementAcknowledgement session={session} onUpdated={handleUpdated} />
-        <AgreementItemsCovered session={session} onUpdated={handleUpdated} />
+        <AgreementItemsCovered session={session} onHeparinChange={handleHeparinChange} />
         <AgreementSignature session={session} onUpdated={handleUpdated} />
       </div>
 

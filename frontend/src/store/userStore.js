@@ -3,6 +3,7 @@ import * as userApi from "../api/userApi";
 
 export const useUserStore = create((set) => ({
   users: [],
+  onlineDirectory: [],
   loading: false,
   error: null,
   activityLogs: [],
@@ -23,6 +24,15 @@ export const useUserStore = create((set) => ({
         error: err.response?.data?.message || err.message,
         loading: false,
       });
+    }
+  },
+
+  fetchOnlineDirectory: async () => {
+    try {
+      const res = await userApi.getOnlineDirectory();
+      set({ onlineDirectory: res.data.data });
+    } catch (err) {
+      set({ error: err.response?.data?.message || err.message });
     }
   },
 

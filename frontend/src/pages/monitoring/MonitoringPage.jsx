@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, X } from "lucide-react";
+import { Download, Printer, Search, X } from "lucide-react";
 
 import Topbar from "../../components/layout/Topbar";
 import MonitoringPhic from "./MonitoringPhic";
@@ -10,8 +10,6 @@ import MonitoringAgreement from "./MonitoringAgreement";
 
 import { usePatientStore } from "../../store/patientStore";
 import { useMonitoringStore } from "../../store/monitoringStore";
-import { useAuthStore } from "../../store/authStore";
-import { normalizeRole, ROLES } from "../../utils/roles";
 
 const TABS = [
   { key: "cash", label: "Cash Treatment" },
@@ -24,10 +22,8 @@ const TABS = [
 const MonitoringPage = () => {
 
   const { patients, fetchPatients } = usePatientStore();
-  const role = normalizeRole(useAuthStore((state) => state.user?.role));
-  const isCashier = role === ROLES.CASHIER;
-  const visibleTabs = isCashier ? TABS.filter((tab) => tab.key === "cash") : TABS;
-  const [activeTab, setActiveTab] = useState(isCashier ? "cash" : "phic");
+  const visibleTabs = TABS;
+  const [activeTab, setActiveTab] = useState("phic");
 
   const {
     monitoring,
@@ -63,6 +59,30 @@ const MonitoringPage = () => {
     clearMonitoring();
   };
 
+  const handlePhicPrint = () => {
+    const pageStyle = document.createElement("style");
+    pageStyle.textContent = "@media print { @page { size: A4 landscape; margin: 0.4in; } }";
+    document.head.appendChild(pageStyle);
+    const cleanup = () => pageStyle.remove();
+    window.addEventListener("afterprint", cleanup, { once: true });
+    window.print();
+    window.setTimeout(cleanup, 1000);
+  };
+
+  const handlePhicDownload = () => {
+    const dates = monitoring?.phic?.dates || [];
+    const rows = ["Session No.,Date", ...Array.from({ length: 156 }, (_, index) =>
+      `${index + 1},${dates[index] ? new Date(dates[index]).toLocaleDateString() : ""}`
+    )];
+    const blob = new Blob([rows.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "phic-session-dates.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   useEffect(() => {
     fetchPatients();
   }, []);
@@ -79,14 +99,14 @@ const MonitoringPage = () => {
 
   return (
 
-    <div className="space-y-6">
+    <div className="space-y-3">
 
       <Topbar title="Monitoring" />
 
-      <div className="no-print space-y-4 rounded-3xl bg-white p-5 shadow-sm">
+      <div className="no-print space-y-2 rounded-xl bg-white p-2 shadow-sm">
 
         <div className="relative inline-block">
-          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2">
+          <div className="flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1">
             <Search size={15} className="shrink-0 text-slate-400" />
             <input
               value={patientSearch}
@@ -100,7 +120,7 @@ const MonitoringPage = () => {
                 setPatientSearch(selectedPatientObj ? `${selectedPatientObj.last_name}, ${selectedPatientObj.first_name}` : "");
               }}
               placeholder="Search patient name or ID..."
-              className="w-64 bg-transparent text-sm font-semibold text-black outline-none placeholder:font-normal placeholder:text-slate-400"
+              className="w-44 bg-transparent text-[10px] font-semibold text-black outline-none placeholder:font-normal placeholder:text-slate-400"
             />
             {selectedPatientObj && !patientSearchOpen && (
               <button
@@ -139,7 +159,9 @@ const MonitoringPage = () => {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+
+          <div className="flex flex-wrap gap-2">
 
           {visibleTabs.map((tab) => (
             <button
@@ -154,6 +176,19 @@ const MonitoringPage = () => {
               {tab.label}
             </button>
           ))}
+
+          </div>
+
+          {activeTab === "phic" && monitoring?.phic && (
+            <div className="flex items-center gap-1">
+              <button type="button" onClick={handlePhicPrint} className="flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-50">
+                <Printer size={14} /> Print
+              </button>
+              <button type="button" onClick={handlePhicDownload} className="flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-50">
+                <Download size={14} /> Download
+              </button>
+            </div>
+          )}
 
         </div>
 

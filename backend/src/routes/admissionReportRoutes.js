@@ -4,7 +4,7 @@ import { protect, roleOnly } from "../middleware/authMiddleware.js";
 import { ROLES } from "../utils/roles.js";
 
 const router = express.Router();
-router.use(protect, roleOnly(ROLES.PHILHEALTH_OFFICER));
+router.use(protect, roleOnly(ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER));
 
 router.get("/", getAdmissionReport);
 router.put("/:id", updateInfoRelayed);

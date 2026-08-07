@@ -52,7 +52,8 @@ const UsersPage = () => {
   const term = search.trim().toLowerCase();
   const filteredUsers = users.filter((user) =>
     [userName(user), loginId(user), user.role, user.status]
-      .some((value) => String(value || "").toLowerCase().includes(term))
+      .some((value) => String(value || "").toLowerCase().includes(term)) ||
+    JSON.stringify(user).toLowerCase().includes(term)
   );
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -115,21 +116,21 @@ const UsersPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <Topbar title="Users" />
-      <div className="flex flex-col gap-3 rounded-3xl bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 sm:w-96">
+      <div className="flex flex-col gap-2 rounded-xl bg-white p-2 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 sm:w-56">
           <Search size={16} className="text-slate-400" />
-          <input placeholder="Search name, login, role, or status..." value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} className="w-full bg-transparent text-sm text-black outline-none placeholder:text-slate-400" />
+          <input placeholder="Search users..." value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} className="w-full bg-transparent text-[10px] text-black outline-none placeholder:text-slate-400" />
         </div>
-        <Button onClick={() => { setNewUser(EMPTY_USER); setCreateOpen(true); }} className="inline-flex items-center justify-center gap-2">
+        <Button onClick={() => { setNewUser(EMPTY_USER); setCreateOpen(true); }} className="inline-flex items-center justify-center gap-1 !px-2 !py-1 !text-[10px]">
           <Plus size={17} /> Create User
         </Button>
       </div>
-      <div className="overflow-x-auto rounded-3xl bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
+      <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
+        <table className="w-full text-left text-xs [&_td]:!px-2.5 [&_td]:!py-1.5 [&_th]:!px-2.5 [&_th]:!py-1.5">
           <thead>
-            <tr className="border-b border-slate-200 text-xs font-bold uppercase tracking-wide text-slate-700">
+            <tr className="border-b border-slate-200 text-[10px] font-bold uppercase tracking-wide text-slate-700">
               <th className="px-4 py-3">Name</th><th className="px-4 py-3">Login</th><th className="px-4 py-3">Role</th>
               <th className="px-4 py-3">Status</th><th className="px-4 py-3">Created</th>
               <th className="px-4 py-3 text-right">Actions</th>
@@ -142,8 +143,8 @@ const UsersPage = () => {
               <tr key={user._id} className="transition hover:bg-slate-50">
                 <td className="px-4 py-3 font-bold text-black">{userName(user)}</td>
                 <td className="px-4 py-3 text-slate-500">{loginId(user)}</td>
-                <td className="px-4 py-3"><span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">{user.role}</span></td>
-                <td className="px-4 py-3"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${STATUS_STYLES[user.status] || "bg-slate-100 text-slate-600"}`}>{user.status}</span></td>
+                <td className="px-4 py-3"><span className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold text-slate-600">{user.role}</span></td>
+                <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${STATUS_STYLES[user.status] || "bg-slate-100 text-slate-600"}`}>{user.status}</span></td>
                 <td className="px-4 py-3 text-slate-500">{new Date(user.createdAt).toLocaleDateString()}</td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2">
