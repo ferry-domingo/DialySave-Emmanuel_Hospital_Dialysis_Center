@@ -166,3 +166,45 @@ export const updateUserPassword = async (req, res) => {
     return res.status(500).json({ success: false, message: "Failed to update password.", error: error.message });
   }
 };
+
+export const updateUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+
+    const name = String(req.body.name || "").trim();
+    const login = String(req.body.login || "").trim();
+    const role = normalizeRole(req.body.role);
+    const status = req.body.status;
+    const password = String(req.body.password || "");
+    const allowedRoles = [ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER, ROLES.PATIENT, ROLES.DOCTOR];
+
+    if (name.length < 2 || name.length > 100) return res.status(400).json({ success: false, message: "Name must be between 2 and 100 characters." });
+    if (login.length < 3 || login.length > 150 || /\s/.test(login)) return res.status(400).json({ success: false, message: "Enter a valid login without spaces." });
+    if (!allowedRoles.includes(role)) return res.status(400).json({ success: false, message: "Select a valid role." });
+    if (!["Active", "Inactive"].includes(status)) return res.status(400).json({ success: false, message: "Status must be Active or Inactive." });
+    if (password && password.length < 8) return res.status(400).json({ success: false, message: "Password must be at least 8 characters." });
+    if (String(req.user._id) === req.params.id && status === "Inactive") return res.status(400).json({ success: false, message: "You cannot deactivate your own account." });
+
+    const normalizedLogin = login.includes("@") ? login.toLowerCase() : login;
+    const duplicate = await User.findOne({ _id: { $ne: user._id }, $or: [{ username: normalizedLogin }, { email: normalizedLogin }] });
+    if (duplicate) return res.status(409).json({ success: false, message: "Login is already in use." });
+
+    const previous = { name: user.name, username: user.username, role: user.role, status: user.status };
+    user.name = name;
+    user.username = normalizedLogin;
+    if (normalizedLogin.includes("@")) user.email = normalizedLogin;
+    user.role = role;
+    user.status = status;
+    if (password) user.password = await hashPassword(password);
+    await user.save();
+
+    await recordActivity({ req, actor: req.user, action: "USER_UPDATED", target: user, details: `Updated account profile${password ? " and password" : ""}. Previous role/status: ${previous.role}/${previous.status}.` });
+    const safeUser = user.toObject();
+    delete safeUser.password;
+    return res.status(200).json({ success: true, message: "User updated successfully.", data: { ...safeUser, role: normalizeRole(safeUser.role) } });
+  } catch (error) {
+    if (error?.code === 11000) return res.status(409).json({ success: false, message: "Login is already in use." });
+    return res.status(500).json({ success: false, message: "Failed to update user.", error: error.message });
+  }
+};

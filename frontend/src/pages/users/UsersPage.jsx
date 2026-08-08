@@ -10,7 +10,7 @@ import { useAuthStore } from "../../store/authStore";
 import Pagination from "../../components/common/Pagination";
 import Select from "../../components/common/Select";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
 const EMPTY_USER = {
   name: "",
   email: "",
@@ -116,19 +116,19 @@ const UsersPage = () => {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       <Topbar title="Users" />
       <div className="flex flex-col gap-2 rounded-xl bg-white p-2 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 sm:w-56">
           <Search size={16} className="text-slate-400" />
           <input placeholder="Search users..." value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} className="w-full bg-transparent text-[10px] text-black outline-none placeholder:text-slate-400" />
         </div>
-        <Button onClick={() => { setNewUser(EMPTY_USER); setCreateOpen(true); }} className="inline-flex items-center justify-center gap-1 !px-2 !py-1 !text-[10px]">
-          <Plus size={17} /> Create User
+        <Button onClick={() => { setNewUser(EMPTY_USER); setCreateOpen(true); }} className="inline-flex items-center justify-center gap-1.5 !px-3 !py-1.5 !text-[11px]">
+          <Plus size={15} /> Create User
         </Button>
       </div>
       <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
-        <table className="w-full text-left text-xs [&_td]:!px-2.5 [&_td]:!py-1.5 [&_th]:!px-2.5 [&_th]:!py-1.5">
+        <table className="w-full text-left text-[10px] [&_td]:!px-2.5 [&_td]:!py-1 [&_th]:!px-2.5 [&_th]:!py-1.5">
           <thead>
             <tr className="border-b border-slate-200 text-[10px] font-bold uppercase tracking-wide text-slate-700">
               <th className="px-4 py-3">Name</th><th className="px-4 py-3">Login</th><th className="px-4 py-3">Role</th>
@@ -147,9 +147,9 @@ const UsersPage = () => {
                 <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${STATUS_STYLES[user.status] || "bg-slate-100 text-slate-600"}`}>{user.status}</span></td>
                 <td className="px-4 py-3 text-slate-500">{new Date(user.createdAt).toLocaleDateString()}</td>
                 <td className="px-4 py-3">
-                  <div className="flex justify-end gap-2">
-                    <button onClick={() => { setPasswordUser(user); setPassword(""); setConfirmPassword(""); }} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold hover:bg-slate-100"><KeyRound size={15} /> Password</button>
-                    <button disabled={(currentUser?.id || currentUser?._id) === user._id} onClick={() => toggleStatus(user)} className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-40 ${user.status === "Active" ? "bg-red-50 text-red-700 hover:bg-red-100" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}><Power size={15} />{user.status === "Active" ? "Deactivate" : "Activate"}</button>
+                  <div className="flex justify-end gap-1">
+                    <button onClick={() => { setPasswordUser(user); setPassword(""); setConfirmPassword(""); }} className="inline-flex h-6 items-center gap-1 rounded-md border border-slate-200 px-2 text-[9px] font-bold hover:bg-slate-100"><KeyRound size={11} /> Password</button>
+                    <button disabled={(currentUser?.id || currentUser?._id) === user._id} onClick={() => toggleStatus(user)} className={`inline-flex h-6 items-center gap-1 rounded-md px-2 text-[9px] font-bold disabled:cursor-not-allowed disabled:opacity-40 ${user.status === "Active" ? "bg-red-50 text-red-700 hover:bg-red-100" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}><Power size={11} />{user.status === "Active" ? "Deactivate" : "Activate"}</button>
                   </div>
                 </td>
               </tr>

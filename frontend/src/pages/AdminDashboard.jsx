@@ -56,7 +56,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-2.5 md:h-full md:overflow-hidden">
-      <Topbar title="Admin Dashboard" />
+      <Topbar title="Admin workspace" />
 
       <section className="relative overflow-hidden rounded-xl bg-slate-950 px-4 py-2.5 text-white shadow-sm">
         <div className="absolute -right-16 -top-24 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl" />
@@ -207,7 +207,7 @@ const AdminDashboard = () => {
                 <time className="shrink-0 text-[11px] font-medium text-slate-400">{new Date(log.createdAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</time>
               </div>
             ))}
-          </div>
+          </div>kw
         </div>
 
         <div className="space-y-4">

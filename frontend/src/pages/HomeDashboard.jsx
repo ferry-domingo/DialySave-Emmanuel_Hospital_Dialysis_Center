@@ -1,4 +1,4 @@
-import AdminDashboard from "./AdminDashboard";
+import AdminDashboard from "./AdminDashboardCompact";
 import Dashboard from "./Dashboard";
 import { useAuthStore } from "../store/authStore";
 import { normalizeRole, ROLES } from "../utils/roles";

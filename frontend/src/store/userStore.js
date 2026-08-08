@@ -42,6 +42,12 @@ export const useUserStore = create((set) => ({
     return res.data;
   },
 
+  updateUser: async (id, data) => {
+    const res = await userApi.updateUser(id, data);
+    set((state) => ({ users: state.users.map((user) => user._id === id ? { ...user, ...res.data.data } : user) }));
+    return res.data;
+  },
+
   updateStatus: async (id, status) => {
     const res = await userApi.updateUserStatus(id, status);
     set((state) => ({
