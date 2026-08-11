@@ -71,19 +71,19 @@ const MonitoringPackage = ({ patientId }) => {
 
   if (loading) {
     return (
-      <div className="rounded-3xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">
+      <div className="rounded-xl bg-white p-5 text-center text-sm text-slate-400 shadow-sm">
         Loading...
       </div>
     );
   }
 
   return (
-    <div className="rounded-3xl bg-white p-5 shadow-sm">
+    <div className="rounded-xl bg-white p-2.5 shadow-sm">
 
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-bold text-slate-900">Package</h2>
-        <div className="flex items-center gap-2">
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+        <h2 className="text-sm font-bold text-slate-900">Package</h2>
+        <div className="flex items-center gap-1.5">
+          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">
             {monitoring?.package?.total || 0} used
           </span>
           <button type="button" onClick={handlePrint} className="flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-50">
@@ -92,7 +92,7 @@ const MonitoringPackage = ({ patientId }) => {
         </div>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200">
+      <div className="mt-2 overflow-x-auto rounded-lg border border-slate-200">
         <table className="w-full min-w-300 text-left text-xs [&_td]:!px-2 [&_td]:!py-1.5 [&_th]:!px-2 [&_th]:!py-1.5">
 
           <thead>

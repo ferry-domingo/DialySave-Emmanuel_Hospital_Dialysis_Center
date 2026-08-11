@@ -20,11 +20,13 @@ import ActivityLogsPage from "../pages/activityLogs/ActivityLogsPage";
 import SettingsPage from "../pages/settings/SettingsPage";
 import MessagesPage from "../pages/messages/MessagesPage";
 import AlertsPage from "../pages/alerts/AlertsPage";
+import AnnouncementsPage from "../pages/announcements/AnnouncementsPage";
 import DoctorDashboardPage from "../pages/doctors/DoctorDashboardPage";
 import DoctorPatientsPage from "../pages/doctors/DoctorPatientsPage";
 import DoctorSessionsPage from "../pages/doctors/DoctorSessionsPage";
 import LandingPage from "../pages/public/LandingPage";
 import { AboutPage, ContactPage, ServicesPage, TechnologyPage } from "../pages/public/PublicInfoPages";
+import PublicAnnouncementsPage from "../pages/public/PublicAnnouncementsPage";
 
 const AppRoutes = () => {
   return (
@@ -36,6 +38,7 @@ const AppRoutes = () => {
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/technology" element={<TechnologyPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/announcements" element={<PublicAnnouncementsPage />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />
 
@@ -62,6 +65,7 @@ const AppRoutes = () => {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/alerts" element={<RoleRoute allowedRoles={[ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER, ROLES.PATIENT, ROLES.DOCTOR]}><AlertsPage /></RoleRoute>} />
+          <Route path="/admin-announcements" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AnnouncementsPage /></RoleRoute>} />
         </Route>
       </Routes>
     </BrowserRouter>

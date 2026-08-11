@@ -1,41 +1,45 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  Activity,
-  CalendarDays,
-  ChevronRight,
-  CircleUserRound,
-  Droplets,
-  Search,
-  Stethoscope,
-  Users,
-} from "lucide-react";
-import api from "../../api/axios";
-import Topbar from "../../components/layout/Topbar";
 import { Link } from "react-router-dom";
+import { Activity, Bell, CalendarDays, ChevronRight, CircleUserRound, Droplets, HeartPulse, Mail, Search, Stethoscope, UserCheck, Users } from "lucide-react";
+
+import api from "../../api/axios";
+import OnlineUsersCard from "../../components/dashboard/OnlineUsersCard";
+import Topbar from "../../components/layout/Topbar";
+import { useMessageStore } from "../../store/messageStore";
+import { useNotificationStore } from "../../store/notificationStore";
 import { formatDoctorName } from "../../utils/doctorName";
 
-const formatDate = (value) =>
-  value ? new Intl.DateTimeFormat("en-PH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—";
+const formatDate = (value) => value
+  ? new Intl.DateTimeFormat("en-PH", { month: "short", day: "numeric", year: "numeric" }).format(new Date(value))
+  : "—";
 
-const patientName = (patient) =>
-  [patient?.first_name, patient?.middle_name, patient?.last_name].filter(Boolean).join(" ");
+const patientName = (patient) => [patient?.first_name, patient?.middle_name, patient?.last_name].filter(Boolean).join(" ");
 
-const StatCard = ({ icon: Icon, label, value, tone = "slate" }) => {
-  const tones = {
-    slate: "bg-slate-950 text-white",
-    blue: "bg-blue-50 text-blue-700",
-    emerald: "bg-emerald-50 text-emerald-700",
-  };
-  return (
-    <div className="rounded-3xl bg-white p-5 shadow-sm">
-      <span className={`grid h-11 w-11 place-items-center rounded-2xl ${tones[tone]}`}><Icon size={20} /></span>
-      <p className="mt-4 text-2xl font-extrabold text-slate-900">{value}</p>
-      <p className="mt-1 text-sm font-medium text-slate-500">{label}</p>
-    </div>
-  );
-};
+const PanelHeader = ({ icon: Icon, title, subtitle, tone = "bg-slate-50 text-slate-600", to }) => (
+  <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2">
+    <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg ${tone}`}><Icon size={13} /></span>
+    <div className="min-w-0 flex-1"><h2 className="truncate text-xs font-extrabold text-slate-900">{title}</h2><p className="truncate text-[8px] text-slate-400">{subtitle}</p></div>
+    {to && <Link to={to} className="shrink-0 text-[8px] font-bold text-emerald-700">View all</Link>}
+  </div>
+);
+
+const InfoTile = ({ label, value }) => (
+  <div className="min-w-0 rounded-lg border border-slate-100 bg-slate-50/80 px-2 py-1.5">
+    <p className="truncate text-[7px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
+    <p className="mt-0.5 truncate text-[10px] font-semibold text-slate-900" title={String(value || "")}>{value || "—"}</p>
+  </div>
+);
+
+const StatTile = ({ icon: Icon, label, value, tone }) => (
+  <div className="flex min-w-0 items-center gap-2 px-3 py-2">
+    <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg ${tone}`}><Icon size={13} /></span>
+    <div className="min-w-0"><p className="truncate text-[8px] font-bold uppercase text-slate-400">{label}</p><p className="mt-0.5 truncate text-sm font-extrabold leading-none text-slate-900">{value ?? 0}</p></div>
+  </div>
+);
 
 const DoctorDashboardPage = () => {
+  const conversations = useMessageStore((state) => state.conversations);
+  const notifications = useNotificationStore((state) => state.notifications);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -66,115 +70,67 @@ const DoctorDashboardPage = () => {
 
   const patients = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return (data?.patients || []).filter((patient) =>
-      !term || JSON.stringify(patient).toLowerCase().includes(term)
-    );
+    return (data?.patients || []).filter((patient) => !term || JSON.stringify(patient).toLowerCase().includes(term));
   }, [data, search]);
 
-  const sessions = useMemo(() => (data?.sessions || []).filter((session) =>
-    !selectedPatient || session.patient?._id === selectedPatient
-  ), [data, selectedPatient]);
-
-  const selected = data?.patients?.find((patient) => patient._id === selectedPatient);
+  const sessions = useMemo(() => (data?.sessions || []).filter((session) => !selectedPatient || session.patient?._id === selectedPatient), [data, selectedPatient]);
+  const recentSessions = sessions.slice(0, 7);
+  const completedLabs = (data?.sessions || []).reduce((total, session) => total + (session.laboratory_results || []).filter((lab) => lab.done).length, 0);
+  const totalLabs = (data?.sessions || []).reduce((total, session) => total + (session.laboratory_results?.length || 0), 0);
+  const activePatients = (data?.patients || []).filter((patient) => patient.status === "Active").length;
+  const latestSession = data?.sessions?.[0];
 
   return (
-    <div className="space-y-6">
-      <Topbar title="Doctor Dashboard" />
-
-      {loading && <div className="rounded-3xl bg-white p-12 text-center text-sm text-slate-500 shadow-sm">Loading your assigned patients…</div>}
-      {error && <div className="rounded-3xl bg-red-50 p-6 text-sm font-semibold text-red-600 shadow-sm">{error}</div>}
+    <div className="min-w-0 space-y-2.5 xl:flex xl:h-full xl:flex-col xl:space-y-0 xl:overflow-hidden">
+      <Topbar title="Doctor workspace" />
+      {loading && <div className="mt-2.5 grid flex-1 place-items-center rounded-xl bg-white text-sm text-slate-400 shadow-sm">Loading your assigned patients...</div>}
+      {error && <div className="mt-2.5 rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-600">{error}</div>}
 
       {!loading && !error && data && (
-        <>
-          <section className="overflow-hidden rounded-3xl bg-slate-950 p-6 text-white shadow-sm">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold text-slate-400">Welcome back</p>
-                <h2 className="mt-1 text-2xl font-extrabold">{formatDoctorName(data.doctor)}</h2>
-                <p className="mt-2 text-sm text-slate-300">Doctor ID: {data.doctor.doctor_id}</p>
-              </div>
-              <span className="grid h-16 w-16 place-items-center rounded-3xl bg-white/10"><Stethoscope size={30} /></span>
-            </div>
-          </section>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <StatCard icon={Users} label="Assigned patients" value={data.summary.patientCount} />
-            <StatCard icon={Activity} label="Total dialysis sessions" value={data.summary.sessionCount} tone="blue" />
-            <StatCard icon={CalendarDays} label="Sessions this month" value={data.summary.sessionsThisMonth} tone="emerald" />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Link to="/doctor-patients" className="group flex items-center gap-4 rounded-3xl bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-              <span className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-blue-700"><Users size={21} /></span>
-              <span><span className="block font-extrabold text-slate-900">View all assigned patients</span><span className="mt-1 block text-sm text-slate-500">Profiles, medical details, and recent sessions</span></span>
-              <ChevronRight className="ml-auto text-slate-300 transition group-hover:translate-x-1" />
-            </Link>
-            <Link to="/doctor-sessions" className="group flex items-center gap-4 rounded-3xl bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-              <span className="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-700"><Activity size={21} /></span>
-              <span><span className="block font-extrabold text-slate-900">Review dialysis sessions</span><span className="mt-1 block text-sm text-slate-500">Treatment details, supplies, and laboratory status</span></span>
-              <ChevronRight className="ml-auto text-slate-300 transition group-hover:translate-x-1" />
-            </Link>
-          </div>
-
-          <div className="grid gap-5 xl:grid-cols-[0.85fr_1.4fr]">
-            <section className="rounded-3xl bg-white p-5 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="font-bold text-slate-900">My Patients</h2>
-                  <p className="mt-1 text-xs text-slate-500">Patients currently assigned to you</p>
-                </div>
-                {selectedPatient && <button onClick={() => setSelectedPatient("")} className="text-xs font-bold text-blue-600">Show all</button>}
-              </div>
-              <div className="mt-4 flex items-center gap-2 rounded-2xl bg-slate-50 px-3.5 py-3">
-                <Search size={16} className="text-slate-400" />
-                <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search name or patient ID" className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400" />
-              </div>
-              <div className="mt-3 max-h-[34rem] space-y-2 overflow-y-auto">
-                {patients.map((patient) => (
-                  <button key={patient._id} onClick={() => setSelectedPatient(patient._id)} className={`flex w-full items-center gap-3 rounded-2xl p-3 text-left transition ${selectedPatient === patient._id ? "bg-slate-950 text-white" : "hover:bg-slate-50"}`}>
-                    <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${selectedPatient === patient._id ? "bg-white/10" : "bg-slate-100 text-slate-600"}`}><CircleUserRound size={19} /></span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold">{patientName(patient)}</span>
-                      <span className={`block text-xs ${selectedPatient === patient._id ? "text-slate-300" : "text-slate-500"}`}>{patient.patient_id} · {patient.blood_type}</span>
-                    </span>
-                    <ChevronRight size={16} className="ml-auto shrink-0 opacity-50" />
-                  </button>
-                ))}
-                {!patients.length && <p className="p-6 text-center text-sm text-slate-500">No assigned patients found.</p>}
-              </div>
+        <div className="grid min-h-0 w-full gap-2.5 xl:mt-2.5 xl:flex-1 xl:grid-cols-[minmax(240px,262px)_minmax(420px,1fr)_270px_215px] xl:overflow-hidden">
+          <div className="grid min-h-0 gap-2.5 xl:grid-rows-[86px_auto_minmax(0,1fr)]">
+            <section className="relative min-h-[86px] overflow-hidden rounded-xl bg-[#173d31] p-3 text-white shadow-sm">
+              <div className="absolute -right-10 -top-20 h-44 w-44 rounded-full bg-emerald-400/20 blur-3xl" />
+              <div className="relative flex h-full items-center"><div className="min-w-0"><p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-emerald-200"><Stethoscope size={11} />Doctor overview</p><h1 className="mt-1 break-words text-sm font-black leading-tight">Good day, {formatDoctorName(data.doctor)}.</h1><p className="mt-1 text-[8px] text-emerald-50/70">Your assigned care workload at a glance.</p></div></div>
             </section>
 
-            <section className="rounded-3xl bg-white p-5 shadow-sm">
-              <div>
-                <h2 className="font-bold text-slate-900">{selected ? `${patientName(selected)}'s Sessions` : "Dialysis Sessions"}</h2>
-                <p className="mt-1 text-xs text-slate-500">{selected ? `${selected.patient_id} · ${selected.blood_type} blood type` : "Complete session history for your assigned patients"}</p>
-              </div>
-              <div className="mt-4 space-y-3">
-                {sessions.map((session) => (
-                  <article key={session._id} className="rounded-2xl border border-slate-100 p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-blue-700"><Droplets size={18} /></span>
-                        <div>
-                          <h3 className="text-sm font-bold text-slate-900">{session.session_id}</h3>
-                          <p className="mt-0.5 text-xs text-slate-500">{patientName(session.patient)} · {session.patient?.patient_id}</p>
-                        </div>
-                      </div>
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">{session.payment_type || "Not set"}</span>
-                    </div>
-                    <div className="mt-3 grid gap-2 border-t border-slate-100 pt-3 text-xs text-slate-500 sm:grid-cols-2">
-                      <span><b className="text-slate-700">Date:</b> {formatDate(session.createdAt)}</span>
-                      <span><b className="text-slate-700">Labs:</b> {session.laboratory_results?.filter((lab) => lab.done).length || 0}/{session.laboratory_results?.length || 0} completed</span>
-                      <span><b className="text-slate-700">Injection:</b> {session.injections?.name || "Not recorded"}</span>
-                      <span><b className="text-slate-700">Dialyzer:</b> {session.dialyzer?.name || "Not recorded"}</span>
-                    </div>
-                  </article>
-                ))}
-                {!sessions.length && <div className="rounded-2xl bg-slate-50 p-10 text-center"><Activity className="mx-auto text-slate-400" /><p className="mt-3 text-sm font-semibold text-slate-600">No dialysis sessions found.</p></div>}
-              </div>
+            <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">
+              <PanelHeader icon={CircleUserRound} title="Doctor Profile" subtitle="Professional information" tone="bg-violet-50 text-violet-600" />
+              <div className="grid grid-cols-2 gap-2 p-3"><InfoTile label="Doctor ID" value={data.doctor.doctor_id} /><InfoTile label="Expertise" value={data.doctor.medical_expertise} /><InfoTile label="Contact" value={data.doctor.contact_number} /><InfoTile label="Gender" value={data.doctor.gender} /><InfoTile label="Status" value={data.doctor.status} /><InfoTile label="Assigned Patients" value={data.summary.patientCount} /></div>
+            </section>
+
+            <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">
+              <PanelHeader icon={Users} title="Assigned Patients" subtitle="Select a patient to filter sessions" tone="bg-blue-50 text-blue-600" to="/doctor-patients" />
+              <div className="m-2 flex h-7 items-center gap-2 rounded-lg bg-slate-50 px-2"><Search size={12} className="text-slate-400" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search patient" className="min-w-0 flex-1 bg-transparent text-[9px] outline-none" /></div>
+              <div className="min-h-0 flex-1 divide-y divide-slate-100 overflow-hidden px-2">{patients.slice(0, 7).map((patient) => <button key={patient._id} onClick={() => setSelectedPatient(selectedPatient === patient._id ? "" : patient._id)} className={`flex w-full min-w-0 items-center gap-2 px-1 py-1.5 text-left ${selectedPatient === patient._id ? "text-emerald-700" : "text-slate-600"}`}><span className={`grid h-6 w-6 shrink-0 place-items-center rounded-lg ${selectedPatient === patient._id ? "bg-emerald-50" : "bg-slate-50"}`}><CircleUserRound size={12} /></span><span className="min-w-0 flex-1"><b className="block truncate text-[9px]">{patientName(patient)}</b><small className="block text-[7px] text-slate-400">{patient.patient_id} · {patient.blood_type || "N/A"}</small></span><ChevronRight size={10} /></button>)}{!patients.length && <p className="py-4 text-center text-[9px] text-slate-400">No assigned patients</p>}</div>
             </section>
           </div>
-        </>
+
+          <div className="grid min-h-0 gap-2.5 xl:grid-rows-[86px_228px_minmax(0,1fr)]">
+            <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm"><div className="grid h-full grid-cols-3 divide-x divide-slate-100"><StatTile icon={Users} label="Assigned Patients" value={data.summary.patientCount} tone="bg-blue-50 text-blue-600" /><StatTile icon={Activity} label="Total Sessions" value={data.summary.sessionCount} tone="bg-cyan-50 text-cyan-600" /><StatTile icon={CalendarDays} label="This Month" value={data.summary.sessionsThisMonth} tone="bg-emerald-50 text-emerald-600" /></div></section>
+
+            <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">
+              <PanelHeader icon={Activity} title={selectedPatient ? "Patient Sessions" : "Recent Sessions"} subtitle="Latest dialysis treatments" tone="bg-cyan-50 text-cyan-600" to="/doctor-sessions" />
+              <div className="divide-y divide-slate-100 px-3">{recentSessions.slice(0, 5).map((session) => <Link key={session._id} to="/doctor-sessions" className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-2"><span className="min-w-0"><b className="block truncate text-[10px] text-slate-800">{session.session_id} · {patientName(session.patient)}</b><small className="block truncate text-[8px] text-slate-400">{session.patient?.patient_id} · {session.payment_type || "N/A"} · Labs {session.laboratory_results?.filter((lab) => lab.done).length || 0}/{session.laboratory_results?.length || 0}</small></span><time className="text-[8px] text-slate-400">{formatDate(session.createdAt)}</time></Link>)}{!recentSessions.length && <p className="py-8 text-center text-[9px] text-slate-400">No sessions found</p>}</div>
+            </section>
+
+            <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">
+              <PanelHeader icon={HeartPulse} title="Care Insights" subtitle="Assigned workload and treatment activity" tone="bg-emerald-50 text-emerald-600" />
+              <div className="grid grid-cols-4 divide-x divide-slate-100"><InfoTile label="Active Patients" value={activePatients} /><InfoTile label="Lab Completion" value={`${completedLabs}/${totalLabs}`} /><InfoTile label="Last Session" value={formatDate(latestSession?.createdAt)} /><InfoTile label="Patient Filter" value={selectedPatient ? "Active" : "All"} /></div>
+              <div className="grid min-h-0 flex-1 grid-cols-2 gap-2 border-t border-slate-100 p-3"><Link to="/doctor-patients" className="flex flex-col justify-center rounded-lg bg-blue-50 p-3"><Users size={16} className="text-blue-600" /><b className="mt-2 text-xs text-slate-900">Patient records</b><span className="mt-1 text-[8px] text-slate-500">Review assigned profiles and medical information</span></Link><Link to="/doctor-sessions" className="flex flex-col justify-center rounded-lg bg-emerald-50 p-3"><Activity size={16} className="text-emerald-600" /><b className="mt-2 text-xs text-slate-900">Treatment history</b><span className="mt-1 text-[8px] text-slate-500">Review supplies, coverage, and lab status</span></Link></div>
+            </section>
+          </div>
+
+          <div className="grid min-h-0 gap-2.5 xl:grid-rows-[minmax(150px,1fr)_minmax(150px,1fr)_auto]">
+            <section className="min-h-0 overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm"><PanelHeader icon={Mail} title="Recent Messages" subtitle="Latest conversations" tone="bg-blue-50 text-blue-600" to="/messages" /><div className="divide-y divide-slate-100 px-3">{conversations.slice(0, 5).map((conversation) => <Link key={conversation._id} to="/messages" className="flex min-w-0 items-center gap-2 py-1.5"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-600"><Mail size={11} /></span><span className="min-w-0 flex-1"><b className="block truncate text-[9px] text-slate-700">{conversation.lastMessage?.sender?.name || conversation.lastMessage?.sender?.username || "Conversation"}</b><small className="block truncate text-[7px] text-slate-400">{conversation.lastMessage?.text || "New message"}</small></span>{conversation.unreadCount > 0 && <b className="rounded-full bg-emerald-600 px-1.5 text-[7px] text-white">{conversation.unreadCount}</b>}</Link>)}{!conversations.length && <p className="py-4 text-center text-[9px] text-slate-400">No recent messages</p>}</div></section>
+
+            <section className="min-h-0 overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm"><PanelHeader icon={Bell} title="Recent Alerts" subtitle="Latest patient notifications" tone="bg-amber-50 text-amber-600" to="/alerts" /><div className="divide-y divide-slate-100 px-3">{notifications.slice(0, 5).map((alert) => <Link key={alert._id} to="/alerts" className="flex min-w-0 items-center gap-2 py-1.5"><span className={`h-1.5 w-1.5 shrink-0 rounded-full ${alert.isRead ? "bg-slate-300" : "bg-amber-500"}`} /><span className="min-w-0 flex-1"><b className="block truncate text-[9px] text-slate-700">{alert.title}</b><small className="block truncate text-[7px] text-slate-400">{formatDate(alert.createdAt)}</small></span></Link>)}{!notifications.length && <p className="py-4 text-center text-[9px] text-slate-400">No recent alerts</p>}</div></section>
+
+            <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm"><PanelHeader icon={UserCheck} title="Clinical Focus" subtitle="Current assigned-care status" tone="bg-violet-50 text-violet-600" /><div className="grid grid-cols-2 gap-2 p-3"><InfoTile label="Selected Patient" value={selectedPatient ? patientName(data.patients.find((patient) => patient._id === selectedPatient)) : "All patients"} /><InfoTile label="Visible Sessions" value={sessions.length} /></div></section>
+          </div>
+
+          <aside className="h-full min-h-0 overflow-hidden"><OnlineUsersCard tall /></aside>
+        </div>
       )}
     </div>
   );

@@ -10,6 +10,7 @@ import {
   LogOut,
   Menu,
   MessageCircle,
+  Megaphone,
   PanelLeftClose,
   PanelLeftOpen,
   Settings as SettingsIcon,
@@ -40,6 +41,7 @@ const adminMenus = [
 
 const messageMenu = { name: "Messages", icon: MessageCircle, path: "/messages" };
 const alertsMenu = { name: "Alerts", icon: BellRing, path: "/alerts" };
+const announcementsMenu = { name: "Announcements", icon: Megaphone, path: "/admin-announcements" };
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -59,7 +61,7 @@ const Sidebar = () => {
         messageMenu,
       ]
     : role === ROLES.ADMIN
-      ? [...adminMenus, messageMenu, alertsMenu]
+      ? [...adminMenus, announcementsMenu, messageMenu, alertsMenu]
       : [ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER].includes(role)
         ? [...operationalMenus, admissionMenu, alertsMenu, messageMenu]
         : [messageMenu];
@@ -142,8 +144,8 @@ const Sidebar = () => {
         )}
         <button type="button" onClick={() => setProfileOpen((value) => !value)} aria-expanded={profileOpen} className={`flex w-full items-center gap-2 rounded-xl p-1.5 text-left transition hover:bg-slate-50 ${collapsed ? "md:justify-center" : ""}`}>
           <UserAvatar user={user} className="h-9 w-9 text-xs" />
-          <div className={`min-w-0 ${collapsed ? "md:hidden" : ""}`}>
-            <p className="truncate text-[11px] font-bold uppercase leading-tight text-slate-900">{user?.username || "User"}</p>
+          <div className={`min-w-0 flex-1 ${collapsed ? "md:hidden" : ""}`}>
+            <p className="whitespace-normal break-words text-[11px] font-bold uppercase leading-tight text-slate-900">{user?.name || user?.username || "User"}</p>
             <p className="truncate text-[10px] leading-tight text-slate-400">{user?.role || "Role"}</p>
           </div>
           <span className={`ml-auto text-slate-400 ${collapsed ? "md:hidden" : ""}`}>{profileOpen ? <ChevronDown size={14} /> : <ChevronUp size={14} />}</span>

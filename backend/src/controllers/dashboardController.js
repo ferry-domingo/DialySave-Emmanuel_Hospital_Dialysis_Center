@@ -54,6 +54,19 @@ export const getAdminDashboardSummary = async (req, res) => {
     const now = new Date();
     const today = startOfDay(now);
     const sevenDaysAgo = new Date(today.getTime() - 6 * DAY_MS);
+    const accountPeriod = ["week", "month", "year", "all"].includes(req.query.accountPeriod) ? req.query.accountPeriod : "all";
+    const activityPeriod = ["week", "month", "year", "all"].includes(req.query.activityPeriod) ? req.query.activityPeriod : "week";
+    const accountPeriodDays = { week: 7, month: 30, year: 365 }[accountPeriod];
+    const accountRoleMatch = accountPeriodDays
+      ? { createdAt: { $gte: new Date(now.getTime() - accountPeriodDays * DAY_MS) } }
+      : {};
+    const activityStart = activityPeriod === "week"
+      ? getMondayOfCurrentWeek()
+      : activityPeriod === "month"
+        ? new Date(now.getFullYear(), now.getMonth(), 1)
+        : activityPeriod === "year"
+          ? new Date(now.getFullYear(), 0, 1)
+          : null;
 
     const [
       totalUsers,
@@ -68,12 +81,13 @@ export const getAdminDashboardSummary = async (req, res) => {
       recentActivity,
       recentSecurityEvents,
       activityRows,
+      recentAlerts,
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ status: "Active" }),
       User.countDocuments({ status: "Inactive" }),
       User.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
-      User.aggregate([{ $group: { _id: "$role", count: { $sum: 1 } } }, { $sort: { count: -1 } }]),
+      User.aggregate([{ $match: accountRoleMatch }, { $group: { _id: "$role", count: { $sum: 1 } } }, { $sort: { count: -1 } }]),
       ActivityLog.countDocuments({ createdAt: { $gte: today } }),
       ActivityLog.countDocuments({ action: { $in: ["LOGIN_FAILED", "LOGIN_BLOCKED"] }, createdAt: { $gte: today } }),
       Notification.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
@@ -89,19 +103,41 @@ export const getAdminDashboardSummary = async (req, res) => {
         .sort({ createdAt: -1 })
         .limit(5)
         .lean(),
-      ActivityLog.find({ createdAt: { $gte: sevenDaysAgo } }).select("action createdAt").lean(),
+      ActivityLog.find(activityStart ? { createdAt: { $gte: activityStart } } : {}).select("action createdAt").lean(),
+      Notification.find().sort({ createdAt: -1 }).limit(8).select("title type isRead createdAt").lean(),
     ]);
 
-    const activityTrend = Array.from({ length: 7 }, (_, index) => {
-      const dayStart = new Date(sevenDaysAgo.getTime() + index * DAY_MS);
-      const dayEnd = new Date(dayStart.getTime() + DAY_MS);
-      const dayRows = activityRows.filter((row) => row.createdAt >= dayStart && row.createdAt < dayEnd);
+    const securityActions = ["LOGIN_FAILED", "LOGIN_BLOCKED", "PASSWORD_CHANGE_FAILED"];
+    const summarizeActivity = (label, start, end) => {
+      const rows = activityRows.filter((row) => row.createdAt >= start && row.createdAt < end);
       return {
-        day: dayStart.toLocaleDateString("en-US", { weekday: "short" }),
-        activity: dayRows.length,
-        security: dayRows.filter((row) => ["LOGIN_FAILED", "LOGIN_BLOCKED", "PASSWORD_CHANGE_FAILED"].includes(row.action)).length,
+        day: label,
+        activity: rows.length,
+        security: rows.filter((row) => securityActions.includes(row.action)).length,
       };
-    });
+    };
+
+    let activityTrend;
+    if (activityPeriod === "week" || activityPeriod === "month") {
+      const days = activityPeriod === "week" ? 7 : new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      activityTrend = Array.from({ length: days }, (_, index) => {
+        const start = new Date(activityStart.getTime() + index * DAY_MS);
+        return summarizeActivity(
+          activityPeriod === "week" ? start.toLocaleDateString("en-US", { weekday: "short" }) : String(start.getDate()),
+          start,
+          new Date(start.getTime() + DAY_MS),
+        );
+      });
+    } else if (activityPeriod === "year") {
+      activityTrend = Array.from({ length: 12 }, (_, index) => {
+        const start = new Date(activityStart.getFullYear(), activityStart.getMonth() + index, 1);
+        const end = new Date(start.getFullYear(), start.getMonth() + 1, 1);
+        return summarizeActivity(start.toLocaleDateString("en-US", { month: "short" }), start, end);
+      });
+    } else {
+      const years = [...new Set(activityRows.map((row) => row.createdAt.getFullYear()))].sort((a, b) => a - b);
+      activityTrend = (years.length ? years : [now.getFullYear()]).map((year) => summarizeActivity(String(year), new Date(year, 0, 1), new Date(year + 1, 0, 1)));
+    }
 
     return res.status(200).json({
       success: true,
@@ -116,6 +152,7 @@ export const getAdminDashboardSummary = async (req, res) => {
         usersByRole: roleRows.map((row) => ({ role: normalizeRole(row._id), count: row.count })),
         activityTrend,
         recentActivity,
+        recentAlerts,
         generatedAt: now,
       },
     });
@@ -377,18 +414,15 @@ export const getDashboardSummary = async (req, res) => {
       return { day: WEEK_LABELS[index], count: weekAnalyticsSessions.filter((session) => session.createdAt >= dayStart && session.createdAt < dayEnd).length };
     });
     const daysInMonth = new Date(analyticsDate.getFullYear(), analyticsDate.getMonth() + 1, 0).getDate();
-    const weeksInMonth = Math.ceil(daysInMonth / 7);
-    const monthTrends = Array.from({ length: weeksInMonth }, (_, index) => ({
-      day: `W${index + 1}`,
-      count: monthAnalyticsSessions.filter((session) =>
-        Math.floor((new Date(session.createdAt).getDate() - 1) / 7) === index
-      ).length,
+    const monthTrends = Array.from({ length: daysInMonth }, (_, index) => ({
+      day: String(index + 1),
+      count: monthAnalyticsSessions.filter((session) => new Date(session.createdAt).getDate() === index + 1).length,
     }));
     const yearTrends = Array.from({ length: 12 }, (_, index) => ({
       day: new Date(analyticsDate.getFullYear(), index, 1).toLocaleDateString("en-US", { month: "short" }),
       count: yearAnalyticsSessions.filter((session) => new Date(session.createdAt).getMonth() === index).length,
     }));
-    const historyYears = [...new Set(historySessionDetails.map((session) => new Date(session.createdAt).getFullYear()))];
+    const historyYears = [...new Set(historySessionDetails.map((session) => new Date(session.createdAt).getFullYear()))].sort((a, b) => a - b);
     const historyTrends = historyYears.map((year) => ({
       day: String(year),
       count: historySessionDetails.filter((session) => new Date(session.createdAt).getFullYear() === year).length,

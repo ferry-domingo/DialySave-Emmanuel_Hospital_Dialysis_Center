@@ -25,10 +25,10 @@ const Topbar = ({ title }) => {
   };
 
   return (
-    <div className="flex items-center justify-between rounded-xl bg-white px-3 py-1.5 shadow-sm">
-      <h1 className="text-lg font-bold text-slate-900">{title}</h1>
+    <div className="flex min-w-0 items-center justify-between rounded-xl bg-white px-3 py-1.5 shadow-sm">
+      <h1 className="min-w-0 truncate text-lg font-bold text-slate-900">{title}</h1>
 
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         <Link
           to="/messages"
           aria-label="Messages"
@@ -53,8 +53,8 @@ const Topbar = ({ title }) => {
         <div className="relative ml-1">
           <button type="button" onClick={() => setProfileOpen((value) => !value)} aria-expanded={profileOpen} className="flex items-center gap-1.5 rounded-full border border-slate-100 py-0.5 pl-0.5 pr-2 text-left transition hover:bg-slate-50">
             <UserAvatar user={user} className="h-7 w-7 text-[10px]" />
-            <div className="hidden sm:block">
-              <p className="max-w-32 truncate text-xs font-bold uppercase leading-tight text-slate-900">{user?.username || "User"}</p>
+            <div className="hidden min-w-0 sm:block">
+              <p className="max-w-40 whitespace-normal break-words text-[11px] font-bold uppercase leading-tight text-slate-900">{user?.name || user?.username || "User"}</p>
               <p className="text-[10px] text-slate-400">{user?.role || "Role"}</p>
             </div>
             <ChevronDown size={13} className={`shrink-0 text-slate-400 transition ${profileOpen ? "rotate-180" : ""}`} />

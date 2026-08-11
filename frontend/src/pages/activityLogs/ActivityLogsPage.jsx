@@ -17,6 +17,9 @@ const LABELS = {
   EMAIL_CHANGE_REQUESTED: "Requested email change",
   ACCOUNT_EMAIL_CHANGED: "Changed login email",
   PATIENT_ALERT_SENT: "Sent patient alert",
+  ANNOUNCEMENT_CREATED: "Published announcement",
+  ANNOUNCEMENT_UPDATED: "Updated announcement",
+  ANNOUNCEMENT_DELETED: "Deleted announcement",
 };
 
 const actorName = (log) => {
@@ -53,8 +56,8 @@ const ActivityLogsPage = () => {
   return (
     <div className="space-y-3">
       <Topbar title="Activity Logs" />
-      <div className="flex flex-col gap-2 rounded-xl bg-white p-2 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 sm:w-56">
+      <div className="flex min-w-0 flex-col gap-2 rounded-xl bg-white p-2 shadow-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 sm:w-56 sm:max-w-full">
           <Search size={16} className="text-slate-400" />
           <input placeholder="Search activity..." value={search} onChange={(event) => setSearch(event.target.value)} className="w-full bg-transparent text-[10px] text-black outline-none placeholder:text-slate-400" />
         </div>
@@ -66,8 +69,8 @@ const ActivityLogsPage = () => {
       <div className="rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs text-slate-500">
         {archived ? "Archived activity older than one month." : "Active activity from the last month. Older records are archived automatically."}
       </div>
-      <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
-        <table className="w-full text-left text-xs [&_td]:!px-2.5 [&_td]:!py-1.5 [&_th]:!px-2.5 [&_th]:!py-1.5">
+      <div className="min-w-0 max-w-full overflow-x-auto overscroll-x-contain rounded-xl bg-white shadow-sm">
+        <table className="w-full min-w-[640px] text-left text-xs [&_td]:!px-2.5 [&_td]:!py-1.5 [&_th]:!px-2.5 [&_th]:!py-1.5">
           <thead><tr className="border-b border-slate-200 text-[10px] font-bold uppercase tracking-wide text-slate-700">
             <th className="px-4 py-3">Date & time</th><th className="px-4 py-3">User</th>
             <th className="px-4 py-3">Activity</th><th className="px-4 py-3">Target</th><th className="px-4 py-3">Details</th>
@@ -86,7 +89,7 @@ const ActivityLogsPage = () => {
                 <p className="font-semibold text-slate-700">{accountName(log.target, log.targetUsername)}</p>
                 {(log.target?.role || log.targetUsername) && <p className="mt-0.5 text-xs text-slate-400">{log.target?.role || "Account"}</p>}
               </td>
-              <td className="px-4 py-3 text-slate-500">{log.details || "—"}</td>
+              <td className="max-w-64 break-words px-4 py-3 text-slate-500">{log.details || "—"}</td>
             </tr>)}
           </tbody>
         </table>

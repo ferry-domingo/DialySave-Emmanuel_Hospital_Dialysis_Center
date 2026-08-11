@@ -225,11 +225,11 @@ const AlertsPage = () => {
         </Modal>
       )}
 
-      <div className="flex flex-col gap-2 rounded-xl bg-white p-2 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 sm:w-56">
+      <div className="flex min-w-0 flex-col gap-2 rounded-xl bg-white p-2 shadow-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 sm:w-56 sm:max-w-full">
           <Search size={13} className="text-slate-400" /><input placeholder="Search alerts..." value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} className="w-full bg-transparent text-[10px] outline-none" />
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-1">
           <Button variant="secondary" onClick={() => { setShowArchived((value) => !value); setPage(1); }}><span className="inline-flex items-center gap-1">{showArchived ? <List size={12} /> : <Archive size={12} />}{showArchived ? "Active Alerts" : "Archive"}</span></Button>
           {isManager && <Button onClick={() => { setEditingId(""); setPatientSearch(""); setForm({ patientId: "", type: "Dialysis Schedule", title: "Next dialysis session", message: "", scheduledFor: "" }); setComposerOpen(true); }}><span className="inline-flex items-center gap-1"><Send size={12} /> Send Alert</span></Button>}
         </div>

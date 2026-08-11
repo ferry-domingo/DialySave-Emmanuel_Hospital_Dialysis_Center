@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { usePatientStore } from "../../store/patientStore";
@@ -14,6 +14,10 @@ const PatientTable = ({
   patients,
   loading,
   onEdit,
+  onView,
+  showAge = false,
+  showActions = true,
+  getTotalSessions,
 }) => {
   const { deletePatient } = usePatientStore();
 
@@ -60,10 +64,12 @@ const PatientTable = ({
             <th className="px-2.5 py-1.5">Name</th>
             <th className="px-2.5 py-1.5">Doctor</th>
             <th className="px-2.5 py-1.5">Gender</th>
+            {showAge && <th className="px-2.5 py-1.5">Age</th>}
             <th className="px-2.5 py-1.5">Blood Type</th>
             <th className="px-2.5 py-1.5">Contact Number</th>
             <th className="px-2.5 py-1.5">Status</th>
-            <th className="px-2.5 py-1.5 text-center">Actions</th>
+            {getTotalSessions && <th className="px-2.5 py-1.5 text-center">Total Dialysis Sessions</th>}
+            {showActions && <th className="px-2.5 py-1.5 text-center">Actions</th>}
           </tr>
         </thead>
 
@@ -88,6 +94,12 @@ const PatientTable = ({
                 {patient.gender}
               </td>
 
+              {showAge && (
+                <td className="px-2.5 py-1.5 text-slate-600">
+                  {patient.age ?? "—"}
+                </td>
+              )}
+
               <td className="px-2.5 py-1.5 text-slate-600">
                 {patient.blood_type}
               </td>
@@ -104,27 +116,49 @@ const PatientTable = ({
                 </span>
               </td>
 
-              <td className="px-2.5 py-1">
-                <div className="flex justify-center gap-0.5">
+              {getTotalSessions && (
+                <td className="px-2.5 py-1.5 text-center font-semibold text-slate-600">
+                  {getTotalSessions(patient)}
+                </td>
+              )}
 
-                  <button
-                    onClick={() => onEdit(patient)}
-                    aria-label="Edit patient"
-                    className="grid h-5 w-5 place-items-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                  >
-                    <Pencil size={11} />
-                  </button>
+              {showActions && (
+                <td className="px-2.5 py-1">
+                  <div className="flex justify-center gap-0.5">
 
-                  <button
-                    onClick={() => handleDelete(patient._id)}
-                    aria-label="Delete patient"
-                    className="grid h-5 w-5 place-items-center rounded text-slate-400 transition hover:bg-red-50 hover:text-red-600"
-                  >
-                    <Trash2 size={11} />
-                  </button>
+                  {onView && (
+                    <button
+                      onClick={() => onView(patient)}
+                      aria-label={`View ${patient.first_name} ${patient.last_name}`}
+                      className="grid h-5 w-5 place-items-center rounded text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
+                    >
+                      <Eye size={11} />
+                    </button>
+                  )}
 
-                </div>
-              </td>
+                  {onEdit && (
+                    <>
+                      <button
+                        onClick={() => onEdit(patient)}
+                        aria-label="Edit patient"
+                        className="grid h-5 w-5 place-items-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                      >
+                        <Pencil size={11} />
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(patient._id)}
+                        aria-label="Delete patient"
+                        className="grid h-5 w-5 place-items-center rounded text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    </>
+                  )}
+
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

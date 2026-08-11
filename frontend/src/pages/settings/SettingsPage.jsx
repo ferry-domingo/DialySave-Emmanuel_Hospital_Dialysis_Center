@@ -122,18 +122,18 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="settings-page space-y-6">
       <Topbar title="Account Settings" />
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <form onSubmit={saveProfile} className="rounded-3xl bg-white p-6 shadow-sm">
-          <div className="mb-6 flex items-center gap-3">
+      <div className="settings-grid grid gap-6 xl:grid-cols-[1fr_1fr]">
+        <form onSubmit={saveProfile} className="settings-card rounded-3xl bg-white p-6 shadow-sm">
+          <div className="settings-card-header mb-6 flex items-center gap-3">
             <span className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-50 text-blue-600"><UserRound size={21} /></span>
             <div><h2 className="font-bold text-slate-900">Account details</h2><p className="text-sm text-slate-500">Manage your sign-in identity.</p></div>
           </div>
           <div className="space-y-4">
-            <div className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:flex-row sm:items-center">
-              <UserAvatar user={{ ...user, profilePicture }} className="h-24 w-24 text-2xl" />
+            <div className="settings-profile-row flex flex-col gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:flex-row sm:items-center">
+              <UserAvatar user={{ ...user, profilePicture }} className="settings-avatar h-24 w-24 text-2xl" />
               <div className="flex-1">
                 <p className="font-semibold text-slate-800">Profile picture</p>
                 <p className="mb-3 text-sm text-slate-500">JPG, PNG, or WebP. Your photo will be cropped to a square.</p>
@@ -168,10 +168,10 @@ const SettingsPage = () => {
           </div>
         </form>
 
-        <div className="space-y-6">
+        <div className="settings-card-stack space-y-6">
         {![ROLES.PATIENT, ROLES.DOCTOR].includes(user?.role) && (
-          <section className="rounded-3xl bg-white p-6 shadow-sm">
-            <div className="mb-6 flex items-center gap-3">
+          <section className="settings-card rounded-3xl bg-white p-6 shadow-sm">
+            <div className="settings-card-header mb-6 flex items-center gap-3">
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-violet-50 text-violet-600"><MailCheck size={21} /></span>
               <div><h2 className="font-bold text-slate-900">Login email</h2><p className="text-sm text-slate-500">A code will be sent to the new address before it becomes your login.</p></div>
             </div>
@@ -193,8 +193,8 @@ const SettingsPage = () => {
           </section>
         )}
 
-        <form onSubmit={savePassword} className="rounded-3xl bg-white p-6 shadow-sm">
-          <div className="mb-6 flex items-center gap-3">
+        <form onSubmit={savePassword} className="settings-card rounded-3xl bg-white p-6 shadow-sm">
+          <div className="settings-card-header mb-6 flex items-center gap-3">
             <span className="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-50 text-emerald-600"><KeyRound size={21} /></span>
             <div><h2 className="font-bold text-slate-900">Change password</h2><p className="text-sm text-slate-500">Use at least eight characters.</p></div>
           </div>
@@ -208,7 +208,7 @@ const SettingsPage = () => {
         </div>
       </div>
 
-      <div className="flex items-start gap-3 rounded-3xl border border-emerald-100 bg-emerald-50 p-5">
+      <div className="settings-notice flex items-start gap-3 rounded-3xl border border-emerald-100 bg-emerald-50 p-5">
         <ShieldCheck className="mt-0.5 shrink-0 text-emerald-600" size={21} />
         <div><p className="font-bold text-emerald-900">Security activity is recorded</p><p className="mt-1 text-sm text-emerald-700">Profile updates, successful password changes, and failed password attempts appear in the administrator Activity Logs.</p></div>
       </div>

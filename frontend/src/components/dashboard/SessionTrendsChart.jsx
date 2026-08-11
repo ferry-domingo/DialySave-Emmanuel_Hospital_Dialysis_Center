@@ -10,12 +10,12 @@ const PERIODS = [
   { value: "history", label: "All history" },
 ];
 const EMPTY_PERIODS = {
-  month: Array.from({ length: 5 }, (_, index) => ({ day: `W${index + 1}`, count: 0 })),
+  month: Array.from({ length: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() }, (_, index) => ({ day: String(index + 1), count: 0 })),
   year: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((day) => ({ day, count: 0 })),
 };
 const PERIOD_LABELS = {
   week: "Monday–Sunday",
-  month: "W1–W5",
+  month: `1–${new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()}`,
   year: "Jan–Dec",
   history: "By year",
 };
@@ -33,7 +33,7 @@ const SessionTrendsChart = ({ data = [], periods, embedded = false }) => {
   const activePeriods = chartData.filter((entry) => entry.count > 0).length;
   const peak = chartData.reduce((highest, entry) => entry.count > highest.count ? entry : highest, { day: "—", count: 0 });
   const average = chartData.length ? (total / chartData.length).toFixed(1) : "0.0";
-  const averageUnit = period === "week" ? "day" : period === "month" ? "week" : period === "year" ? "month" : "year";
+  const averageUnit = period === "week" || period === "month" ? "day" : period === "year" ? "month" : "year";
 
   return (
     <section className={`flex h-full min-w-0 flex-col p-3 ${embedded ? "" : "rounded-xl border border-slate-200/70 bg-white shadow-sm"}`} aria-labelledby="session-trends-title">

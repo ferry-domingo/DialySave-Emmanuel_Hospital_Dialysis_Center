@@ -26,10 +26,10 @@ export const useDashboardStore = create((set) => ({
     }
   },
 
-  fetchAdminSummary: async () => {
+  fetchAdminSummary: async (filters) => {
     set({ loading: true, error: null });
     try {
-      const res = await dashboardApi.getAdminDashboardSummary();
+      const res = await dashboardApi.getAdminDashboardSummary(filters);
       set({ adminSummary: res.data.data, loading: false });
     } catch (err) {
       set({ error: err.response?.data?.message || err.message, loading: false });

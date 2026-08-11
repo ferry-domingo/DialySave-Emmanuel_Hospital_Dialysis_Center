@@ -11,7 +11,7 @@ const displayName = (user) => user.role === "Patient"
   ? [user.patient?.first_name, user.patient?.last_name].filter(Boolean).join(" ") || user.name || user.username
   : user.name || user.username;
 
-const OnlineUsersCard = ({ embedded = false }) => {
+const OnlineUsersCard = ({ embedded = false, onlineOnly = false }) => {
   const { onlineDirectory, fetchOnlineDirectory } = useUserStore();
   const onlineUserIds = useOnlineUsersStore((state) => state.onlineUserIds);
   const currentUser = useAuthStore((state) => state.user);
@@ -25,6 +25,7 @@ const OnlineUsersCard = ({ embedded = false }) => {
 
   const visibleUsers = onlineDirectory
     .filter((user) => String(user._id) !== currentUserId)
+    .filter((user) => !onlineOnly || onlineUserIds.includes(String(user._id)))
     .filter((user) => displayName(user).toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
       const aOnline = onlineUserIds.includes(String(a._id));
@@ -33,12 +34,14 @@ const OnlineUsersCard = ({ embedded = false }) => {
       return displayName(a).localeCompare(displayName(b));
     });
   const onlineCount = visibleUsers.filter((user) => onlineUserIds.includes(String(user._id))).length;
+  const staffOnline = visibleUsers.filter((user) => onlineUserIds.includes(String(user._id)) && user.role !== "Patient").length;
+  const patientsOnline = onlineCount - staffOnline;
 
   return (
     <div className={`flex h-full min-h-0 min-w-0 flex-col p-3 ${embedded ? "" : "rounded-xl border border-slate-200/70 bg-white shadow-sm"}`}>
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-bold text-slate-900">Online Users</h2>
-        <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-bold text-emerald-600">{onlineCount}/{visibleUsers.length} online</span>
+        <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-bold text-emerald-600">{onlineOnly ? onlineCount : `${onlineCount}/${visibleUsers.length}`} online</span>
       </div>
 
       <div className="mt-2 flex items-center gap-1.5 rounded-lg border border-slate-100 bg-slate-50 px-2 py-1">
@@ -53,7 +56,7 @@ const OnlineUsersCard = ({ embedded = false }) => {
 
       <div className="mt-3 min-h-0 flex-1 space-y-0.5 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {visibleUsers.length === 0 && (
-          <p className="py-6 text-center text-xs text-slate-400">No matching users.</p>
+          <p className="py-6 text-center text-xs text-slate-400">{onlineOnly ? "No users are online." : "No matching users."}</p>
         )}
         {visibleUsers.map((user) => {
           const isOnline = onlineUserIds.includes(String(user._id));
@@ -80,6 +83,14 @@ const OnlineUsersCard = ({ embedded = false }) => {
           );
         })}
       </div>
+
+      {onlineOnly && onlineCount > 0 && (
+        <div className="mt-2 grid grid-cols-3 gap-1 border-t border-slate-100 pt-2 text-center">
+          <div><b className="block text-[11px] text-slate-800">{onlineCount}</b><span className="text-[8px] text-slate-400">Online</span></div>
+          <div><b className="block text-[11px] text-slate-800">{staffOnline}</b><span className="text-[8px] text-slate-400">Staff</span></div>
+          <div><b className="block text-[11px] text-slate-800">{patientsOnline}</b><span className="text-[8px] text-slate-400">Patients</span></div>
+        </div>
+      )}
 
       {previewUser && (
         <div role="dialog" aria-modal="true" aria-label={`${displayName(previewUser)} profile picture`} onClick={() => setPreviewUser(null)} className="fixed inset-0 z-[100] grid place-items-center bg-slate-950/65 p-4 backdrop-blur-sm">

@@ -99,14 +99,14 @@ const MonitoringPage = () => {
 
   return (
 
-    <div className="space-y-3">
+    <div className="min-w-0 space-y-2.5 xl:flex xl:h-full xl:flex-col xl:space-y-0 xl:overflow-hidden">
 
       <Topbar title="Monitoring" />
 
-      <div className="no-print space-y-2 rounded-xl bg-white p-2 shadow-sm">
+      <div className="no-print mt-2.5 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200/70 bg-white p-2 shadow-sm">
 
-        <div className="relative inline-block">
-          <div className="flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1">
+        <div className="relative shrink-0">
+          <div className="flex h-8 items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2">
             <Search size={15} className="shrink-0 text-slate-400" />
             <input
               value={patientSearch}
@@ -120,7 +120,7 @@ const MonitoringPage = () => {
                 setPatientSearch(selectedPatientObj ? `${selectedPatientObj.last_name}, ${selectedPatientObj.first_name}` : "");
               }}
               placeholder="Search patient name or ID..."
-              className="w-44 bg-transparent text-[10px] font-semibold text-black outline-none placeholder:font-normal placeholder:text-slate-400"
+              className="w-48 bg-transparent text-[10px] font-semibold text-black outline-none placeholder:font-normal placeholder:text-slate-400"
             />
             {selectedPatientObj && !patientSearchOpen && (
               <button
@@ -159,15 +159,15 @@ const MonitoringPage = () => {
           )}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-2">
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1">
 
           {visibleTabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+              className={`rounded-lg px-2.5 py-1.5 text-[10px] font-semibold transition ${
                 activeTab === tab.key
                   ? "bg-slate-950 text-white shadow-md"
                   : "bg-slate-100 text-black hover:bg-slate-200"
@@ -197,7 +197,7 @@ const MonitoringPage = () => {
       {
 
         loading && selectedPatient && (
-          <div className="rounded-3xl bg-white p-8 text-center text-sm text-slate-500 shadow-sm">
+          <div className="mt-2.5 grid min-h-0 flex-1 place-items-center rounded-xl bg-white p-5 text-center text-sm text-slate-500 shadow-sm">
             Loading patient monitoring data...
           </div>
         )
@@ -207,7 +207,7 @@ const MonitoringPage = () => {
       {
 
         !loading && error && (
-          <div className="rounded-3xl bg-red-50 p-5 text-sm font-medium text-red-600 shadow-sm">
+          <div className="mt-2.5 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600 shadow-sm">
             {error}
           </div>
         )
@@ -218,7 +218,7 @@ const MonitoringPage = () => {
 
         !loading && monitoring &&
 
-        <>
+        <div className="mt-2.5 min-h-0 flex-1 overflow-y-auto">
           {activeTab === "phic" && (
             <MonitoringPhic phic={monitoring.phic} />
           )}
@@ -242,7 +242,7 @@ const MonitoringPage = () => {
               patientId={selectedPatient}
             />
           )}
-        </>
+        </div>
 
       }
 

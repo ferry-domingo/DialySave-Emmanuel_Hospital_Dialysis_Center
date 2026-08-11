@@ -118,8 +118,8 @@ const UsersPage = () => {
   return (
     <div className="space-y-2.5">
       <Topbar title="Users" />
-      <div className="flex flex-col gap-2 rounded-xl bg-white p-2 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 sm:w-56">
+      <div className="flex min-w-0 flex-col gap-2 rounded-xl bg-white p-2 shadow-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 sm:w-56 sm:max-w-full">
           <Search size={16} className="text-slate-400" />
           <input placeholder="Search users..." value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} className="w-full bg-transparent text-[10px] text-black outline-none placeholder:text-slate-400" />
         </div>
@@ -127,8 +127,8 @@ const UsersPage = () => {
           <Plus size={15} /> Create User
         </Button>
       </div>
-      <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
-        <table className="w-full text-left text-[10px] [&_td]:!px-2.5 [&_td]:!py-1 [&_th]:!px-2.5 [&_th]:!py-1.5">
+      <div className="min-w-0 max-w-full overflow-x-auto overscroll-x-contain rounded-xl bg-white shadow-sm">
+        <table className="w-full min-w-[620px] text-left text-[10px] [&_td]:!px-2.5 [&_td]:!py-1 [&_th]:!px-2.5 [&_th]:!py-1.5">
           <thead>
             <tr className="border-b border-slate-200 text-[10px] font-bold uppercase tracking-wide text-slate-700">
               <th className="px-4 py-3">Name</th><th className="px-4 py-3">Login</th><th className="px-4 py-3">Role</th>

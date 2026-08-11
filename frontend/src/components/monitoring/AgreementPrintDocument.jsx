@@ -5,16 +5,16 @@ const Mark = ({ ok }) => (
   <span className="text-sm font-bold">{ok ? "✓" : "✗"}</span>
 );
 
-const PageHeader = () => (
-  <img src="/images/header.png" alt="" className="mx-auto mb-6 w-[84%]" />
+const PageHeader = ({ className = "" }) => (
+  <img src="/images/header.png" alt="" className={`agreement-print-header mx-auto mb-6 w-[84%] ${className}`} />
 );
 
 const PageFooter = () => (
   <img src="/images/footer.png" alt="" className="h-8" />
 );
 
-const FormTitle = () => (
-  <div className="mb-4 text-center leading-none">
+const FormTitle = ({ className = "" }) => (
+  <div className={`mb-4 text-center leading-none ${className}`}>
     <p className="text-[12px] font-bold">PHILHEALTH HEMODIALYSIS BENEFITS PACKAGE</p>
     <p className="text-[12px] font-bold">AGREEMENT FORM</p>
   </div>
@@ -51,17 +51,17 @@ const AgreementPrintDocument = ({ session }) => {
     <div className="mx-auto max-w-[850px] bg-white font-serif text-black">
 
       {/* ================= PAGE 1 ================= */}
-      <div className="agreement-print-page space-y-1">
+      <div className="agreement-print-page agreement-print-page-first space-y-1">
 
-        <PageHeader />
-        <FormTitle />
+        <PageHeader className="agreement-print-first-header" />
+        <FormTitle className="agreement-print-first-title" />
 
         <div className="flex justify-between text-[11px]">
           <p><span className="font-semibold">HD Treatment Session No.</span> {session.sessionNo}</p>
           <p><span className="font-semibold">Date (Month/Day/Year):</span> {new Date(session.date).toLocaleDateString()}</p>
         </div>
 
-        <div className="space-y-2 text-justify text-[11px] leading-[1.45]">
+        <div className="agreement-print-first-intro space-y-2 text-justify text-[11px] leading-[1.45]">
           <p>
             This document is intended to verify that you have received adequate information verbally and in writing,
             including PhilHealth's guidelines for availing of the benefits package for hemodialysis (HD). The HD
@@ -138,7 +138,7 @@ const AgreementPrintDocument = ({ session }) => {
           </tbody>
         </table>
 
-        <div className="flex justify-start pt-0.5">
+        <div className="agreement-print-first-footer flex justify-start pt-0.5">
           <PageFooter />
         </div>
 

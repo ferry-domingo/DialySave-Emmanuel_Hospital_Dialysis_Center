@@ -10,9 +10,9 @@ const Modal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-3">
+    <div className="app-viewport-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-3">
 
-      <div className={`max-h-[96vh] w-full ${maxWidth} overflow-y-auto rounded-2xl bg-white p-3 shadow-2xl`}>
+      <div className={`app-modal-panel max-h-[96vh] w-full ${maxWidth} overflow-y-auto rounded-2xl bg-white p-3 shadow-2xl`}>
 
         <div className="mb-2 flex items-center justify-between">
 

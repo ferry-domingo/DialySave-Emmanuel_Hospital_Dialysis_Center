@@ -16,7 +16,7 @@ import { useNotificationStore } from "../../store/notificationStore";
 import { normalizeRole, ROLES } from "../../utils/roles";
 
 const Layout = () => {
-  const { loadUser, token } = useAuthStore();
+  const { loadUser, token, user } = useAuthStore();
   const setOnlineUserIds = useOnlineUsersStore((state) => state.setOnlineUserIds);
   const fetchConversations = useMessageStore((state) => state.fetchConversations);
   const receiveMessage = useMessageStore((state) => state.receiveMessage);
@@ -102,12 +102,18 @@ const Layout = () => {
     };
   }, [token, setOnlineUserIds, fetchConversations, receiveMessage, replaceMessage, applyReadReceipt, clearMessages, fetchNotifications, receiveNotification]);
 
+  if (token && !user) {
+    return <div className="grid min-h-screen place-items-center bg-[#f4f7f5] text-sm text-slate-400">Loading workspace...</div>;
+  }
+
+  const isAdmin = normalizeRole(user?.role) === ROLES.ADMIN;
+
   return (
-    <div className="min-h-screen bg-[#f4f7f5] md:flex">
+    <div className={`app-shell min-h-screen w-full max-w-full overflow-x-hidden bg-[#f4f7f5] md:flex ${isAdmin ? "admin-dashboard-shell" : ""}`}>
       <Sidebar />
 
-      <div className="min-w-0 flex-1 md:h-screen md:overflow-hidden">
-        <main className="min-h-[calc(100vh-4.5rem)] px-2 py-2 sm:px-3 md:h-full md:overflow-y-auto md:px-3 md:py-2 lg:px-4">
+      <div className="app-main-column min-w-0 max-w-full flex-1 md:h-screen md:overflow-hidden">
+        <main className="app-main-content min-h-[calc(100vh-4.5rem)] w-full min-w-0 max-w-full px-2 py-2 sm:px-3 md:h-full md:overflow-y-auto md:px-3 md:py-2 lg:px-4">
           <Outlet />
         </main>
       </div>

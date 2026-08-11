@@ -32,17 +32,17 @@ const AgreementAcknowledgement = ({ session, onUpdated }) => {
 
   return (
 
-    <div className="rounded-3xl bg-white shadow-sm">
+    <div className="rounded-xl bg-white shadow-sm">
 
-      <div className="flex items-center gap-3 rounded-t-3xl border-b border-slate-100 px-6 py-4">
-        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-slate-950 text-xs font-bold text-white">1</span>
-        <h2 className="text-base font-bold text-slate-900">Agreement Acknowledgement</h2>
+      <div className="flex items-center gap-2 rounded-t-xl border-b border-slate-100 px-3 py-2">
+        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-slate-950 text-[10px] font-bold text-white">1</span>
+        <h2 className="text-sm font-bold text-slate-900">Agreement Acknowledgement</h2>
       </div>
 
-      <div className="space-y-4 p-6 text-sm leading-6">
+      <div className="space-y-2 p-3 text-[10px] leading-4">
 
-        <div className="flex items-start gap-3 rounded-2xl bg-slate-50 p-4 text-slate-600">
-          <Info size={16} className="mt-0.5 shrink-0 text-emerald-600" />
+        <div className="flex items-start gap-2 rounded-lg bg-slate-50 p-2.5 text-slate-600">
+          <Info size={14} className="mt-0.5 shrink-0 text-emerald-600" />
           <p>
             This document is intended to verify that you have received adequate information verbally and in writing,
             including PhilHealth's guidelines for availing of the benefits package for hemodialysis (HD). The HD Facility
@@ -51,9 +51,9 @@ const AgreementAcknowledgement = ({ session, onUpdated }) => {
           </p>
         </div>
 
-        <div className="space-y-2">
+        <div className="grid gap-1.5 lg:grid-cols-2">
 
-          <label className="flex items-start gap-3 py-1">
+          <label className="flex items-start gap-2 rounded-lg border border-slate-100 p-2">
             <input
               type="checkbox"
               checked={informedConsent}
@@ -67,7 +67,7 @@ const AgreementAcknowledgement = ({ session, onUpdated }) => {
             </span>
           </label>
 
-          <label className="flex items-start gap-3 py-1">
+          <label className="flex items-start gap-2 rounded-lg border border-slate-100 p-2">
             <input
               type="checkbox"
               checked={itemsAcknowledged}

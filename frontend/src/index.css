@@ -38,6 +38,74 @@ button {
   cursor: pointer;
 }
 
+/* Keep protected workspace flex/grid children from creating page-level
+   horizontal overflow. Wide data surfaces scroll inside their own cards. */
+.app-shell,
+.app-main-column,
+.app-main-content {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (min-width: 1280px) {
+  .admin-dashboard-shell {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .admin-dashboard-shell .settings-page,
+  .admin-dashboard-shell .settings-card-stack {
+    --tw-space-y-reverse: 0;
+  }
+
+  .admin-dashboard-shell .settings-page > :not([hidden]) ~ :not([hidden]),
+  .admin-dashboard-shell .settings-card-stack > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.75rem;
+  }
+
+  .admin-dashboard-shell .settings-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  .admin-dashboard-shell .settings-card {
+    border-radius: 0.75rem;
+    padding: 0.875rem;
+  }
+
+  .admin-dashboard-shell .settings-card-header {
+    margin-bottom: 0.875rem;
+  }
+
+  .admin-dashboard-shell .settings-profile-row {
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .admin-dashboard-shell .settings-avatar {
+    width: 4rem;
+    height: 4rem;
+    font-size: 1.125rem;
+  }
+
+  .admin-dashboard-shell .settings-notice {
+    border-radius: 0.75rem;
+    padding: 0.875rem;
+  }
+
+  .admin-dashboard-shell .announcements-page article > div:first-child {
+    gap: 0.75rem;
+    padding: 0.875rem;
+  }
+
+  .admin-dashboard-shell .announcements-page article footer {
+    flex-wrap: wrap;
+    padding: 0.625rem 0.875rem;
+  }
+}
+
 .login-page { position:relative; isolation:isolate; display:grid; height:100vh; place-items:center; overflow:hidden; padding:76px clamp(12px,2.5vw,30px) 12px; color:#17342b; background:#e8eeea; }
 .login-backdrop { position:absolute; z-index:-2; inset:0; background:radial-gradient(circle at 8% 8%,rgba(255,255,255,.94),transparent 35%),linear-gradient(135deg,#edf3ef 0%,#dbe6df 100%); }
 .login-page::after { position:absolute; z-index:-1; inset:0; content:""; opacity:.42; background-image:linear-gradient(rgba(77,110,97,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(77,110,97,.05) 1px,transparent 1px); background-size:42px 42px; }
@@ -251,6 +319,10 @@ button {
   min-height: 11in;
 }
 
+.agreement-monitoring-print {
+  display: none;
+}
+
 .admission-report-print {
   display: none;
 }
@@ -295,6 +367,9 @@ button {
     left: 0;
     width: 100%;
   }
+  .agreement-monitoring-print {
+    display: block !important;
+  }
   .no-print {
     display: none !important;
   }
@@ -302,6 +377,28 @@ button {
     min-height: 0;
     break-after: page;
     page-break-after: always;
+  }
+  .agreement-print-page-first {
+    height: 297mm;
+    box-sizing: border-box;
+  }
+  .agreement-print-header {
+    width: auto !important;
+    height: 1in;
+    margin-top: 0 !important;
+    object-fit: contain;
+  }
+  .agreement-print-first-header {
+    margin-bottom: 0.08in !important;
+  }
+  .agreement-print-first-title {
+    margin-bottom: 0.08in !important;
+  }
+  .agreement-print-first-intro > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.2rem !important;
+  }
+  .agreement-print-first-footer {
+    margin-top: 0.04in !important;
   }
   .agreement-print-page:last-child {
     break-after: auto;

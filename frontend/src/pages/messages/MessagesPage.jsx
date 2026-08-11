@@ -358,7 +358,7 @@ const MessagesPage = () => {
       <Topbar title="Messages" />
 
       <div className="flex min-h-0 flex-1 overflow-hidden rounded-xl bg-white shadow-sm">
-        <aside className={`${activeConversationId ? "hidden md:flex" : "flex"} w-full flex-col border-r border-slate-100 md:w-80 lg:w-96`}>
+        <aside className={`messages-conversation-list ${activeConversationId ? "hidden md:flex" : "flex"} w-full min-w-0 flex-col border-r border-slate-100 md:w-80 lg:w-96`}>
           <div className="border-b border-slate-100 p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -497,7 +497,7 @@ const MessagesPage = () => {
         <section className={`${activeConversationId ? "flex" : "hidden md:flex"} min-h-0 min-w-0 flex-1 flex-col`}>
           {activeConversation && activeUser ? (
             <>
-              <header className="flex h-[73px] shrink-0 items-center gap-3 border-b border-slate-100 px-4">
+              <header className="messages-chat-header flex h-[73px] shrink-0 items-center gap-3 border-b border-slate-100 px-4">
                 <button
                   type="button"
                   onClick={() => useMessageStore.setState({ activeConversationId: null })}
@@ -515,7 +515,7 @@ const MessagesPage = () => {
                       : `${activeUser.role}${onlineUserIds.includes(getUserId(activeUser)) ? " · Active now" : ""}`}
                   </p>
                 </div>
-                <div className="ml-auto flex items-center gap-1">
+                <div className="messages-chat-actions ml-auto flex shrink-0 items-center gap-1">
                   <button type="button" onClick={() => setConversationPreference(activeConversation._id, "pinned", !activeConversation.pinned)} title={activeConversation.pinned ? "Unpin chat" : "Pin chat"} className={`grid h-9 w-9 place-items-center rounded-full hover:bg-slate-100 ${activeConversation.pinned ? "text-emerald-600" : "text-slate-400"}`}><Pin size={17} /></button>
                   <button type="button" onClick={() => setConversationPreference(activeConversation._id, "muted", !activeConversation.muted)} title={activeConversation.muted ? "Unmute chat" : "Mute chat"} className={`grid h-9 w-9 place-items-center rounded-full hover:bg-slate-100 ${activeConversation.muted ? "text-red-500" : "text-slate-400"}`}><BellOff size={17} /></button>
                   <button type="button" onClick={() => setConversationPreference(activeConversation._id, "archived", !activeConversation.archived)} title={activeConversation.archived ? "Restore chat" : "Archive chat"} className="grid h-9 w-9 place-items-center rounded-full text-slate-400 hover:bg-slate-100"><Archive size={17} /></button>
@@ -595,7 +595,7 @@ const MessagesPage = () => {
                       )}
                       <div className={`max-w-[82%] sm:max-w-[70%] ${own ? "items-end" : "items-start"} flex flex-col`}>
                         {editingMessageId === message._id ? (
-                          <form onSubmit={(event) => handleEdit(event, message._id)} className="flex min-w-64 items-center gap-1 rounded-2xl bg-white p-1.5 shadow-md">
+                          <form onSubmit={(event) => handleEdit(event, message._id)} className="flex w-full min-w-0 max-w-sm items-center gap-1 rounded-2xl bg-white p-1.5 shadow-md">
                             <input
                               autoFocus
                               value={editText}
@@ -764,7 +764,7 @@ const MessagesPage = () => {
                   </button>
                   <div className="relative">
                     <button type="button" onClick={() => setEmojiOpen((open) => !open)} aria-label="Choose emoji" className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-slate-500 hover:bg-slate-100"><Smile size={20} /></button>
-                    {emojiOpen && <div className="absolute bottom-14 left-0 z-30 grid w-72 grid-cols-6 gap-2 rounded-2xl bg-white p-4 shadow-xl">{["😀","😂","😍","🥰","😎","😭","😮","😡","👍","👏","🙏","❤️","🎉","🔥","✅","💯","😊","🤔"].map((emoji) => <button key={emoji} type="button" onClick={() => { setDraft((value) => `${value}${emoji}`); setEmojiOpen(false); }} className="grid h-9 w-9 place-items-center text-3xl transition hover:scale-125">{emoji}</button>)}</div>}
+                    {emojiOpen && <div className="absolute bottom-14 right-0 z-30 grid w-48 grid-cols-6 gap-1 rounded-xl bg-white p-2 shadow-xl">{["😀","😂","😍","🥰","😎","😭","😮","😡","👍","👏","🙏","❤️","🎉","🔥","✅","💯","😊","🤔"].map((emoji) => <button key={emoji} type="button" onClick={() => { setDraft((value) => `${value}${emoji}`); setEmojiOpen(false); }} className="grid h-7 w-7 place-items-center text-xl transition hover:scale-125">{emoji}</button>)}</div>}
                   </div>
                   <textarea
                     value={draft}
@@ -812,7 +812,7 @@ const MessagesPage = () => {
       {error && <p className="mt-3 text-sm font-medium text-red-600">{error}</p>}
 
       {forwardingMessage && (
-        <div className="fixed inset-0 z-[70] grid place-items-center bg-slate-950/40 p-4 backdrop-blur-sm">
+        <div className="app-viewport-overlay fixed inset-0 z-[70] grid place-items-center bg-slate-950/40 p-4 backdrop-blur-sm">
           <div className="flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
               <div>
@@ -869,7 +869,7 @@ const MessagesPage = () => {
       )}
 
       {unsendTarget && (
-        <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/40 p-4 backdrop-blur-sm">
+        <div className="app-viewport-overlay fixed inset-0 z-[80] grid place-items-center bg-slate-950/40 p-4 backdrop-blur-sm">
           <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl">
             <div className="border-b border-slate-100 px-5 py-4">
               <h2 className="font-bold text-slate-900">Unsend message?</h2>

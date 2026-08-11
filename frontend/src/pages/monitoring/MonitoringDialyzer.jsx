@@ -18,19 +18,19 @@ const MonitoringDialyzer = ({ dialyzer }) => {
 
   return (
 
-    <div className="rounded-3xl bg-white p-5 shadow-sm">
+    <div className="rounded-xl bg-white p-2.5 shadow-sm">
 
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-bold text-slate-900">Dialyzer</h2>
-        <div className="flex items-center gap-2">
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">{dialyzer.total} used</span>
+        <h2 className="text-sm font-bold text-slate-900">Dialyzer</h2>
+        <div className="flex items-center gap-1.5">
+          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">{dialyzer.total} used</span>
           <button type="button" onClick={handlePrint} className="flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-50">
             <Printer size={14} /> Print
           </button>
         </div>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200">
+      <div className="mt-2 overflow-x-auto rounded-lg border border-slate-200">
         <table className="w-full text-left text-xs [&_td]:!px-2.5 [&_td]:!py-1.5 [&_th]:!px-2.5 [&_th]:!py-1.5">
 
           <thead>

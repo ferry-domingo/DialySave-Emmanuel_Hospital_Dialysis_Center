@@ -53,24 +53,24 @@ const AgreementItemsCovered = ({ session, onHeparinChange }) => {
 
   return (
 
-    <div className="rounded-3xl bg-white shadow-sm">
+    <div className="rounded-xl bg-white shadow-sm">
 
-      <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
-        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-slate-950 text-xs font-bold text-white">2</span>
-        <h2 className="text-base font-bold text-slate-900">Items Covered by PhilHealth</h2>
+      <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2">
+        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-slate-950 text-[10px] font-bold text-white">1</span>
+        <h2 className="text-sm font-bold text-slate-900">Items Covered by PhilHealth</h2>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 p-6 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 p-3 text-[10px] [&_td]:!py-1 md:grid-cols-3">
 
         {/* ================= DRUGS ================= */}
 
         <div>
 
-          <h3 className="mb-3 text-sm font-bold text-slate-900">
+          <h3 className="mb-1.5 text-xs font-bold text-slate-900">
             Drugs / Medicines
           </h3>
 
-          <table className="w-full text-sm">
+          <table className="w-full text-[10px]">
 
             <tbody className="divide-y divide-slate-100">
 
@@ -161,7 +161,7 @@ const AgreementItemsCovered = ({ session, onHeparinChange }) => {
                       type="button"
                       disabled={savingHeparin}
                       onClick={() => selectHeparin(option)}
-                      className={`w-full rounded-xl px-3 py-2 text-left transition ${
+                      className={`w-full rounded-lg px-2 py-1.5 text-left transition ${
                         selectedHeparin === option
                           ? "bg-emerald-50 font-semibold text-emerald-800 ring-1 ring-emerald-200"
                           : "hover:bg-slate-50"
@@ -184,11 +184,11 @@ const AgreementItemsCovered = ({ session, onHeparinChange }) => {
 
         <div>
 
-          <h3 className="mb-3 text-sm font-bold text-slate-900">
+          <h3 className="mb-1.5 text-xs font-bold text-slate-900">
             Laboratory Tests
           </h3>
 
-          <table className="w-full text-sm">
+          <table className="w-full text-[10px]">
 
             <tbody className="divide-y divide-slate-100">
 
@@ -257,11 +257,11 @@ const AgreementItemsCovered = ({ session, onHeparinChange }) => {
 
         <div>
 
-          <h3 className="mb-3 text-sm font-bold text-slate-900">
+          <h3 className="mb-1.5 text-xs font-bold text-slate-900">
             Supplies
           </h3>
 
-          <table className="w-full text-sm">
+          <table className="w-full text-[10px]">
 
             <tbody className="divide-y divide-slate-100">
 
@@ -289,11 +289,11 @@ const AgreementItemsCovered = ({ session, onHeparinChange }) => {
 
           </table>
 
-          <h3 className="mb-3 mt-6 text-sm font-bold text-slate-900">
+          <h3 className="mb-1.5 mt-3 text-xs font-bold text-slate-900">
             Administrative Fees
           </h3>
 
-          <table className="w-full text-sm">
+          <table className="w-full text-[10px]">
 
             <tbody className="divide-y divide-slate-100">
 
@@ -325,28 +325,28 @@ const AgreementItemsCovered = ({ session, onHeparinChange }) => {
 
       </div>
 
-      <div className="border-t border-slate-100 px-6 pb-6 pt-5">
+      <div className="border-t border-slate-100 px-3 pb-3 pt-3">
 
-        <h3 className="mb-2 text-sm font-bold text-slate-900">
+        <h3 className="mb-1 text-xs font-bold text-slate-900">
           Copayment (Not Covered by PhilHealth)
         </h3>
 
-        <p className="mb-3 text-sm text-slate-500">
+        <p className="mb-2 text-[10px] leading-4 text-slate-500">
           I understand that I may be charged a copayment for the following items,
           amenities, additional services, and premium services that are not covered
           by PhilHealth (attach additional sheet as necessary).
         </p>
 
-        <div className="overflow-hidden rounded-2xl border border-slate-100">
+        <div className="overflow-hidden rounded-lg border border-slate-100">
 
-          <table className="w-full text-sm">
+          <table className="w-full text-[10px]">
 
             <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-400">
 
               <tr>
-                <th className="p-3 text-left">Item</th>
-                <th className="p-3 text-left">Unit / Quantity</th>
-                <th className="p-3 text-left">Price (PHP)</th>
+                <th className="p-2 text-left">Item</th>
+                <th className="p-2 text-left">Unit / Quantity</th>
+                <th className="p-2 text-left">Price (PHP)</th>
               </tr>
 
             </thead>
@@ -354,7 +354,7 @@ const AgreementItemsCovered = ({ session, onHeparinChange }) => {
             <tbody>
 
               <tr>
-                <td colSpan={3} className="p-6 text-center text-slate-400">
+                <td colSpan={3} className="p-3 text-center text-slate-400">
                   No additional charges indicated.
                 </td>
               </tr>

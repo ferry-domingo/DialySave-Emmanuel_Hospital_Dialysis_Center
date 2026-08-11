@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, CalendarDays, Circle, FlaskConical, HeartPulse, Search, Syringe } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Topbar from "../../components/layout/Topbar";
 import api from "../../api/axios";
 import { useAuthStore } from "../../store/authStore";
@@ -10,16 +10,16 @@ const formatDate = (value) => value
   ? new Intl.DateTimeFormat("en-PH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value))
   : "Date unavailable";
 
-const Detail = ({ icon: Icon, label, value, payment }) => (
-  <div className="rounded-2xl bg-slate-50 p-4">
-    <div className="flex items-start gap-3">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white text-slate-500 shadow-sm">
-        <Icon size={16} />
+const Detail = ({ icon: Icon, label, value, payment, tone = "bg-white text-slate-500" }) => (
+  <div className="min-w-0 rounded-xl border border-slate-100/80 bg-slate-50/80 p-2.5">
+    <div className="flex items-start gap-2">
+      <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg shadow-sm ${tone}`}>
+        <Icon size={13} />
       </span>
       <div className="min-w-0">
-        <p className="text-xs font-bold uppercase tracking-wide text-slate-400">{label}</p>
-        <p className="mt-1 font-semibold text-slate-900">{value || "Not recorded"}</p>
-        {payment && <p className="mt-1 text-xs text-slate-500">Coverage: {payment}</p>}
+        <p className="text-[8px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
+        <p className="mt-0.5 text-[11px] font-semibold leading-snug text-slate-900">{value || "Not recorded"}</p>
+        {payment && <p className="mt-0.5 text-[8px] text-slate-500">Coverage: {payment}</p>}
       </div>
     </div>
   </div>
@@ -27,11 +27,12 @@ const Detail = ({ icon: Icon, label, value, payment }) => (
 
 const PatientSessionsPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuthStore();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedId, setSelectedId] = useState("");
+  const [selectedId, setSelectedId] = useState(() => searchParams.get("session") || "");
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -66,7 +67,7 @@ const PatientSessionsPage = () => {
   ), [sessions]);
 
   const displayedIndex = selectedId
-    ? sortedSessions.findIndex((s) => s._id === selectedId)
+    ? sortedSessions.findIndex((session) => String(session._id || session.session_id) === selectedId)
     : 0;
 
   const displayedSession = sortedSessions[displayedIndex >= 0 ? displayedIndex : 0] || null;
@@ -91,28 +92,28 @@ const PatientSessionsPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-2.5 xl:flex xl:h-full xl:flex-col xl:space-y-0 xl:overflow-hidden">
 
       <Topbar title="Dialysis Sessions" />
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-emerald-100/80 bg-gradient-to-r from-emerald-50/80 via-white to-blue-50/70 px-3 py-2 shadow-sm">
 
         <button
           onClick={() => navigate("/patient-portal")}
-          className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50"
+          className="inline-flex h-8 items-center gap-2 rounded-xl bg-white px-3 text-[10px] font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50"
         >
           <ArrowLeft size={16} /> Back to overview
         </button>
 
         {sortedSessions.length > 1 && (
           <div className="relative">
-            <div className="flex items-center gap-2 rounded-2xl bg-white px-3.5 py-2.5 shadow-sm">
-              <Search size={16} className="text-slate-400" />
+            <div className="flex h-8 items-center gap-2 rounded-xl bg-white px-3 shadow-sm">
+              <Search size={14} className="text-slate-400" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by session # or date"
-                className="w-56 bg-transparent text-sm text-black outline-none placeholder:text-slate-400"
+                className="w-48 bg-transparent text-[10px] text-black outline-none placeholder:text-slate-400"
               />
             </div>
 
@@ -156,54 +157,55 @@ const PatientSessionsPage = () => {
       )}
 
       {!loading && !error && (displayedSession ? (
-        <article className="overflow-hidden rounded-3xl bg-white shadow-sm">
-          <header className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-slate-950 font-bold text-white">
+        <article className="mt-2.5 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">
+          <header className="flex flex-col gap-2 border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-emerald-50/60 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-slate-950 text-sm font-bold text-white">
                 {sortedSessions.length - displayedIndex}
               </span>
               <div>
-                <h2 className="text-base font-bold text-slate-900">
+                <h2 className="text-sm font-bold text-slate-900">
                   {displayedSession.session_id || "Dialysis session"}
                   {displayedIndex === 0 && (
-                    <span className="ml-2 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-700">Current</span>
+                    <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-[8px] font-bold text-emerald-700">Current</span>
                   )}
                 </h2>
-                <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
-                  <CalendarDays size={14} />
+                <p className="mt-0.5 flex items-center gap-1.5 text-[9px] text-slate-500">
+                  <CalendarDays size={11} />
                   {formatDate(displayedSession.createdAt)}
                 </p>
               </div>
             </div>
-            <span className="w-fit rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600">
+            <span className="w-fit rounded-full bg-slate-100 px-2.5 py-1 text-[9px] font-bold text-slate-600">
               {displayedSession.payment_type || "No coverage set"}
             </span>
           </header>
 
-          <div className="p-5">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="flex min-h-0 flex-1 flex-col p-3">
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
               <Detail
                 icon={HeartPulse}
                 label="Attending doctor"
                 value={formatDoctorName(displayedSession.doctor) || "Not assigned"}
+                tone="bg-emerald-100 text-emerald-700"
               />
-              <Detail icon={Syringe} label="Injection" value={displayedSession.injections?.name} payment={displayedSession.injections?.payment_type} />
-              <Detail icon={Circle} label="Dialyzer" value={displayedSession.dialyzer?.name} payment={displayedSession.dialyzer?.payment_type} />
-              <Detail icon={FlaskConical} label="Intravenous iron" value={displayedSession.intravenous_iron?.name} payment={displayedSession.intravenous_iron?.payment_type} />
+              <Detail icon={Syringe} label="Injection" value={displayedSession.injections?.name} payment={displayedSession.injections?.payment_type} tone="bg-blue-100 text-blue-700" />
+              <Detail icon={Circle} label="Dialyzer" value={displayedSession.dialyzer?.name} payment={displayedSession.dialyzer?.payment_type} tone="bg-violet-100 text-violet-700" />
+              <Detail icon={FlaskConical} label="Intravenous iron" value={displayedSession.intravenous_iron?.name} payment={displayedSession.intravenous_iron?.payment_type} tone="bg-amber-100 text-amber-700" />
             </div>
 
-            <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+            <div className="mt-2 min-h-0 flex-1 rounded-xl border border-blue-100/70 bg-gradient-to-br from-blue-50/50 to-slate-50 p-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-slate-900">Laboratory results</h3>
-                <span className="text-xs font-medium text-slate-500">{displayedSession.laboratory_results?.length || 0} test(s)</span>
+                <h3 className="flex items-center gap-1.5 text-xs font-bold text-slate-900"><FlaskConical size={13} className="text-blue-600" />Laboratory results</h3>
+                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[9px] font-semibold text-blue-700">{displayedSession.laboratory_results?.length || 0} test(s)</span>
               </div>
 
               {displayedSession.laboratory_results?.length ? (
-                <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-2 grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
                   {displayedSession.laboratory_results.map((result, resultIndex) => (
                     <div
                       key={`${displayedSession._id}-lab-${resultIndex}`}
-                      className="flex items-center gap-2 rounded-xl bg-white px-3 py-2.5 text-sm"
+                      className="flex items-center gap-2 rounded-lg bg-white px-2.5 py-1.5 text-[10px]"
                     >
                       <span className="font-medium text-slate-700">{result.name}</span>
                       <span className="ml-auto text-sm font-bold text-black">{result.done ? "✓" : "✗"}</span>
