@@ -892,37 +892,23 @@ button {
 
 /* Use the dashboard's compact sidebar styling throughout the authenticated app. */
 @media (min-width: 768px) {
+  .app-shell {
+    --workspace-sidebar-width: 187.2px;
+  }
+
+  .app-shell:has(> aside[data-collapsed="true"]) {
+    --workspace-sidebar-width: 64px;
+  }
+
   .app-shell > aside {
     width: 187px !important;
+    flex: 0 0 187.2px;
     height: 100vh;
     zoom: 1;
   }
 
   .app-shell > aside[data-collapsed="true"] {
     width: 64px !important;
-  }
-}
-
-/* Reproduce the complete 90%-zoom dashboard composition at browser 100%. */
-@media (min-width: 1280px) and (max-width: 1700px) {
-  .app-shell:has(.dashboard-readable) {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100vh;
-    min-height: 100vh;
-    overflow: hidden;
-  }
-
-  .app-shell:has(.dashboard-readable) > .app-main-column {
-    width: 111.111111%;
-    max-width: none;
-    height: 111.111111vh;
-    flex: 0 0 calc((100% - 187.2px) / 0.9);
-    zoom: 0.9;
-  }
-
-  .app-shell:has(.dashboard-readable) .app-main-content {
-    overflow: hidden;
+    flex-basis: 64px;
   }
 }
