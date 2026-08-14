@@ -8,6 +8,7 @@ export const recordActivity = async ({
   target = null,
   details = "",
 }) => {
+  if (req) req.activityRecorded = true;
   try {
     await ActivityLog.create({
       actor: actor?._id || actor?.id || null,

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Activity, Bell, CalendarDays, ChevronRight, CircleUserRound, Droplets, HeartPulse, Mail, Search, Stethoscope, UserCheck, Users } from "lucide-react";
+import { Activity, Bell, CalendarDays, ChevronRight, CircleUserRound, HeartPulse, Mail, Search, Stethoscope, UserCheck, Users } from "lucide-react";
 
 import api from "../../api/axios";
 import OnlineUsersCard from "../../components/dashboard/OnlineUsersCard";
@@ -17,23 +17,23 @@ const patientName = (patient) => [patient?.first_name, patient?.middle_name, pat
 
 const PanelHeader = ({ icon: Icon, title, subtitle, tone = "bg-slate-50 text-slate-600", to }) => (
   <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2">
-    <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg ${tone}`}><Icon size={13} /></span>
-    <div className="min-w-0 flex-1"><h2 className="truncate text-xs font-extrabold text-slate-900">{title}</h2><p className="truncate text-[8px] text-slate-400">{subtitle}</p></div>
-    {to && <Link to={to} className="shrink-0 text-[8px] font-bold text-emerald-700">View all</Link>}
+    <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${tone}`}><Icon size={14} /></span>
+    <div className="min-w-0 flex-1"><h2 className="truncate text-[13px] font-extrabold text-slate-950">{title}</h2><p className="truncate text-[8px] font-medium text-slate-500">{subtitle}</p></div>
+    {to && <Link to={to} className="shrink-0 text-[9px] font-bold text-emerald-700">View all</Link>}
   </div>
 );
 
 const InfoTile = ({ label, value }) => (
-  <div className="min-w-0 rounded-lg border border-slate-100 bg-slate-50/80 px-2 py-1.5">
-    <p className="truncate text-[7px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
-    <p className="mt-0.5 truncate text-[10px] font-semibold text-slate-900" title={String(value || "")}>{value || "—"}</p>
+  <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50/80 px-2.5 py-2">
+    <p className="truncate text-[8px] font-bold uppercase tracking-wide text-slate-500">{label}</p>
+    <p className="mt-0.5 break-words text-xs font-bold leading-snug text-slate-950" title={String(value || "")}>{value || "—"}</p>
   </div>
 );
 
 const StatTile = ({ icon: Icon, label, value, tone }) => (
   <div className="flex min-w-0 items-center gap-2 px-3 py-2">
     <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg ${tone}`}><Icon size={13} /></span>
-    <div className="min-w-0"><p className="truncate text-[8px] font-bold uppercase text-slate-400">{label}</p><p className="mt-0.5 truncate text-sm font-extrabold leading-none text-slate-900">{value ?? 0}</p></div>
+    <div className="min-w-0"><p className="text-[9px] font-bold uppercase leading-tight text-slate-500">{label}</p><p className="mt-1 truncate text-base font-black leading-none text-slate-950">{value ?? 0}</p></div>
   </div>
 );
 
@@ -81,7 +81,7 @@ const DoctorDashboardPage = () => {
   const latestSession = data?.sessions?.[0];
 
   return (
-    <div className="min-w-0 space-y-2.5 xl:flex xl:h-full xl:flex-col xl:space-y-0 xl:overflow-hidden">
+    <div className="doctor-dashboard-readable min-w-0 space-y-2.5 xl:flex xl:h-full xl:flex-col xl:space-y-0 xl:overflow-hidden">
       <Topbar title="Doctor workspace" />
       {loading && <div className="mt-2.5 grid flex-1 place-items-center rounded-xl bg-white text-sm text-slate-400 shadow-sm">Loading your assigned patients...</div>}
       {error && <div className="mt-2.5 rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-600">{error}</div>}
@@ -91,12 +91,12 @@ const DoctorDashboardPage = () => {
           <div className="grid min-h-0 gap-2.5 xl:grid-rows-[86px_auto_minmax(0,1fr)]">
             <section className="relative min-h-[86px] overflow-hidden rounded-xl bg-[#173d31] p-3 text-white shadow-sm">
               <div className="absolute -right-10 -top-20 h-44 w-44 rounded-full bg-emerald-400/20 blur-3xl" />
-              <div className="relative flex h-full items-center"><div className="min-w-0"><p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-emerald-200"><Stethoscope size={11} />Doctor overview</p><h1 className="mt-1 break-words text-sm font-black leading-tight">Good day, {formatDoctorName(data.doctor)}.</h1><p className="mt-1 text-[8px] text-emerald-50/70">Your assigned care workload at a glance.</p></div></div>
+              <div className="relative flex h-full items-center"><div className="min-w-0"><p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-emerald-100"><Stethoscope size={12} />Doctor overview</p><h1 className="mt-1 break-words text-base font-black leading-tight">Good day, {formatDoctorName(data.doctor)}.</h1><p className="mt-1 text-[8px] font-medium text-emerald-50">Your assigned care workload at a glance.</p></div></div>
             </section>
 
             <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">
               <PanelHeader icon={CircleUserRound} title="Doctor Profile" subtitle="Professional information" tone="bg-violet-50 text-violet-600" />
-              <div className="grid grid-cols-2 gap-2 p-3"><InfoTile label="Doctor ID" value={data.doctor.doctor_id} /><InfoTile label="Expertise" value={data.doctor.medical_expertise} /><InfoTile label="Contact" value={data.doctor.contact_number} /><InfoTile label="Gender" value={data.doctor.gender} /><InfoTile label="Status" value={data.doctor.status} /><InfoTile label="Assigned Patients" value={data.summary.patientCount} /></div>
+              <div className="grid grid-cols-2 gap-2 p-3"><InfoTile label="Doctor ID" value={data.doctor.doctor_id} /><InfoTile label="Expertise" value={data.doctor.medical_expertise} /><InfoTile label="Contact" value={data.doctor.contact_number} /><InfoTile label="Sex" value={data.doctor.gender} /><InfoTile label="Status" value={data.doctor.status} /><InfoTile label="Assigned Patients" value={data.summary.patientCount} /></div>
             </section>
 
             <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">
@@ -106,7 +106,7 @@ const DoctorDashboardPage = () => {
             </section>
           </div>
 
-          <div className="grid min-h-0 gap-2.5 xl:grid-rows-[86px_228px_minmax(0,1fr)]">
+          <div className="grid min-h-0 gap-2.5 xl:grid-rows-[86px_248px_minmax(0,1fr)]">
             <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm"><div className="grid h-full grid-cols-3 divide-x divide-slate-100"><StatTile icon={Users} label="Assigned Patients" value={data.summary.patientCount} tone="bg-blue-50 text-blue-600" /><StatTile icon={Activity} label="Total Sessions" value={data.summary.sessionCount} tone="bg-cyan-50 text-cyan-600" /><StatTile icon={CalendarDays} label="This Month" value={data.summary.sessionsThisMonth} tone="bg-emerald-50 text-emerald-600" /></div></section>
 
             <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">

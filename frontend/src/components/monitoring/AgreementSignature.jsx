@@ -4,11 +4,12 @@ import toast from "react-hot-toast";
 
 import { useAuthStore } from "../../store/authStore";
 import { signAgreement } from "../../api/dialysisSessionApi";
+import { patientName, signatureDate, signatureName, userName } from "../../utils/agreementSignatures";
 
 const SignatureBlock = ({ sessionId, role, label, defaultName, signature }) => {
-  const [name, setName] = useState(defaultName || "");
-  const [savedName, setSavedName] = useState(signature?.name || defaultName || "");
-  const [savedAt, setSavedAt] = useState(signature?.signedAt || null);
+  const [name, setName] = useState(() => signatureName(signature, defaultName));
+  const [savedName, setSavedName] = useState(() => signatureName(signature, defaultName));
+  const [savedAt, setSavedAt] = useState(() => signatureDate(signature));
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const accountIdentityLocked = ["patient", "facilityRepresentative"].includes(role) && Boolean(defaultName?.trim());
@@ -17,12 +18,12 @@ const SignatureBlock = ({ sessionId, role, label, defaultName, signature }) => {
   const canEditSignedName = ["patient", "facilityRepresentative"].includes(role);
 
   useEffect(() => {
-    const nextName = signature?.name || defaultName || "";
+    const nextName = signatureName(signature, defaultName);
     setName(nextName);
     setSavedName(nextName);
-    setSavedAt(signature?.signedAt || null);
+    setSavedAt(signatureDate(signature));
     setEditing(false);
-  }, [sessionId, signature?.name, signature?.signedAt, defaultName]);
+  }, [sessionId, signature, defaultName]);
 
   const handleSign = async () => {
     if (!name.trim() || saving) return;
@@ -123,7 +124,7 @@ const AgreementSignature = ({ session }) => {
           sessionId={session.sessionId}
           role="patient"
           label="Patient"
-          defaultName={session.patient?.full_name}
+          defaultName={patientName(session.patient)}
           signature={signatures.patient}
         />
 
@@ -138,7 +139,7 @@ const AgreementSignature = ({ session }) => {
           sessionId={session.sessionId}
           role="facilityRepresentative"
           label="HD Facility Representative"
-          defaultName={user?.username}
+          defaultName={userName(user)}
           signature={signatures.facilityRepresentative}
         />
 

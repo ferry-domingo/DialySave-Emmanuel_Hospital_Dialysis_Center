@@ -48,7 +48,7 @@ const DEFAULT_VALUES = {
   status: "Active",
 };
 
-const DoctorForm = ({ doctor, onClose }) => {
+const DoctorForm = ({ doctor, onClose, onCreated }) => {
   const {
     createDoctor,
     updateDoctor,
@@ -104,13 +104,8 @@ const DoctorForm = ({ doctor, onClose }) => {
         toast.success("Doctor updated successfully");
       } else {
         const response = await createDoctor(payload);
-        const credentials = response.data?.credentials;
-        toast.success(
-          credentials
-            ? `Doctor created. Login ID: ${credentials.loginId} | Initial password: ${credentials.initialPassword}`
-            : "Doctor created successfully",
-          { duration: 10000 }
-        );
+        toast.success("Doctor created successfully");
+        onCreated?.(response.data?.credentials);
       }
 
       onClose();
@@ -150,11 +145,11 @@ const DoctorForm = ({ doctor, onClose }) => {
           <Input label="Middle Name" autoComplete="additional-name" {...register("middle_name")} />
 
           <Select
-            label="Gender"
+            label="Sex"
             required
             error={errors.gender?.message}
             options={GENDER_OPTIONS}
-            {...register("gender", { required: "Gender is required" })}
+            {...register("gender", { required: "Sex is required" })}
           />
           <DateInput
             label="Birthdate"

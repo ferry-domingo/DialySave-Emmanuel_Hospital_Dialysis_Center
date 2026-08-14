@@ -1,6 +1,43 @@
 import { verifyAuthToken } from "../utils/auth.js";
 import User from "../models/User.js";
 import { normalizeRole, ROLES } from "../utils/roles.js";
+import { recordActivity } from "../utils/activityLog.js";
+
+const WRITE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+const METHOD_ACTION = {
+  POST: "CREATED",
+  PUT: "UPDATED",
+  PATCH: "UPDATED",
+  DELETE: "DELETED",
+};
+
+const resourceFor = (req) => {
+  const pathParts = String(req.originalUrl || req.baseUrl || "system")
+    .split("?")[0]
+    .split("/")
+    .filter(Boolean);
+  const apiIndex = pathParts.indexOf("api");
+  return (pathParts[apiIndex + 1] || pathParts[0] || "system")
+    .replaceAll("-", "_")
+    .toUpperCase();
+};
+
+const automaticActionFor = (req) => `${resourceFor(req)}_${req.method === "GET" ? "VIEWED" : METHOD_ACTION[req.method] || "CHANGED"}`;
+
+const attachAutomaticActivityLog = (req, res) => {
+  if (!WRITE_METHODS.has(req.method) || req.activityLogAttached) return;
+  req.activityLogAttached = true;
+
+  res.once("finish", () => {
+    if (res.statusCode < 200 || res.statusCode >= 400 || req.activityRecorded) return;
+    void recordActivity({
+      req,
+      actor: req.user,
+      action: automaticActionFor(req),
+      details: `${req.method} ${String(req.originalUrl || req.baseUrl || "").split("?")[0]} completed successfully.`,
+    });
+  });
+};
 
 export const protect = async (req, res, next) => {
   try {
@@ -40,6 +77,7 @@ export const protect = async (req, res, next) => {
     }
 
     req.user = user;
+    attachAutomaticActivityLog(req, res);
     next();
   } catch (error) {
     return res.status(401).json({

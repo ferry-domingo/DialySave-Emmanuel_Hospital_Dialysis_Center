@@ -261,7 +261,7 @@ export const getDashboardSummary = async (req, res) => {
       .populate("patient", "patient_id first_name last_name")
       .populate("doctor", "first_name last_name gender")
       .sort({ createdAt: -1 })
-      .limit(8);
+      .limit(20);
 
     const recentSessions = recentSessionsRaw.map((session) => ({
       _id: session._id,
@@ -316,6 +316,7 @@ export const getDashboardSummary = async (req, res) => {
       yearlySessionDetails,
       historySessionDetails,
       pendingAdmissionRelay,
+      upcomingAppointmentsRaw,
     ] = await Promise.all([
       Patient.countDocuments({ status: "Active" }),
       Doctor.countDocuments({ status: "Active" }),
@@ -358,7 +359,26 @@ export const getDashboardSummary = async (req, res) => {
           { "info_relayed.phic_staff": { $exists: false } },
         ],
       }),
+      Notification.find({
+        type: "Dialysis Schedule",
+        scheduledFor: { $gte: now },
+      })
+        .populate("patient", "patient_id first_name middle_name last_name")
+        .sort({ scheduledFor: 1 })
+        .limit(15)
+        .lean(),
     ]);
+    const upcomingAppointments = upcomingAppointmentsRaw.map((appointment) => ({
+      _id: appointment._id,
+      title: appointment.title,
+      scheduledFor: appointment.scheduledFor,
+      patientId: appointment.patient?.patient_id || "—",
+      patientName: appointment.patient
+        ? [appointment.patient.first_name, appointment.patient.middle_name, appointment.patient.last_name]
+          .filter(Boolean)
+          .join(" ")
+        : "Unknown patient",
+    }));
     const completedLabsToday = todaySessions.reduce((total, session) =>
       total + (session.laboratory_results || []).filter((result) => result.done).length, 0);
 
@@ -470,6 +490,7 @@ export const getDashboardSummary = async (req, res) => {
           completedLabsToday,
           alertsThisWeek,
         },
+        upcomingAppointments,
         philHealthSnapshot: {
           sessionsThisMonth: phicMonth,
           sessionsThisYear: phicYear,

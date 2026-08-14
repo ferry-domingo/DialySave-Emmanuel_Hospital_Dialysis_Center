@@ -20,7 +20,7 @@ export const getPatientMonitoring = async (req, res) => {
         })
         .populate(
             "patient",
-            "patient_id first_name last_name"
+            "patient_id first_name middle_name last_name"
         )
         .sort({ createdAt: 1 });
             
@@ -78,11 +78,13 @@ export const getPatientMonitoring = async (req, res) => {
                     _id: session.patient._id,
                     patient_id: session.patient.patient_id,
                     first_name: session.patient.first_name,
+                    middle_name: session.patient.middle_name,
                     last_name: session.patient.last_name,
-                    full_name:
-                        session.patient.first_name +
-                        " " +
+                    full_name: [
+                        session.patient.first_name,
+                        session.patient.middle_name,
                         session.patient.last_name,
+                    ].filter(Boolean).join(" "),
                 },
 
                 injection: session.injections,

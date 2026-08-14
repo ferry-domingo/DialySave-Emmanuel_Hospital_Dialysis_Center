@@ -9,6 +9,7 @@ import DoctorTable from "./DoctorTable";
 
 import { useDoctorStore } from "../../store/doctorStore";
 import Pagination from "../../components/common/Pagination";
+import CredentialsModal from "../../components/common/CredentialsModal";
 
 const PAGE_SIZE = 10;
 
@@ -23,6 +24,7 @@ const DoctorPage = () => {
   const [page, setPage] = useState(1);
   const [openModal, setOpenModal] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [credentials, setCredentials] = useState(null);
 
   useEffect(() => {
     fetchDoctors();
@@ -103,8 +105,11 @@ const DoctorPage = () => {
         <DoctorForm
           doctor={selectedDoctor}
           onClose={() => setOpenModal(false)}
+          onCreated={(value) => setCredentials(value)}
         />
       </Modal>
+
+      <CredentialsModal credentials={credentials} accountType="Doctor" onClose={() => setCredentials(null)} />
 
     </div>
   );

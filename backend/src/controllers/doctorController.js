@@ -22,7 +22,7 @@ export const createDoctor = async (req, res) => {
       return res.status(400).json({
         success: false,
         message:
-          "First name, last name, birthdate, and gender are required.",
+          "First name, last name, birthdate, and sex are required.",
       });
     }
 
@@ -68,7 +68,7 @@ export const createDoctor = async (req, res) => {
       data: doctor,
       credentials: {
         loginId: doctor.doctor_id,
-        initialPassword,
+        temporaryPassword: initialPassword,
       },
     });
   } catch (error) {

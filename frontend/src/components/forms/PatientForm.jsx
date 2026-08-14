@@ -49,7 +49,7 @@ const DEFAULT_VALUES = {
   status: "Active",
 };
 
-const PatientForm = ({ patient, onClose }) => {
+const PatientForm = ({ patient, onClose, onCreated }) => {
   const {
     createPatient,
     updatePatient,
@@ -112,8 +112,9 @@ const PatientForm = ({ patient, onClose }) => {
         await updatePatient(patient._id, data);
         toast.success("Patient updated successfully");
       } else {
-        await createPatient(data);
+        const response = await createPatient(data);
         toast.success("Patient created successfully");
+        onCreated?.(response.data?.credentials);
       }
 
       onClose();
@@ -145,11 +146,11 @@ const PatientForm = ({ patient, onClose }) => {
           <Input label="Middle Name" {...register("middle_name")} />
 
           <Select
-            label="Gender"
+            label="Sex"
             required
             error={errors.gender?.message}
             options={GENDER_OPTIONS}
-            {...register("gender", { required: "Gender is required" })}
+            {...register("gender", { required: "Sex is required" })}
           />
           <DateInput
             label="Birthdate"

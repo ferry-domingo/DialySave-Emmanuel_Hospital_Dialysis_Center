@@ -3,7 +3,6 @@ import { recordActivity } from "../utils/activityLog.js";
 import { normalizeRole, ROLES } from "../utils/roles.js";
 
 const VALID_ROLES = [ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER, ROLES.PATIENT, ROLES.DOCTOR];
-const VALID_PRIORITIES = ["Normal", "Important", "Urgent"];
 const VALID_MEDIA_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const populate = (query) => query.populate("createdBy", "name username");
 
@@ -19,7 +18,7 @@ const valuesFrom = (body) => ({
   message: String(body.message || "").trim(),
   media: mediaFrom(body.media),
   audience: [...new Set(Array.isArray(body.audience) ? body.audience.filter((role) => VALID_ROLES.includes(role)) : [])],
-  priority: VALID_PRIORITIES.includes(body.priority) ? body.priority : "Normal",
+  priority: "Normal",
   startsAt: body.startsAt ? new Date(body.startsAt) : new Date(),
   expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
   isActive: body.isActive !== false,
@@ -45,7 +44,7 @@ export const getAnnouncements = async (req, res) => {
       startsAt: { $lte: now },
       $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }],
     };
-    const announcements = await populate(Announcement.find(filter).sort({ priority: 1, createdAt: -1 }));
+    const announcements = await populate(Announcement.find(filter).sort({ createdAt: -1 }));
     return res.json({ success: true, total: announcements.length, data: announcements });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to retrieve announcements.", error: error.message });

@@ -79,12 +79,12 @@ const Sidebar = () => {
   };
 
   const linkClass = ({ isActive }) =>
-    `group flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition ${isActive ? "bg-slate-950 text-white shadow-md" : "text-black hover:bg-slate-100"
+    `group flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition ${isActive ? "bg-[#116149] text-white shadow-sm" : "text-black hover:bg-slate-100"
     } ${collapsed ? "md:justify-center md:bg-transparent md:p-0 md:shadow-none md:hover:bg-transparent" : ""}`;
 
   const iconBadgeClass = (isActive) =>
     `grid h-8 w-8 shrink-0 place-items-center rounded-lg transition ${isActive ? "bg-white/10 text-white" : "bg-slate-100 text-black group-hover:bg-white"
-    } ${collapsed ? (isActive ? "md:h-11 md:w-11 md:rounded-full md:bg-slate-950 md:text-white" : "md:h-11 md:w-11 md:rounded-full") : ""}`;
+    } ${collapsed ? (isActive ? "md:h-11 md:w-11 md:rounded-full md:bg-[#116149] md:text-white" : "md:h-11 md:w-11 md:rounded-full") : ""}`;
 
   return <>
     <header className="sticky top-0 z-40 flex h-[4.5rem] items-center justify-between border-b border-slate-200 bg-white px-4 text-slate-900 shadow-sm md:hidden">
@@ -96,7 +96,8 @@ const Sidebar = () => {
     </header>
     {open && <button aria-label="Close navigation" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm md:hidden" />}
     <aside
-      className={`${open ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-50 flex w-72 flex-col overflow-hidden rounded-r-3xl bg-white text-slate-900 shadow-2xl transition-all duration-200 md:sticky md:top-0 md:left-auto md:inset-y-auto md:h-screen md:translate-x-0 md:rounded-none md:border-r md:border-slate-200/70 md:shadow-none ${collapsed ? "md:w-16" : "md:w-52"
+      data-collapsed={collapsed}
+      className={`${open ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-50 flex w-72 flex-col overflow-hidden rounded-r-3xl bg-white text-slate-900 shadow-2xl transition-all duration-200 md:sticky md:top-0 md:left-auto md:inset-y-auto md:h-screen md:translate-x-0 md:rounded-none md:border-r md:border-slate-200/70 md:shadow-none ${collapsed ? "md:w-16" : "md:w-[187px]"
         }`}
     >
       <div className={`flex items-center gap-2 border-b border-slate-100 px-4 py-3 ${collapsed ? "md:flex-col md:items-center md:gap-2" : "justify-between"}`}>

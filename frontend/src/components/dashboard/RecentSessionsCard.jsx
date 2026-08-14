@@ -12,12 +12,12 @@ const formatSessionDate = (value) => {
 
 const RecentSessionsCard = ({ sessions = [], loading, showLink = true, embedded = false }) => {
   return (
-    <div className={`flex h-full min-w-0 flex-col p-3 ${embedded ? "" : "rounded-xl border border-slate-200/70 bg-white shadow-sm"}`}>
+    <div className={`flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-3 ${embedded ? "" : "rounded-xl border border-slate-200/70 bg-white shadow-sm"}`}>
       <div>
         <h2 className="text-sm font-bold text-slate-900">Recent Dialysis Sessions</h2>
       </div>
 
-      <div className="mt-2 flex-1 overflow-x-auto">
+      <div className="mt-2 min-h-0 flex-1 overflow-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <table className="w-full text-left text-[10px]">
           <thead>
             <tr className="text-[10px] uppercase tracking-wide text-blue-700">
@@ -51,7 +51,7 @@ const RecentSessionsCard = ({ sessions = [], loading, showLink = true, embedded 
       </div>
 
       {showLink && (
-        <Link to="/sessions" className="mt-3 self-start text-xs font-semibold text-slate-400 transition hover:text-slate-700">
+        <Link to="/sessions" className="mt-2 shrink-0 self-start text-[10px] font-semibold text-slate-500 transition hover:text-slate-700">
           See More &gt;
         </Link>
       )}

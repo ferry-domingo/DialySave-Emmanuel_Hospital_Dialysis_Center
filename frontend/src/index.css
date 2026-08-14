@@ -765,3 +765,164 @@ button {
     font-weight: 700;
   }
 }
+/* Announcement priority is intentionally hidden; announcements no longer use status levels. */
+.public-site span[class*="font-black uppercase"][class*="rounded-full"][class*="text-[8px]"],
+.public-site span[class*="font-black uppercase"][class*="rounded-full"][class*="text-[9px]"] {
+  display: none;
+}
+/* Dashboard labels must remain legible in its compact, single-screen layout. */
+.dashboard-readable [class~="text-[7px]"] {
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+.dashboard-readable [class~="text-[8px]"],
+.dashboard-readable [class~="text-[9px]"] {
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.dashboard-readable [class~="text-[10px]"] {
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+/* A restrained type palette keeps dense dashboard data calm and consistent. */
+.dashboard-readable :where(h1, h2, h3, h4, strong, b) {
+  color: #0f172a;
+}
+
+.dashboard-readable :where(p, small, th, td, label, time),
+.dashboard-readable span:not(:has(svg)) {
+  color: #475569;
+}
+
+.dashboard-readable a:not([class*="bg-"]) {
+  color: #047857;
+}
+
+.dashboard-readable [class~="text-white"] {
+  color: #fff;
+}
+
+.dashboard-readable [class*="text-emerald-50"] {
+  color: #ecfdf5;
+}
+
+.dashboard-readable .dashboard-welcome h1 {
+  color: #fff;
+}
+
+.dashboard-readable .dashboard-welcome p:first-of-type {
+  color: #a7f3d0;
+}
+
+.dashboard-readable .dashboard-welcome p:last-of-type {
+  color: rgb(236 253 245 / 0.7);
+}
+
+/* Patient-facing information stays readable without triggering dashboard zoom. */
+.patient-dashboard-readable [class~="text-[7px]"] {
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.patient-dashboard-readable [class~="text-[8px]"] {
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.patient-dashboard-readable [class~="text-[9px]"],
+.patient-dashboard-readable [class~="text-[10px]"] {
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.patient-dashboard-readable [class~="text-[11px]"] {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.patient-dashboard-readable [class~="text-slate-400"] {
+  color: #64748b;
+}
+
+/* Doctor-facing clinical details use a modest readability boost. */
+.doctor-dashboard-readable [class~="text-[7px]"] {
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.doctor-dashboard-readable [class~="text-[8px]"] {
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.doctor-dashboard-readable [class~="text-[9px]"],
+.doctor-dashboard-readable [class~="text-[10px]"] {
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.doctor-dashboard-readable [class~="text-slate-400"] {
+  color: #64748b;
+}
+
+/* Keep compact admin data readable without changing its card geometry. */
+.admin-dashboard-readable [class~="text-[7px]"] {
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+.admin-dashboard-readable [class~="text-[8px]"] {
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.admin-dashboard-readable [class~="text-[9px]"],
+.admin-dashboard-readable [class~="text-[10px]"] {
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.admin-dashboard-readable strong,
+.admin-dashboard-readable b {
+  font-weight: 800;
+}
+
+/* Use the dashboard's compact sidebar styling throughout the authenticated app. */
+@media (min-width: 768px) {
+  .app-shell > aside {
+    width: 187px !important;
+    height: 100vh;
+    zoom: 1;
+  }
+
+  .app-shell > aside[data-collapsed="true"] {
+    width: 64px !important;
+  }
+}
+
+/* Reproduce the complete 90%-zoom dashboard composition at browser 100%. */
+@media (min-width: 1280px) and (max-width: 1700px) {
+  .app-shell:has(.dashboard-readable) {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  .app-shell:has(.dashboard-readable) > .app-main-column {
+    width: 111.111111%;
+    max-width: none;
+    height: 111.111111vh;
+    flex: 0 0 calc((100% - 187.2px) / 0.9);
+    zoom: 0.9;
+  }
+
+  .app-shell:has(.dashboard-readable) .app-main-content {
+    overflow: hidden;
+  }
+}

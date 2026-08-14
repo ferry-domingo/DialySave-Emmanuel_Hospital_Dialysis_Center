@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
@@ -9,6 +9,7 @@ import DateInput from "../common/DateInput";
 import { usePatientStore } from "../../store/patientStore";
 import { useDoctorStore } from "../../store/doctorStore";
 import { formatDoctorName } from "../../utils/doctorName";
+import CredentialsModal from "../common/CredentialsModal";
 
 const GENDER_OPTIONS = [
   { value: "Male", label: "Male" },
@@ -23,6 +24,7 @@ const BLOOD_TYPE_OPTIONS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].ma
 const QuickPatientForm = ({ embedded = false }) => {
   const { createPatient, loading } = usePatientStore();
   const { doctors, fetchDoctors } = useDoctorStore();
+  const [credentials, setCredentials] = useState(null);
 
   const {
     register,
@@ -47,8 +49,9 @@ const QuickPatientForm = ({ embedded = false }) => {
 
   const onSubmit = async (data) => {
     try {
-      await createPatient(data);
+      const response = await createPatient(data);
       toast.success("Patient added successfully");
+      setCredentials(response.data?.credentials || null);
       reset();
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to add patient");
@@ -58,15 +61,16 @@ const QuickPatientForm = ({ embedded = false }) => {
   const hasErrors = Object.keys(errors).length > 0;
 
   return (
-    <div className={`h-full p-3 ${embedded ? "" : "rounded-xl border border-slate-200/70 bg-white shadow-sm"}`}>
+    <>
+    <div className={`flex h-full min-h-0 flex-col overflow-hidden p-3 ${embedded ? "" : "rounded-xl border border-slate-200/70 bg-white shadow-sm"}`}>
       <h2 className="text-sm font-bold text-slate-900">Patient Form</h2>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="mt-2 grid grid-cols-2 gap-2">
+      <form onSubmit={handleSubmit(onSubmit)} className="mt-2 grid min-h-0 flex-1 grid-cols-2 content-start gap-x-2 gap-y-2">
         <div className="contents">
           <Input label="First Name" {...register("first_name", { required: true })} />
           <Input label="Last Name" {...register("last_name", { required: true })} />
           <Input label="Middle Name" {...register("middle_name")} />
-          <Select label="Gender" {...register("gender", { required: true })} options={GENDER_OPTIONS} />
+          <Select label="Sex" {...register("gender", { required: true })} options={GENDER_OPTIONS} />
           <DateInput label="Birthdate" {...register("birthdate", { required: true })} />
           <Select
             label="Doctor"
@@ -91,6 +95,8 @@ const QuickPatientForm = ({ embedded = false }) => {
         </button>
       </form>
     </div>
+    <CredentialsModal credentials={credentials} accountType="Patient" onClose={() => setCredentials(null)} />
+    </>
   );
 };
 

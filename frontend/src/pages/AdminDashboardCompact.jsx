@@ -102,7 +102,7 @@ const AdminDashboardCompact = () => {
   const busiestDay = activityTrend.reduce((best, row) => (row.activity ?? 0) > (best?.activity ?? 0) ? row : best, null);
 
   return (
-    <div className="space-y-2.5 xl:flex xl:h-full xl:flex-col xl:space-y-0 xl:overflow-hidden">
+    <div className="admin-dashboard-readable space-y-2.5 xl:flex xl:h-full xl:flex-col xl:space-y-0 xl:overflow-hidden">
       <Topbar title="Admin workspace" />
 
       {error && <div className="mt-2.5 flex items-center gap-2 rounded-xl bg-red-50 px-3 py-2 text-xs font-bold text-red-700"><CircleAlert size={14} />{error}</div>}
@@ -182,7 +182,7 @@ const AdminDashboardCompact = () => {
           <div className="grid min-h-0 w-full grid-cols-1 items-stretch gap-2.5 overflow-hidden lg:grid-cols-[minmax(0,1fr)_320px]">
             <section className="flex h-full min-w-0 flex-col rounded-xl border border-slate-200/70 bg-white p-3 shadow-sm">
               <CardHeading title="Recent audit activity" subtitle="Latest account and system changes" action={<Link to="/activity-logs" className="text-[9px] font-bold text-emerald-700">View all</Link>} />
-              <div className="mt-2 min-h-0 flex-1 overflow-hidden">
+              <div className="mt-2 min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {loading && !adminSummary && <p className="py-4 text-center text-[10px] text-slate-400">Loading…</p>}
                 {!loading && !recentActions.length && <div className="grid h-full place-items-center text-slate-300"><CheckCircle2 size={18} /></div>}
                 <div className="divide-y divide-slate-100">
@@ -199,7 +199,7 @@ const AdminDashboardCompact = () => {
 
             <section className="flex h-full min-w-0 flex-col rounded-xl border border-slate-200/70 bg-white p-3 shadow-sm">
               <CardHeading title="Needs attention" subtitle="Items awaiting administrator review" />
-              <div className="mt-2 min-h-0 flex-1 divide-y divide-slate-100">
+              <div className="mt-2 min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {attentionItems.map(({ label, value, icon: Icon, to, tone }) => (
                   <Link key={label} to={to} className="flex items-center gap-2 py-2 hover:bg-slate-50">
                     <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg ${tone}`}><Icon size={13} /></span>
@@ -213,10 +213,10 @@ const AdminDashboardCompact = () => {
         </div>
 
         <div className="min-h-0 overflow-hidden">
-          <div className="flex h-full w-full flex-col gap-2.5">
-            <section className="rounded-xl border border-slate-100 bg-white p-3 shadow-sm">
+          <div className="grid h-full min-h-0 w-full grid-rows-[auto_minmax(0,1fr)_minmax(0,1fr)] gap-2.5">
+            <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-100 bg-white p-3 shadow-sm">
               <CardHeading title="Security Overview" subtitle="Authentication and account risk" />
-              <div className="mt-1 divide-y divide-slate-100">
+              <div className="mt-1 min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <QueueItem to="/activity-logs" label="Failed logins today" value={stats?.failedLoginsToday} urgent={(stats?.failedLoginsToday ?? 0) > 0} />
                 <QueueItem to="/activity-logs" label="Recent security events" value={recentSecurity.length} urgent={recentSecurity.length > 0} />
                 <QueueItem to="/activity-logs" label="Recent account changes" value={accountChanges} />
@@ -242,9 +242,9 @@ const AdminDashboardCompact = () => {
               </div>
             </section>
 
-            <section className="min-h-0 flex-1 rounded-xl border border-slate-100 bg-white p-3 shadow-sm">
+            <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-100 bg-white p-3 shadow-sm">
               <CardHeading title="Recent alerts" subtitle="Latest patient notifications" action={<Link to="/alerts" className="text-[8px] font-bold text-emerald-700">View all</Link>} />
-              <div className="mt-1.5 divide-y divide-slate-100">
+              <div className="mt-1.5 min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {(adminSummary?.recentAlerts ?? []).slice(0, 7).map((alert) => (
                   <Link key={alert._id} to="/alerts" className="flex min-w-0 items-center gap-2 py-1.5 hover:bg-slate-50">
                     <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-amber-50 text-amber-600"><BellRing size={12} /></span>

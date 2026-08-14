@@ -20,9 +20,9 @@ const StatCard = ({ label, unit, value, icon: Icon, iconClass, periodDays, chang
     );
 
     return detailsHref ? (
-      <Link to={detailsHref} title={`${label}: ${value} ${unit}`} className="flex min-h-[84px] min-w-0 flex-col justify-center px-3 py-2 transition hover:bg-slate-50">{content}</Link>
+      <Link to={detailsHref} title={`${label}: ${value} ${unit}`} className="flex min-h-[78px] min-w-0 flex-col justify-center px-2 py-1.5 transition hover:bg-slate-50">{content}</Link>
     ) : (
-      <div title={`${label}: ${value} ${unit}`} className="flex min-h-[84px] min-w-0 flex-col justify-center px-3 py-2">{content}</div>
+      <div title={`${label}: ${value} ${unit}`} className="flex min-h-[78px] min-w-0 flex-col justify-center px-2 py-1.5">{content}</div>
     );
   }
 

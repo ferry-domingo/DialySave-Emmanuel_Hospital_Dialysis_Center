@@ -33,7 +33,7 @@ export const createPatient = async (req, res) => {
       return res.status(400).json({
         success: false,
         message:
-          "First name, last name, birthdate, gender, and blood type are required.",
+          "First name, last name, birthdate, sex, and blood type are required.",
       });
     }
 
@@ -75,11 +75,17 @@ export const createPatient = async (req, res) => {
       patient: patient._id,
 
     });
+
+    const populatedPatient = await Patient.findById(patient._id).populate("doctor");
     
     return res.status(201).json({
       success: true,
       message: "Patient created successfully.",
-      data: patient,
+      data: populatedPatient,
+      credentials: {
+        loginId: patient.patient_id,
+        temporaryPassword,
+      },
     });
   } catch (error) {
     console.error("Create Patient Error:", error);

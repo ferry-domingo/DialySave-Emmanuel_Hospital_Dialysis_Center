@@ -1,5 +1,6 @@
 import { useAuthStore } from "../../store/authStore";
 import { agreementInjectionMatches } from "../../utils/agreementInjection";
+import { patientName, signatureDate, signatureName, userName } from "../../utils/agreementSignatures";
 
 const Mark = ({ ok }) => (
   <span className="text-sm font-bold">{ok ? "✓" : "✗"}</span>
@@ -46,6 +47,8 @@ const AgreementPrintDocument = ({ session }) => {
     (session.agreement?.heparin || "Heparin sodium 5000 IU/mL, 5 mL vial") === name;
 
   const signatures = session.agreement?.signatures || {};
+  const patientSignatureName = signatureName(signatures.patient, patientName(session.patient));
+  const representativeSignatureName = signatureName(signatures.facilityRepresentative, userName(user));
 
   return (
     <div className="mx-auto max-w-[850px] bg-white font-serif text-black">
@@ -203,14 +206,14 @@ const AgreementPrintDocument = ({ session }) => {
 
         <div className="grid grid-cols-2 gap-8 pt-0.5">
           <SignatureLine
-            name={signatures.patient?.name}
-            signedAt={signatures.patient?.signedAt}
+            name={patientSignatureName}
+            signedAt={signatureDate(signatures.patient)}
             caption="Printed name and signature of patient"
             dateOffset
           />
           <SignatureLine
-            name={signatures.facilityRepresentative?.name}
-            signedAt={signatures.facilityRepresentative?.signedAt}
+            name={representativeSignatureName}
+            signedAt={signatureDate(signatures.facilityRepresentative)}
             caption={<>Printed name and signature<br />HD Facility Representative</>}
           />
         </div>
@@ -218,8 +221,8 @@ const AgreementPrintDocument = ({ session }) => {
         <div className="w-1/2 pt-1">
           <p className="mb-0.5 text-[11px] font-bold">Witness:</p>
           <SignatureLine
-            name={signatures.witness?.name}
-            signedAt={signatures.witness?.signedAt}
+            name={signatureName(signatures.witness)}
+            signedAt={signatureDate(signatures.witness)}
             caption="Printed name and signature"
           />
         </div>
