@@ -51,17 +51,65 @@ export const getAnnouncements = async (req, res) => {
   }
 };
 
-export const getPublicAnnouncements = async (_req, res) => {
+export const getPublicAnnouncements = async (req, res) => {
   try {
     const now = new Date();
-    const announcements = await populate(Announcement.find({
+    const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 0, 0), 20);
+    let query = Announcement.find({
       isActive: true,
       startsAt: { $lte: now },
       $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }],
-    }).sort({ createdAt: -1 }));
+    }).sort({ createdAt: -1 });
+    if (req.query.preview === "1") query = query.select("-media.dataUrl");
+    if (limit) query = query.limit(limit);
+    let announcements = await query.lean();
+    if (req.query.preview === "1") {
+      const apiOrigin = `${req.protocol}://${req.get("host")}`;
+      announcements = announcements.map((announcement) => ({
+        ...announcement,
+        media: announcement.media.map((media, index) => ({
+          ...media,
+          dataUrl: `${apiOrigin}/api/announcements/public/${announcement._id}/media/${index}`,
+        })),
+      }));
+    }
     return res.json({ success: true, total: announcements.length, data: announcements });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Failed to retrieve announcements.", error: error.message });
+  }
+};
+
+const currentPublicFilter = (id) => ({
+  _id: id,
+  isActive: true,
+  startsAt: { $lte: new Date() },
+  $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
+});
+
+export const getPublicAnnouncement = async (req, res) => {
+  try {
+    const announcement = await Announcement.findOne(currentPublicFilter(req.params.id)).lean();
+    if (!announcement) return res.status(404).json({ success: false, message: "Announcement not found." });
+    return res.json({ success: true, data: announcement });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to retrieve announcement.", error: error.message });
+  }
+};
+
+export const getPublicAnnouncementMedia = async (req, res) => {
+  try {
+    const mediaIndex = Number.parseInt(req.params.index, 10);
+    if (!Number.isInteger(mediaIndex) || mediaIndex < 0 || mediaIndex > 3) return res.status(400).end();
+    const announcement = await Announcement.findOne(currentPublicFilter(req.params.id)).select("media").lean();
+    const media = announcement?.media?.[mediaIndex];
+    if (!media?.dataUrl) return res.status(404).end();
+    const separator = media.dataUrl.indexOf(",");
+    if (separator < 0) return res.status(404).end();
+    res.set("Content-Type", media.mimeType);
+    res.set("Cache-Control", "public, max-age=3600");
+    return res.send(Buffer.from(media.dataUrl.slice(separator + 1), "base64"));
+  } catch {
+    return res.status(404).end();
   }
 };
 

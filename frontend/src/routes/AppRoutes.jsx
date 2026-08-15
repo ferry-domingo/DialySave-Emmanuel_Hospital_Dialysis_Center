@@ -25,8 +25,9 @@ import DoctorDashboardPage from "../pages/doctors/DoctorDashboardPage";
 import DoctorPatientsPage from "../pages/doctors/DoctorPatientsPage";
 import DoctorSessionsPage from "../pages/doctors/DoctorSessionsPage";
 import LandingPage from "../pages/public/LandingPage";
-import { AboutPage, ContactPage, ServicesPage, TechnologyPage } from "../pages/public/PublicInfoPages";
+import { AboutPage, ContactPage, GalleryPage, ServicesPage, TechnologyPage } from "../pages/public/PublicInfoPages";
 import PublicAnnouncementsPage from "../pages/public/PublicAnnouncementsPage";
+import TechnologyGalleryPage from "../pages/technology/TechnologyGalleryPage";
 
 const AppRoutes = () => {
   return (
@@ -37,6 +38,8 @@ const AppRoutes = () => {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/technology" element={<TechnologyPage />} />
+          <Route path="/facilities" element={<TechnologyPage />} />
+          <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/announcements" element={<PublicAnnouncementsPage />} />
         </Route>
@@ -66,6 +69,7 @@ const AppRoutes = () => {
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/alerts" element={<RoleRoute allowedRoles={[ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER, ROLES.PATIENT, ROLES.DOCTOR]}><AlertsPage /></RoleRoute>} />
           <Route path="/admin-announcements" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AnnouncementsPage /></RoleRoute>} />
+          <Route path="/admin-technology" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><TechnologyGalleryPage /></RoleRoute>} />
         </Route>
       </Routes>
     </BrowserRouter>

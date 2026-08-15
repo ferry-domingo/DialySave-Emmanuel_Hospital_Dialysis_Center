@@ -65,7 +65,9 @@ const LoginPage = () => {
           <Link to="/" onClick={() => setNavOpen(false)}>Home</Link>
           <Link to="/about" onClick={() => setNavOpen(false)}>About</Link>
           <Link to="/services" onClick={() => setNavOpen(false)}>Services</Link>
-          <Link to="/technology" onClick={() => setNavOpen(false)}>Technology</Link>
+          <Link to="/facilities" onClick={() => setNavOpen(false)}>Facilities & Technology</Link>
+          <Link to="/gallery" onClick={() => setNavOpen(false)}>Gallery</Link>
+          <Link to="/announcements" onClick={() => setNavOpen(false)}>Announcements</Link>
           <Link to="/contact" onClick={() => setNavOpen(false)}>Contact</Link>
           <span>Secure portal</span>
         </nav>

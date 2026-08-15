@@ -128,12 +128,6 @@ const DoctorDashboardPage = () => {
   }, [assignedTreatmentSessions]);
   const activityChartData = treatmentActivity.periods[activityPeriod];
   const activityTotal = activityChartData.reduce((total, item) => total + item.count, 0);
-  const activityDescriptions = {
-    week: "Monday–Sunday",
-    month: `Days 1–${activityChartData.length}`,
-    year: "January–December",
-    history: "Sessions grouped by year",
-  };
   const recentSessions = sessions.slice(0, 7);
   const completedLabs = (data?.sessions || []).reduce((total, session) => total + (session.laboratory_results || []).filter((lab) => lab.done).length, 0);
   const totalLabs = (data?.sessions || []).reduce((total, session) => total + (session.laboratory_results?.length || 0), 0);
@@ -166,7 +160,7 @@ const DoctorDashboardPage = () => {
             </section>
           </div>
 
-          <div className="grid min-h-0 gap-2.5 xl:grid-rows-[86px_248px_minmax(0,1fr)]">
+          <div className="grid min-h-0 gap-2.5 xl:grid-rows-[86px_200px_minmax(0,1fr)]">
             <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm"><div className="grid h-full grid-cols-3 divide-x divide-slate-100"><StatTile icon={Users} label="Assigned Patients" value={data.summary.patientCount} tone="bg-blue-50 text-blue-600" /><StatTile icon={Activity} label="Total Sessions" value={data.summary.sessionCount} tone="bg-cyan-50 text-cyan-600" /><StatTile icon={CalendarDays} label="This Month" value={data.summary.sessionsThisMonth} tone="bg-emerald-50 text-emerald-600" /></div></section>
 
             <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">
@@ -178,9 +172,9 @@ const DoctorDashboardPage = () => {
               <PanelHeader icon={HeartPulse} title="Care Insights" subtitle="Assigned workload and treatment activity" tone="bg-emerald-50 text-emerald-600" />
               <div className="grid grid-cols-2 gap-2 border-b border-slate-100 px-3 py-2.5 lg:grid-cols-4"><InfoTile label="Active Patients" value={activePatients} /><InfoTile label="Lab Completion" value={`${completedLabs}/${totalLabs}`} /><InfoTile label="Last Session" value={formatDate(latestSession?.createdAt)} /><InfoTile label="Patient Filter" value={selectedPatient ? "Active" : "All"} /></div>
               <div className="min-h-0 flex-1 border-t border-slate-100 p-3">
-                <div className="flex h-full min-h-[220px] min-w-0 flex-col rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm" aria-label="Treatment activity">
+                <div className="flex h-full min-h-0 min-w-0 flex-col rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm" aria-label="Treatment activity">
                   <div className="flex items-center justify-between gap-3">
-                    <div><p className="text-[10px] font-extrabold text-slate-800">Treatment activity</p><p className="mt-0.5 text-[8px] text-slate-400">{activityDescriptions[activityPeriod]}</p></div>
+                    <div><p className="text-[10px] font-extrabold text-slate-800">Treatment activity</p><p className="mt-0.5 text-[8px] text-slate-400">Completed treatment sessions</p></div>
                     <div className="flex items-center gap-2">
                       <label className="sr-only" htmlFor="activity-period">Treatment activity period</label>
                       <select id="activity-period" value={activityPeriod} onChange={(event) => setActivityPeriod(event.target.value)} className="h-6 rounded-md border border-slate-200 bg-white px-1.5 text-[9px] font-bold text-slate-600 outline-none focus:border-emerald-400">
@@ -189,11 +183,11 @@ const DoctorDashboardPage = () => {
                       <div className="text-right"><b className="text-base font-black leading-none text-emerald-700">{activityTotal}</b><p className="mt-0.5 text-[7px] font-bold uppercase tracking-wide text-slate-400">sessions</p></div>
                     </div>
                   </div>
-                  <div className="mt-2 min-h-[160px] min-w-0 flex-1">
+                  <div className="mt-2 min-h-0 min-w-0 flex-1">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={activityChartData} margin={{ top: 18, right: 4, left: -18, bottom: 0 }} barCategoryGap="24%">
+                      <BarChart data={activityChartData} margin={{ top: 18, right: 4, left: -18, bottom: 14 }} barCategoryGap="24%">
                         <CartesianGrid vertical={false} stroke="#f1f5f9" strokeDasharray="3 3" />
-                        <XAxis dataKey="label" axisLine={false} tickLine={false} tickMargin={7} tick={{ fill: "#64748b", fontSize: 8, fontWeight: 600 }} />
+                        <XAxis dataKey="label" axisLine={false} tickLine={false} interval={0} minTickGap={0} height={30} tickMargin={8} padding={{ left: 8, right: 8 }} tick={{ fill: "#64748b", fontSize: 8, fontWeight: 600 }} />
                         <YAxis allowDecimals={false} axisLine={false} tickLine={false} width={22} tick={{ fill: "#94a3b8", fontSize: 8 }} />
                         <Tooltip cursor={{ fill: "#f8fafc" }} formatter={(value) => [`${value} session${value === 1 ? "" : "s"}`, "Sessions"]} contentStyle={{ border: "0", borderRadius: "12px", boxShadow: "0 10px 30px rgb(15 23 42 / 0.12)", fontSize: "10px" }} />
                         <Bar dataKey="count" name="Sessions" radius={[5, 5, 0, 0]} maxBarSize={32} minPointSize={3}>
@@ -211,7 +205,7 @@ const DoctorDashboardPage = () => {
           <div className="grid min-h-0 gap-2.5 xl:grid-rows-[auto_minmax(150px,1fr)_minmax(150px,1fr)]">
             <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm"><PanelHeader icon={UserCheck} title="Clinical Focus" subtitle="Current assigned-care status" tone="bg-violet-50 text-violet-600" /><div className="grid grid-cols-2 gap-2 p-3"><InfoTile label="Selected Patient" value={selectedPatient ? patientName(data.patients.find((patient) => patient._id === selectedPatient)) : "All patients"} /><InfoTile label="Visible Sessions" value={sessions.length} /></div></section>
 
-            <section className="min-h-0 overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm"><PanelHeader icon={Mail} title="Recent Messages" subtitle="Latest conversations" tone="bg-blue-50 text-blue-600" to="/messages" /><div className="divide-y divide-slate-100 px-3">{conversations.slice(0, 5).map((conversation) => <Link key={conversation._id} to="/messages" className="flex min-w-0 items-center gap-2 py-1.5"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-600"><Mail size={11} /></span><span className="min-w-0 flex-1"><b className="block truncate text-[9px] text-slate-700">{conversation.lastMessage?.sender?.name || conversation.lastMessage?.sender?.username || "Conversation"}</b><small className="block truncate text-[7px] text-slate-400">{conversation.lastMessage?.text || "New message"}</small></span>{conversation.unreadCount > 0 && <b className="rounded-full bg-emerald-600 px-1.5 text-[7px] text-white">{conversation.unreadCount}</b>}</Link>)}{!conversations.length && <p className="py-4 text-center text-[9px] text-slate-400">No recent messages</p>}</div></section>
+            <section className="min-h-0 overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm"><PanelHeader icon={Mail} title="Recent Messages" subtitle="Latest conversations" tone="bg-blue-50 text-blue-600" to="/messages" /><div className="divide-y divide-slate-100 px-3">{conversations.slice(0, 10).map((conversation) => <Link key={conversation._id} to="/messages" className="flex min-w-0 items-center gap-2 py-1.5"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-600"><Mail size={11} /></span><span className="min-w-0 flex-1"><b className="block truncate text-[9px] text-slate-700">{conversation.lastMessage?.sender?.name || conversation.lastMessage?.sender?.username || "Conversation"}</b><small className="block truncate text-[7px] text-slate-400">{conversation.lastMessage?.text || "New message"}</small></span>{conversation.unreadCount > 0 && <b className="rounded-full bg-emerald-600 px-1.5 text-[7px] text-white">{conversation.unreadCount}</b>}</Link>)}{!conversations.length && <p className="py-4 text-center text-[9px] text-slate-400">No recent messages</p>}</div></section>
 
             <section className="min-h-0 overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm"><PanelHeader icon={Bell} title="Recent Alerts" subtitle="Latest patient notifications" tone="bg-amber-50 text-amber-600" to="/alerts" /><div className="divide-y divide-slate-100 px-3">{notifications.slice(0, 5).map((alert) => <Link key={alert._id} to="/alerts" className="flex min-w-0 items-center gap-2 py-1.5"><span className={`h-1.5 w-1.5 shrink-0 rounded-full ${alert.isRead ? "bg-slate-300" : "bg-amber-500"}`} /><span className="min-w-0 flex-1"><b className="block truncate text-[9px] text-slate-700">{alert.title}</b><small className="block truncate text-[7px] text-slate-400">{formatDate(alert.createdAt)}</small></span></Link>)}{!notifications.length && <p className="py-4 text-center text-[9px] text-slate-400">No recent alerts</p>}</div></section>
           </div>

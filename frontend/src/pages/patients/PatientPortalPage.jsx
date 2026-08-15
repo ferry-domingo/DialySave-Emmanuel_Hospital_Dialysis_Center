@@ -156,7 +156,7 @@ const PatientPortalPage = () => {
     .filter((conversation) => conversation?.type === "group" || conversation?.participants?.some(
       (participant) => userIdOf(participant) !== currentUserId
     ))
-    .slice(0, 3);
+    .slice(0, 10);
 
   return (
     <div className="patient-dashboard-readable min-w-0 space-y-2.5 2xl:flex 2xl:h-full 2xl:flex-col 2xl:space-y-0 2xl:overflow-hidden">

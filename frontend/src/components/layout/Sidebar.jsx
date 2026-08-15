@@ -6,6 +6,7 @@ import {
   ChevronUp,
   ClipboardList,
   IdCard,
+  Images,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -42,6 +43,7 @@ const adminMenus = [
 const messageMenu = { name: "Messages", icon: MessageCircle, path: "/messages" };
 const alertsMenu = { name: "Alerts", icon: BellRing, path: "/alerts" };
 const announcementsMenu = { name: "Announcements", icon: Megaphone, path: "/admin-announcements" };
+const technologyGalleryMenu = { name: "Gallery Management", icon: Images, path: "/admin-technology" };
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -61,7 +63,7 @@ const Sidebar = () => {
         messageMenu,
       ]
     : role === ROLES.ADMIN
-      ? [...adminMenus, announcementsMenu, messageMenu, alertsMenu]
+      ? [...adminMenus, announcementsMenu, technologyGalleryMenu, messageMenu, alertsMenu]
       : [ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER].includes(role)
         ? [...operationalMenus, admissionMenu, alertsMenu, messageMenu]
         : [messageMenu];

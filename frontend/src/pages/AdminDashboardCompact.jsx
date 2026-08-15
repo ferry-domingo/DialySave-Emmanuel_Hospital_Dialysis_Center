@@ -226,7 +226,7 @@ const AdminDashboardCompact = () => {
             <section className="rounded-xl border border-slate-100 bg-white p-3 shadow-sm">
               <CardHeading title="Recent messages" subtitle="Latest conversations" action={<Link to="/messages" className="text-[8px] font-bold text-emerald-700">View all</Link>} />
               <div className="mt-1 divide-y divide-slate-100">
-                {conversations.slice(0, 5).map((conversation) => {
+                {conversations.slice(0, 10).map((conversation) => {
                   const message = conversation.lastMessage;
                   const senderName = message?.sender?.name || message?.sender?.username || conversation.name || "Conversation";
                   const preview = message?.isUnsent ? "Message unsent" : message?.text || (message?.attachment?.kind ? `${message.attachment.kind} attachment` : "New message");

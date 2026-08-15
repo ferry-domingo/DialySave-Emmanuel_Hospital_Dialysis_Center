@@ -12,6 +12,7 @@ import messageRoutes from "./messageRoutes.js";
 import activityLogRoutes from "./activityLogRoutes.js";
 import notificationRoutes from "./notificationRoutes.js";
 import announcementRoutes from "./announcementRoutes.js";
+import technologyGalleryRoutes from "./technologyGalleryRoutes.js";
 
 const router = express.Router();
 
@@ -28,5 +29,6 @@ router.use("/messages", messageRoutes);
 router.use("/activity-logs", activityLogRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/announcements", announcementRoutes);
+router.use("/technology-gallery", technologyGalleryRoutes);
 
 export default router;
