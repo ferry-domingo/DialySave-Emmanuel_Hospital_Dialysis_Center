@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Activity, Bell, CalendarDays, ChevronRight, CircleUserRound, HeartPulse, Mail, Search, Stethoscope, UserCheck, Users } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import api from "../../api/axios";
 import OnlineUsersCard from "../../components/dashboard/OnlineUsersCard";
@@ -14,6 +15,13 @@ const formatDate = (value) => value
   : "—";
 
 const patientName = (patient) => [patient?.first_name, patient?.middle_name, patient?.last_name].filter(Boolean).join(" ");
+
+const ACTIVITY_PERIODS = [
+  { value: "week", label: "Week" },
+  { value: "month", label: "Month" },
+  { value: "year", label: "Year" },
+  { value: "history", label: "All history" },
+];
 
 const PanelHeader = ({ icon: Icon, title, subtitle, tone = "bg-slate-50 text-slate-600", to }) => (
   <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2">
@@ -45,6 +53,7 @@ const DoctorDashboardPage = () => {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [selectedPatient, setSelectedPatient] = useState("");
+  const [activityPeriod, setActivityPeriod] = useState("week");
 
   const loadDashboard = async () => {
     try {
@@ -74,6 +83,57 @@ const DoctorDashboardPage = () => {
   }, [data, search]);
 
   const sessions = useMemo(() => (data?.sessions || []).filter((session) => !selectedPatient || session.patient?._id === selectedPatient), [data, selectedPatient]);
+  const assignedTreatmentSessions = useMemo(() => {
+    const assignedPatientIds = new Set((data?.patients || []).map((patient) => String(patient._id)));
+    return (data?.sessions || []).filter((session) => {
+      const patientId = String(session.patient?._id ?? session.patient ?? "");
+      return assignedPatientIds.has(patientId) && (!selectedPatient || patientId === selectedPatient);
+    });
+  }, [data, selectedPatient]);
+  const treatmentActivity = useMemo(() => {
+    const now = new Date();
+    const weekStart = new Date(now);
+    weekStart.setHours(0, 0, 0, 0);
+    weekStart.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    const countSessions = (matches) => assignedTreatmentSessions.reduce((total, session) => {
+      const sessionDate = new Date(session.createdAt);
+      return total + (Number.isNaN(sessionDate.getTime()) ? 0 : Number(matches(sessionDate)));
+    }, 0);
+    const week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((label, index) => {
+      const date = new Date(weekStart);
+      date.setDate(weekStart.getDate() + index);
+      return { key: date.toISOString(), label, count: countSessions((sessionDate) => sessionDate.toDateString() === date.toDateString()) };
+    });
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const month = Array.from({ length: daysInMonth }, (_, index) => ({
+      key: `${now.getFullYear()}-${now.getMonth()}-${index + 1}`,
+      label: String(index + 1),
+      count: countSessions((sessionDate) => sessionDate.getFullYear() === now.getFullYear() && sessionDate.getMonth() === now.getMonth() && sessionDate.getDate() === index + 1),
+    }));
+    const year = Array.from({ length: 12 }, (_, index) => ({
+      key: `${now.getFullYear()}-${index}`,
+      label: new Intl.DateTimeFormat("en-PH", { month: "short" }).format(new Date(now.getFullYear(), index, 1)),
+      count: countSessions((sessionDate) => sessionDate.getFullYear() === now.getFullYear() && sessionDate.getMonth() === index),
+    }));
+    const sessionYears = assignedTreatmentSessions.map((session) => new Date(session.createdAt)).filter((date) => !Number.isNaN(date.getTime())).map((date) => date.getFullYear());
+    const firstYear = sessionYears.length ? Math.min(...sessionYears) : now.getFullYear();
+    const history = Array.from({ length: now.getFullYear() - firstYear + 1 }, (_, index) => {
+      const yearValue = firstYear + index;
+      return { key: String(yearValue), label: String(yearValue), count: countSessions((sessionDate) => sessionDate.getFullYear() === yearValue) };
+    });
+
+    return {
+      periods: { week, month, year, history },
+    };
+  }, [assignedTreatmentSessions]);
+  const activityChartData = treatmentActivity.periods[activityPeriod];
+  const activityTotal = activityChartData.reduce((total, item) => total + item.count, 0);
+  const activityDescriptions = {
+    week: "Monday–Sunday",
+    month: `Days 1–${activityChartData.length}`,
+    year: "January–December",
+    history: "Sessions grouped by year",
+  };
   const recentSessions = sessions.slice(0, 7);
   const completedLabs = (data?.sessions || []).reduce((total, session) => total + (session.laboratory_results || []).filter((lab) => lab.done).length, 0);
   const totalLabs = (data?.sessions || []).reduce((total, session) => total + (session.laboratory_results?.length || 0), 0);
@@ -116,17 +176,44 @@ const DoctorDashboardPage = () => {
 
             <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">
               <PanelHeader icon={HeartPulse} title="Care Insights" subtitle="Assigned workload and treatment activity" tone="bg-emerald-50 text-emerald-600" />
-              <div className="grid grid-cols-4 divide-x divide-slate-100"><InfoTile label="Active Patients" value={activePatients} /><InfoTile label="Lab Completion" value={`${completedLabs}/${totalLabs}`} /><InfoTile label="Last Session" value={formatDate(latestSession?.createdAt)} /><InfoTile label="Patient Filter" value={selectedPatient ? "Active" : "All"} /></div>
-              <div className="grid min-h-0 flex-1 grid-cols-2 gap-2 border-t border-slate-100 p-3"><Link to="/doctor-patients" className="flex flex-col justify-center rounded-lg bg-blue-50 p-3"><Users size={16} className="text-blue-600" /><b className="mt-2 text-xs text-slate-900">Patient records</b><span className="mt-1 text-[8px] text-slate-500">Review assigned profiles and medical information</span></Link><Link to="/doctor-sessions" className="flex flex-col justify-center rounded-lg bg-emerald-50 p-3"><Activity size={16} className="text-emerald-600" /><b className="mt-2 text-xs text-slate-900">Treatment history</b><span className="mt-1 text-[8px] text-slate-500">Review supplies, coverage, and lab status</span></Link></div>
+              <div className="grid grid-cols-2 gap-2 border-b border-slate-100 px-3 py-2.5 lg:grid-cols-4"><InfoTile label="Active Patients" value={activePatients} /><InfoTile label="Lab Completion" value={`${completedLabs}/${totalLabs}`} /><InfoTile label="Last Session" value={formatDate(latestSession?.createdAt)} /><InfoTile label="Patient Filter" value={selectedPatient ? "Active" : "All"} /></div>
+              <div className="min-h-0 flex-1 border-t border-slate-100 p-3">
+                <div className="flex h-full min-h-[220px] min-w-0 flex-col rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm" aria-label="Treatment activity">
+                  <div className="flex items-center justify-between gap-3">
+                    <div><p className="text-[10px] font-extrabold text-slate-800">Treatment activity</p><p className="mt-0.5 text-[8px] text-slate-400">{activityDescriptions[activityPeriod]}</p></div>
+                    <div className="flex items-center gap-2">
+                      <label className="sr-only" htmlFor="activity-period">Treatment activity period</label>
+                      <select id="activity-period" value={activityPeriod} onChange={(event) => setActivityPeriod(event.target.value)} className="h-6 rounded-md border border-slate-200 bg-white px-1.5 text-[9px] font-bold text-slate-600 outline-none focus:border-emerald-400">
+                        {ACTIVITY_PERIODS.map((period) => <option key={period.value} value={period.value}>{period.label}</option>)}
+                      </select>
+                      <div className="text-right"><b className="text-base font-black leading-none text-emerald-700">{activityTotal}</b><p className="mt-0.5 text-[7px] font-bold uppercase tracking-wide text-slate-400">sessions</p></div>
+                    </div>
+                  </div>
+                  <div className="mt-2 min-h-[160px] min-w-0 flex-1">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={activityChartData} margin={{ top: 18, right: 4, left: -18, bottom: 0 }} barCategoryGap="24%">
+                        <CartesianGrid vertical={false} stroke="#f1f5f9" strokeDasharray="3 3" />
+                        <XAxis dataKey="label" axisLine={false} tickLine={false} tickMargin={7} tick={{ fill: "#64748b", fontSize: 8, fontWeight: 600 }} />
+                        <YAxis allowDecimals={false} axisLine={false} tickLine={false} width={22} tick={{ fill: "#94a3b8", fontSize: 8 }} />
+                        <Tooltip cursor={{ fill: "#f8fafc" }} formatter={(value) => [`${value} session${value === 1 ? "" : "s"}`, "Sessions"]} contentStyle={{ border: "0", borderRadius: "12px", boxShadow: "0 10px 30px rgb(15 23 42 / 0.12)", fontSize: "10px" }} />
+                        <Bar dataKey="count" name="Sessions" radius={[5, 5, 0, 0]} maxBarSize={32} minPointSize={3}>
+                          {activityChartData.map((item, index) => <Cell key={item.key} fill={index === activityChartData.length - 1 ? "#059669" : "#6ee7b7"} />)}
+                          <LabelList dataKey="count" position="top" fill="#475569" fontSize={8} fontWeight={700} />
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
             </section>
           </div>
 
-          <div className="grid min-h-0 gap-2.5 xl:grid-rows-[minmax(150px,1fr)_minmax(150px,1fr)_auto]">
+          <div className="grid min-h-0 gap-2.5 xl:grid-rows-[auto_minmax(150px,1fr)_minmax(150px,1fr)]">
+            <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm"><PanelHeader icon={UserCheck} title="Clinical Focus" subtitle="Current assigned-care status" tone="bg-violet-50 text-violet-600" /><div className="grid grid-cols-2 gap-2 p-3"><InfoTile label="Selected Patient" value={selectedPatient ? patientName(data.patients.find((patient) => patient._id === selectedPatient)) : "All patients"} /><InfoTile label="Visible Sessions" value={sessions.length} /></div></section>
+
             <section className="min-h-0 overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm"><PanelHeader icon={Mail} title="Recent Messages" subtitle="Latest conversations" tone="bg-blue-50 text-blue-600" to="/messages" /><div className="divide-y divide-slate-100 px-3">{conversations.slice(0, 5).map((conversation) => <Link key={conversation._id} to="/messages" className="flex min-w-0 items-center gap-2 py-1.5"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-600"><Mail size={11} /></span><span className="min-w-0 flex-1"><b className="block truncate text-[9px] text-slate-700">{conversation.lastMessage?.sender?.name || conversation.lastMessage?.sender?.username || "Conversation"}</b><small className="block truncate text-[7px] text-slate-400">{conversation.lastMessage?.text || "New message"}</small></span>{conversation.unreadCount > 0 && <b className="rounded-full bg-emerald-600 px-1.5 text-[7px] text-white">{conversation.unreadCount}</b>}</Link>)}{!conversations.length && <p className="py-4 text-center text-[9px] text-slate-400">No recent messages</p>}</div></section>
 
             <section className="min-h-0 overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm"><PanelHeader icon={Bell} title="Recent Alerts" subtitle="Latest patient notifications" tone="bg-amber-50 text-amber-600" to="/alerts" /><div className="divide-y divide-slate-100 px-3">{notifications.slice(0, 5).map((alert) => <Link key={alert._id} to="/alerts" className="flex min-w-0 items-center gap-2 py-1.5"><span className={`h-1.5 w-1.5 shrink-0 rounded-full ${alert.isRead ? "bg-slate-300" : "bg-amber-500"}`} /><span className="min-w-0 flex-1"><b className="block truncate text-[9px] text-slate-700">{alert.title}</b><small className="block truncate text-[7px] text-slate-400">{formatDate(alert.createdAt)}</small></span></Link>)}{!notifications.length && <p className="py-4 text-center text-[9px] text-slate-400">No recent alerts</p>}</div></section>
-
-            <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm"><PanelHeader icon={UserCheck} title="Clinical Focus" subtitle="Current assigned-care status" tone="bg-violet-50 text-violet-600" /><div className="grid grid-cols-2 gap-2 p-3"><InfoTile label="Selected Patient" value={selectedPatient ? patientName(data.patients.find((patient) => patient._id === selectedPatient)) : "All patients"} /><InfoTile label="Visible Sessions" value={sessions.length} /></div></section>
           </div>
 
           <aside className="h-full min-h-0 overflow-hidden"><OnlineUsersCard tall /></aside>

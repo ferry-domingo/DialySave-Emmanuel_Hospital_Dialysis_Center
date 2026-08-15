@@ -162,8 +162,8 @@ const AlertsPage = () => {
   const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
-    <div className="space-y-3">
-      <Topbar title={isManager ? "Patient Alerts" : "My Alerts"} />
+    <div className="flex h-[calc(100vh-5.5rem)] min-h-0 flex-col gap-3 overflow-hidden md:h-full">
+      <div className="shrink-0"><Topbar title={isManager ? "Patient Alerts" : "My Alerts"} /></div>
 
       {isManager && (
         <Modal isOpen={composerOpen} title={editingId ? "Edit Patient Alert" : "Send Patient Alert"} maxWidth="max-w-2xl" onClose={() => !sending && setComposerOpen(false)}>
@@ -225,7 +225,7 @@ const AlertsPage = () => {
         </Modal>
       )}
 
-      <div className="flex min-w-0 flex-col gap-2 rounded-xl bg-white p-2 shadow-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      <div className="flex min-w-0 shrink-0 flex-col gap-2 rounded-xl bg-white p-2 shadow-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 sm:w-56 sm:max-w-full">
           <Search size={13} className="text-slate-400" /><input placeholder="Search alerts..." value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} className="w-full bg-transparent text-[10px] outline-none" />
         </div>
@@ -236,7 +236,7 @@ const AlertsPage = () => {
         {!isManager && unreadCount > 0 && <Button variant="secondary" onClick={markAllRead}><span className="inline-flex items-center gap-2"><CheckCheck size={16} /> Mark all read</span></Button>}
       </div>
 
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+      <div className="min-h-0 flex-1 overflow-y-auto rounded-xl bg-white shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {loading && <p className="p-10 text-center text-sm text-slate-400">Loading alerts...</p>}
         {!loading && visible.length === 0 && <p className="p-10 text-center text-sm text-slate-400">No alerts found.</p>}
         <div className="divide-y divide-slate-100">

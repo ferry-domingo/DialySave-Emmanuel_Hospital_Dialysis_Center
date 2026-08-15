@@ -95,11 +95,6 @@ button {
     padding: 0.875rem;
   }
 
-  .admin-dashboard-shell .announcements-page article > div:first-child {
-    gap: 0.75rem;
-    padding: 0.875rem;
-  }
-
   .admin-dashboard-shell .announcements-page article footer {
     flex-wrap: wrap;
     padding: 0.625rem 0.875rem;
