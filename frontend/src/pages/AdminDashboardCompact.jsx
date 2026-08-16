@@ -94,7 +94,7 @@ const AdminDashboardCompact = () => {
     { label: "Alerts this week", value: stats?.alertsThisWeek ?? 0, icon: BellRing, to: "/alerts", tone: "bg-violet-50 text-violet-700" },
     { label: "Recent account changes", value: accountChanges, icon: Activity, to: "/activity-logs", tone: "bg-cyan-50 text-cyan-700" },
   ];
-  const recentActions = (adminSummary?.recentActivity ?? []).slice(0, 5);
+  const recentActions = (adminSummary?.recentActivity ?? []).slice(0, 15);
   const recentSecurity = attention?.recentSecurityEvents ?? [];
   const activityTrend = adminSummary?.activityTrend ?? [];
   const weeklyActivity = activityTrend.reduce((sum, row) => sum + (row.activity ?? 0), 0);
@@ -182,7 +182,7 @@ const AdminDashboardCompact = () => {
           <div className="grid min-h-0 w-full grid-cols-1 items-stretch gap-2.5 overflow-hidden lg:grid-cols-[minmax(0,1fr)_320px]">
             <section className="flex h-full min-w-0 flex-col rounded-xl border border-slate-200/70 bg-white p-3 shadow-sm">
               <CardHeading title="Recent audit activity" subtitle="Latest account and system changes" action={<Link to="/activity-logs" className="text-[9px] font-bold text-emerald-700">View all</Link>} />
-              <div className="mt-2 min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="audit-activity-scroll mt-2 min-h-0 flex-1 overflow-y-auto">
                 {loading && !adminSummary && <p className="py-4 text-center text-[10px] text-slate-400">Loading…</p>}
                 {!loading && !recentActions.length && <div className="grid h-full place-items-center text-slate-300"><CheckCircle2 size={18} /></div>}
                 <div className="divide-y divide-slate-100">

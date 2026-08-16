@@ -7,6 +7,7 @@ import Button from "../../components/common/Button";
 import { useAuthStore } from "../../store/authStore";
 import UserAvatar from "../../components/common/UserAvatar";
 import { ROLES } from "../../utils/roles";
+import ContactManagementPage from "../contact/ContactManagementPage";
 
 const prepareProfilePicture = (file) => new Promise((resolve, reject) => {
   if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return reject(new Error("Choose a JPG, PNG, or WebP image."));
@@ -207,6 +208,8 @@ const SettingsPage = () => {
         </form>
         </div>
       </div>
+
+      {user?.role === ROLES.ADMIN && <ContactManagementPage embedded />}
 
       <div className="settings-notice flex items-start gap-3 rounded-3xl border border-emerald-100 bg-emerald-50 p-5">
         <ShieldCheck className="mt-0.5 shrink-0 text-emerald-600" size={21} />

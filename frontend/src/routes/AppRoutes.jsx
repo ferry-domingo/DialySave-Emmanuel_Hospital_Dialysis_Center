@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import Layout from "../components/layout/Layout";
 import PublicLayout from "../components/public/PublicLayout";
@@ -70,6 +70,7 @@ const AppRoutes = () => {
           <Route path="/alerts" element={<RoleRoute allowedRoles={[ROLES.ADMIN, ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER, ROLES.PATIENT, ROLES.DOCTOR]}><AlertsPage /></RoleRoute>} />
           <Route path="/admin-announcements" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AnnouncementsPage /></RoleRoute>} />
           <Route path="/admin-technology" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><TechnologyGalleryPage /></RoleRoute>} />
+          <Route path="/admin-contact" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><Navigate to="/settings#contact-information" replace /></RoleRoute>} />
         </Route>
       </Routes>
     </BrowserRouter>
