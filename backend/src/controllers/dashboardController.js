@@ -96,7 +96,7 @@ export const getAdminDashboardSummary = async (req, res) => {
         .populate("actor", "name username role")
         .populate("target", "name username role")
         .sort({ createdAt: -1 })
-        .limit(8)
+        .limit(15)
         .lean(),
       ActivityLog.find({ action: { $in: ["LOGIN_FAILED", "LOGIN_BLOCKED", "PASSWORD_CHANGE_FAILED"] } })
         .populate("actor", "name username role")

@@ -37,7 +37,15 @@ The shorter `npm run dev` and `npm run prod` commands are aliases for
 - `JWT_SECRET`: a long, random secret (at least 32 characters)
 - `ADMIN_EMAIL`: initial administrator email
 
-Optional email variables:
+Email verification on Render Free should use the Brevo HTTPS API because free
+Render services block outbound SMTP ports. Configure:
+
+- `EMAIL_PROVIDER=brevo`
+- `BREVO_API_KEY`: API key created in Brevo
+- `BREVO_SENDER_EMAIL`: sender address registered and verified in Brevo
+- `BREVO_SENDER_NAME=EHDC`
+
+Optional SMTP fallback variables for local development or hosts that allow SMTP:
 
 - `SMTP_HOST`
 - `SMTP_PORT`
@@ -45,8 +53,8 @@ Optional email variables:
 - `SMTP_PASS`
 - `MAIL_FROM`
 
-These variables are required if users need to change and verify their login
-email. For Gmail SMTP, use:
+The SMTP variables are not used when `EMAIL_PROVIDER=brevo`. For local Gmail
+SMTP testing, use:
 
 - `SMTP_HOST=smtp.gmail.com`
 - `SMTP_PORT=587`
@@ -55,8 +63,8 @@ email. For Gmail SMTP, use:
 - `MAIL_FROM=EHDC <your-mailbox@gmail.com>`
 
 Use a Google App Password, not the mailbox's regular password. Existing Render
-services must add these values manually under **Environment**, then save and
-redeploy.
+services must add the Brevo variables manually under **Environment**, then save
+and redeploy.
 
 `CLIENT_URL` can remain blank for the recommended same-origin deployment. Set it
 to the exact frontend URL only when hosting frontend and backend separately.

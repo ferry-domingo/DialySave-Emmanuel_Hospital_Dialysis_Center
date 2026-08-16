@@ -288,15 +288,30 @@ export const requestEmailChange = async (req, res) => {
     const portConfigurationError = error.message.startsWith("SMTP_PORT must be");
     const authenticationError = error.code === "EAUTH";
     const connectionError = ["ETIMEDOUT", "ECONNECTION", "ESOCKET", "ECONNREFUSED"].includes(error.code);
+    const brevoConfigurationError = error.code === "EBREVO_CONFIG";
+    const brevoAuthenticationError = error.code === "EBREVO_AUTH";
+    const brevoRequestError = error.code === "EBREVO_REQUEST";
+    const brevoConnectionError = error.code === "EBREVO_CONNECTION";
+    const brevoIpBlockedError = error.code === "EBREVO_IP_BLOCKED";
     console.error("Email verification delivery failed:", {
       code: error.code || "UNKNOWN",
       command: error.command || "",
       message: error.message,
     });
-    return res.status(configurationError || portConfigurationError || authenticationError || connectionError ? 503 : 500).json({
+    return res.status(configurationError || portConfigurationError || authenticationError || connectionError || brevoConfigurationError || brevoAuthenticationError || brevoRequestError || brevoConnectionError || brevoIpBlockedError ? 503 : 500).json({
       success: false,
-      message: configurationError
-        ? "Email verification is not configured. Ask the system administrator to configure SMTP."
+      message: brevoIpBlockedError
+        ? "Brevo blocked this server's IP address. Disable API IP blocking or authorize the server IP in Brevo Security settings."
+        : brevoConfigurationError
+        ? "Email verification is not configured. Add the Brevo API key and verified sender in Render."
+        : brevoAuthenticationError
+          ? "Brevo rejected the API key. Check BREVO_API_KEY in Render."
+          : brevoRequestError
+            ? "Brevo could not send the email. Check that the sender address is verified and the daily allowance is available."
+            : brevoConnectionError
+              ? "The Brevo email service could not be reached. Please try again shortly."
+          : configurationError
+        ? "Email verification is not configured. Ask the system administrator to configure an email provider."
         : portConfigurationError
           ? "Invalid SMTP port. Use port 587 for STARTTLS or port 465 for TLS."
         : authenticationError
