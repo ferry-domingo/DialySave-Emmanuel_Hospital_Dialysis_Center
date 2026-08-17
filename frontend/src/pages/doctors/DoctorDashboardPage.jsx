@@ -141,9 +141,9 @@ const DoctorDashboardPage = () => {
       {error && <div className="mt-2.5 rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-600">{error}</div>}
 
       {!loading && !error && data && (
-        <div className="grid min-h-0 w-full gap-2.5 xl:mt-2.5 xl:flex-1 xl:grid-cols-[minmax(240px,262px)_minmax(420px,1fr)_270px_215px] xl:overflow-hidden">
+        <div className="grid min-h-0 w-full gap-2.5 xl:mt-2.5 xl:flex-1 xl:grid-cols-[minmax(15rem,16.375rem)_minmax(26.25rem,1fr)_16.875rem_13.4375rem] xl:overflow-hidden">
           <div className="grid min-h-0 gap-2.5 xl:grid-rows-[86px_auto_minmax(0,1fr)]">
-            <section className="relative min-h-[86px] overflow-hidden rounded-xl bg-[#173d31] p-3 text-white shadow-sm">
+            <section className="relative min-h-[5.375rem] overflow-hidden rounded-xl bg-[#173d31] p-3 text-white shadow-sm">
               <div className="absolute -right-10 -top-20 h-44 w-44 rounded-full bg-emerald-400/20 blur-3xl" />
               <div className="relative flex h-full items-center"><div className="min-w-0"><p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-emerald-100"><Stethoscope size={12} />Doctor overview</p><h1 className="mt-1 break-words text-base font-black leading-tight">Good day, {formatDoctorName(data.doctor)}.</h1><p className="mt-1 text-[8px] font-medium text-emerald-50">Your assigned care workload at a glance.</p></div></div>
             </section>

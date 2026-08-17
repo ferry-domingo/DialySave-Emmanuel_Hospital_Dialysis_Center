@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { Camera, KeyRound, MailCheck, ShieldCheck, Trash2, UserRound } from "lucide-react";
+import { Camera, ChevronRight, ContactRound, KeyRound, MailCheck, ShieldCheck, Trash2, UserRound } from "lucide-react";
 import toast from "react-hot-toast";
 import Topbar from "../../components/layout/Topbar";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 import { useAuthStore } from "../../store/authStore";
 import UserAvatar from "../../components/common/UserAvatar";
-import { ROLES } from "../../utils/roles";
+import { normalizeRole, ROLES } from "../../utils/roles";
 import ContactManagementPage from "../contact/ContactManagementPage";
 
 const prepareProfilePicture = (file) => new Promise((resolve, reject) => {
@@ -33,6 +33,8 @@ const prepareProfilePicture = (file) => new Promise((resolve, reject) => {
 
 const SettingsPage = () => {
   const { user, updateProfile, changePassword, requestEmailChange, verifyEmailChange } = useAuthStore();
+  const role = normalizeRole(user?.role);
+  const isAdmin = String(role || "").toLowerCase() === ROLES.ADMIN.toLowerCase();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [profilePicture, setProfilePicture] = useState("");
@@ -41,6 +43,7 @@ const SettingsPage = () => {
   const [emailSaving, setEmailSaving] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [pendingEmail, setPendingEmail] = useState("");
+  const [activeSection, setActiveSection] = useState("account");
   const [passwords, setPasswords] = useState({
     currentPassword: "",
     newPassword: "",
@@ -126,8 +129,21 @@ const SettingsPage = () => {
     <div className="settings-page space-y-6">
       <Topbar title="Account Settings" />
 
+      <div className="settings-facebook-shell">
+        <aside className="settings-facebook-nav">
+          <div className="settings-nav-heading"><h1>Settings</h1><p>Manage your account and preferences.</p></div>
+          <nav aria-label="Settings sections">
+            <button type="button" className={activeSection === "account" ? "active" : ""} onClick={() => setActiveSection("account")}><span><UserRound size={20} /></span><div><strong>Account details</strong><small>Profile and account information</small></div><ChevronRight size={17} /></button>
+            <button type="button" className={activeSection === "email" ? "active" : ""} onClick={() => setActiveSection("email")}><span><MailCheck size={20} /></span><div><strong>Login email</strong><small>Add, change, and verify your email</small></div><ChevronRight size={17} /></button>
+            <button type="button" className={activeSection === "password" ? "active" : ""} onClick={() => setActiveSection("password")}><span><KeyRound size={20} /></span><div><strong>Password & security</strong><small>Protect your account</small></div><ChevronRight size={17} /></button>
+            {isAdmin && <button type="button" className={activeSection === "contact" ? "active" : ""} onClick={() => setActiveSection("contact")}><span><ContactRound size={20} /></span><div><strong>Public contact</strong><small>Website contact details</small></div><ChevronRight size={17} /></button>}
+          </nav>
+          <div className="settings-nav-user"><UserAvatar user={user} className="h-11 w-11 text-sm" /><div><strong>{user?.name || user?.username || "User"}</strong><span>{user?.role || "Account"}</span></div></div>
+        </aside>
+
+        <main className="settings-facebook-content">
       <div className="settings-grid grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <form onSubmit={saveProfile} className="settings-card rounded-3xl bg-white p-6 shadow-sm">
+        {activeSection === "account" && <form id="account-details" onSubmit={saveProfile} className="settings-card rounded-3xl bg-white p-6 shadow-sm">
           <div className="settings-card-header mb-6 flex items-center gap-3">
             <span className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-50 text-blue-600"><UserRound size={21} /></span>
             <div><h2 className="font-bold text-slate-900">Account details</h2><p className="text-sm text-slate-500">Manage your sign-in identity.</p></div>
@@ -158,7 +174,7 @@ const SettingsPage = () => {
               </div>
             ) : (
               <>
-                <Input label="Name" required value={name} maxLength={100} onChange={(event) => setName(event.target.value)} />
+                <Input containerClassName="settings-field" label="Name" required value={name} maxLength={100} onChange={(event) => setName(event.target.value)} />
               </>
             )}
             <div className="grid gap-3 sm:grid-cols-2">
@@ -167,23 +183,23 @@ const SettingsPage = () => {
             </div>
             <Button type="submit" disabled={profileSaving || (name.trim() === (user?.name || user?.username || "") && profilePicture === (user?.profilePicture || ""))}>{profileSaving ? "Saving..." : "Save account details"}</Button>
           </div>
-        </form>
+        </form>}
 
         <div className="settings-card-stack space-y-6">
-        {![ROLES.PATIENT, ROLES.DOCTOR].includes(user?.role) && (
-          <section className="settings-card rounded-3xl bg-white p-6 shadow-sm">
+        {activeSection === "email" && (
+          <section id="login-email" className="settings-card rounded-3xl bg-white p-6 shadow-sm">
             <div className="settings-card-header mb-6 flex items-center gap-3">
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-violet-50 text-violet-600"><MailCheck size={21} /></span>
-              <div><h2 className="font-bold text-slate-900">Login email</h2><p className="text-sm text-slate-500">A code will be sent to the new address before it becomes your login.</p></div>
+              <div><h2 className="font-bold text-slate-900">Login email</h2><p className="text-sm text-slate-500">Add or change your email. A code will be sent before it can be used to sign in.</p></div>
             </div>
             <div className="space-y-4">
-              <Input label="New email address" type="email" required value={email} maxLength={254} onChange={(event) => { setEmail(event.target.value); setPendingEmail(""); }} />
+              <Input containerClassName="settings-field" label="New email address" type="email" required value={email} maxLength={254} onChange={(event) => { setEmail(event.target.value); setPendingEmail(""); }} />
               {!pendingEmail ? (
                 <Button type="button" onClick={sendVerification} disabled={emailSaving || email.trim() === (user?.email || "")}>{emailSaving ? "Sending..." : "Send verification code"}</Button>
               ) : (
                 <>
                   <p className="text-sm text-slate-500">Enter the code sent to <span className="font-semibold text-slate-700">{pendingEmail}</span>.</p>
-                  <Input label="6-digit verification code" inputMode="numeric" required value={verificationCode} maxLength={6} onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, ""))} />
+                  <Input containerClassName="settings-field" label="6-digit verification code" inputMode="numeric" required value={verificationCode} maxLength={6} onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, ""))} />
                   <div className="flex flex-wrap gap-2">
                     <Button type="button" onClick={confirmEmail} disabled={emailSaving}>{emailSaving ? "Verifying..." : "Verify and change email"}</Button>
                     <Button type="button" variant="secondary" onClick={sendVerification} disabled={emailSaving}>Resend code</Button>
@@ -194,26 +210,28 @@ const SettingsPage = () => {
           </section>
         )}
 
-        <form onSubmit={savePassword} className="settings-card rounded-3xl bg-white p-6 shadow-sm">
+        {activeSection === "password" && <form id="password-security" onSubmit={savePassword} className="settings-card rounded-3xl bg-white p-6 shadow-sm">
           <div className="settings-card-header mb-6 flex items-center gap-3">
             <span className="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-50 text-emerald-600"><KeyRound size={21} /></span>
             <div><h2 className="font-bold text-slate-900">Change password</h2><p className="text-sm text-slate-500">Use at least eight characters.</p></div>
           </div>
           <div className="space-y-4">
-            <Input label="Current password" type="password" required autoComplete="current-password" value={passwords.currentPassword} onChange={(event) => setPasswords((value) => ({ ...value, currentPassword: event.target.value }))} />
-            <Input label="New password" type="password" required autoComplete="new-password" value={passwords.newPassword} onChange={(event) => setPasswords((value) => ({ ...value, newPassword: event.target.value }))} />
-            <Input label="Confirm new password" type="password" required autoComplete="new-password" value={passwords.confirmPassword} onChange={(event) => setPasswords((value) => ({ ...value, confirmPassword: event.target.value }))} />
+            <Input containerClassName="settings-field" label="Current password" type="password" required autoComplete="current-password" value={passwords.currentPassword} onChange={(event) => setPasswords((value) => ({ ...value, currentPassword: event.target.value }))} />
+            <Input containerClassName="settings-field" label="New password" type="password" required autoComplete="new-password" value={passwords.newPassword} onChange={(event) => setPasswords((value) => ({ ...value, newPassword: event.target.value }))} />
+            <Input containerClassName="settings-field" label="Confirm new password" type="password" required autoComplete="new-password" value={passwords.confirmPassword} onChange={(event) => setPasswords((value) => ({ ...value, confirmPassword: event.target.value }))} />
             <Button type="submit" disabled={passwordSaving}>{passwordSaving ? "Changing..." : "Change password"}</Button>
           </div>
-        </form>
+        </form>}
         </div>
+
+        {activeSection === "contact" && isAdmin && <ContactManagementPage embedded />}
       </div>
 
-      {user?.role === ROLES.ADMIN && <ContactManagementPage embedded />}
-
-      <div className="settings-notice flex items-start gap-3 rounded-3xl border border-emerald-100 bg-emerald-50 p-5">
+      {activeSection === "password" && <div className="settings-notice flex items-start gap-3 rounded-3xl border border-emerald-100 bg-emerald-50 p-5">
         <ShieldCheck className="mt-0.5 shrink-0 text-emerald-600" size={21} />
         <div><p className="font-bold text-emerald-900">Security activity is recorded</p><p className="mt-1 text-sm text-emerald-700">Profile updates, successful password changes, and failed password attempts appear in the administrator Activity Logs.</p></div>
+      </div>}
+        </main>
       </div>
     </div>
   );

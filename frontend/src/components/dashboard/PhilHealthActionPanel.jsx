@@ -2,9 +2,9 @@ import { BarChart3, CalendarClock, ClipboardCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const QueueItem = ({ label, value, urgent }) => (
-  <div className="flex items-center justify-between gap-2 py-1">
-    <span className="truncate text-[8px] font-medium text-slate-500">{label}</span>
-    <strong className={`rounded-full px-1.5 py-0.5 text-[8px] ${urgent ? "bg-amber-50 text-amber-700" : "bg-slate-50 text-slate-700"}`}>{value ?? 0}</strong>
+  <div className="flex min-h-0 flex-1 items-center justify-between gap-3 px-0.5 py-1">
+    <span className="min-w-0 flex-1 truncate text-[8px] font-medium leading-tight text-slate-600" title={label}>{label}</span>
+    <strong className={`grid h-5 min-w-6 shrink-0 place-items-center rounded-full px-1.5 text-[8px] leading-none ${urgent ? "bg-amber-50 text-amber-700" : "bg-slate-50 text-slate-700"}`}>{value ?? 0}</strong>
   </div>
 );
 
@@ -27,7 +27,7 @@ const PhilHealthActionPanel = ({ data = {}, operations = {}, appointments = [] }
   const trackedPatients = Object.values(distribution).reduce((sum, value) => sum + (Number(value) || 0), 0);
 
   return (
-    <div className="grid h-full w-full min-h-0 grid-rows-[auto_minmax(0,1fr)_minmax(0,1fr)] gap-2">
+    <div className="grid h-full w-full min-h-0 grid-rows-[auto_minmax(9.5rem,1.15fr)_minmax(7.5rem,.85fr)] gap-2">
       <section className="upcoming-appointments-card flex h-[302px] min-h-[302px] flex-col overflow-hidden rounded-xl border border-emerald-100 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-emerald-50 bg-gradient-to-r from-emerald-50 to-white px-3 py-1.5">
           <div className="flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-lg bg-emerald-600 text-white"><CalendarClock size={14} /></span><div><h2 className="text-sm font-extrabold text-slate-900">Upcoming Appointments</h2><p className="text-[9px] text-slate-500">Next dialysis sessions from alerts</p></div></div>
@@ -54,9 +54,9 @@ const PhilHealthActionPanel = ({ data = {}, operations = {}, appointments = [] }
         </div>
       </section>
 
-      <section className="order-2 flex min-h-0 flex-col rounded-xl border border-slate-100 bg-white p-2 shadow-sm">
-        <div className="flex items-center justify-between"><div className="flex items-center gap-2"><ClipboardCheck size={13} className="text-amber-600" /><h2 className="text-xs font-extrabold text-slate-900">Documentation Queue</h2></div><span className="text-[8px] font-bold text-amber-600">REVIEW</span></div>
-        <div className="mt-1 flex min-h-0 flex-1 flex-col justify-evenly divide-y divide-slate-100">
+      <section className="order-2 flex min-h-[9.5rem] flex-col overflow-hidden rounded-xl border border-slate-100 bg-white p-2 shadow-sm">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-100 pb-1.5"><div className="flex min-w-0 items-center gap-2"><ClipboardCheck size={13} className="shrink-0 text-amber-600" /><h2 className="truncate text-xs font-extrabold text-slate-900">Documentation Queue</h2></div><span className="shrink-0 text-[8px] font-bold text-amber-600">REVIEW</span></div>
+        <div className="flex min-h-0 flex-1 flex-col divide-y divide-slate-100">
           <QueueItem label="Pending PHIC agreements" value={data.pendingAgreements} urgent={data.pendingAgreements > 0} />
           <QueueItem label="Admission info not relayed" value={data.pendingAdmissionRelay} urgent={data.pendingAdmissionRelay > 0} />
           <QueueItem label="Patients near session limit" value={data.patientsNearLimit} urgent={data.patientsNearLimit > 0} />

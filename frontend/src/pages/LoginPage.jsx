@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, HeartPulse, LockKeyhole, Menu, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, ArrowRight, HeartPulse, LockKeyhole } from "lucide-react";
 import Loader from "../components/common/Loader";
+import Modal from "../components/common/Modal";
 import { useAuthStore } from "../store/authStore";
 import { defaultPathForRole } from "../utils/roles";
+import toast from "react-hot-toast";
+import PublicHeader from "../components/public/PublicHeader";
 
 const highlights = [
   {
@@ -26,10 +29,15 @@ const highlights = [
 const LoginPage = () => {
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
-  const [navOpen, setNavOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetStep, setResetStep] = useState("request");
+  const [resetToken, setResetToken] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetForm, setResetForm] = useState({ identifier: "", code: "", newPassword: "", confirmPassword: "" });
   const navigate = useNavigate();
-  const { login, loading, error } = useAuthStore();
+  const { login, loading, error, requestPasswordReset, verifyPasswordResetCode, resetPassword } = useAuthStore();
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -46,33 +54,71 @@ const LoginPage = () => {
     event.preventDefault();
 
     try {
-      const result = await login(loginId, password);
+      const result = await login(loginId, password, rememberMe);
       navigate(defaultPathForRole(result.user?.role), { replace: true });
     } catch (err) {
       console.error(err);
     }
   };
 
+  const requestReset = async (event) => {
+    event.preventDefault();
+    if (!resetForm.identifier.trim()) return toast.error("Enter your email or account ID.");
+    setResetLoading(true);
+    try {
+      const result = await requestPasswordReset(resetForm.identifier.trim());
+      setResetStep("verify");
+      toast.success(result.message);
+    } catch (requestError) {
+      toast.error(requestError.response?.data?.message || "Could not send a reset code.");
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const verifyResetCode = async (event) => {
+    event.preventDefault();
+    if (!/^\d{6}$/.test(resetForm.code)) return toast.error("Enter the 6-digit reset code.");
+    setResetLoading(true);
+    try {
+      const result = await verifyPasswordResetCode(resetForm.identifier.trim(), resetForm.code);
+      setResetToken(result.resetToken);
+      setResetStep("password");
+      toast.success(result.message);
+    } catch (verifyError) {
+      toast.error(verifyError.response?.data?.message || "Could not verify the reset code.");
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const completeReset = async (event) => {
+    event.preventDefault();
+    if (resetForm.newPassword.length < 8) return toast.error("New password must be at least 8 characters.");
+    if (resetForm.newPassword !== resetForm.confirmPassword) return toast.error("New passwords do not match.");
+    if (!resetToken) return toast.error("Verify your reset code first.");
+    setResetLoading(true);
+    try {
+      const result = await resetPassword(resetToken, resetForm.newPassword);
+      toast.success(result.message);
+      setLoginId(resetForm.identifier.trim());
+      setResetOpen(false);
+      setResetStep("request");
+      setResetToken("");
+      setResetForm({ identifier: "", code: "", newPassword: "", confirmPassword: "" });
+    } catch (resetError) {
+      toast.error(resetError.response?.data?.message || "Could not reset the password.");
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   return (
     <main className="login-page">
       <div className="login-backdrop" aria-hidden="true" />
-      <header className="login-public-header">
-        <Link to="/" className="login-public-logo">
-          <img src="/images/logo.png" alt="Emmanuel Hospital Dialysis Center" />
-          <span><strong>Emmanuel Hospital</strong><small>Dialysis Center</small></span>
-        </Link>
-        <nav className={navOpen ? "login-public-nav open" : "login-public-nav"} aria-label="Public website navigation">
-          <Link to="/" onClick={() => setNavOpen(false)}>Home</Link>
-          <Link to="/about" onClick={() => setNavOpen(false)}>About</Link>
-          <Link to="/services" onClick={() => setNavOpen(false)}>Services</Link>
-          <Link to="/facilities" onClick={() => setNavOpen(false)}>Facilities & Technology</Link>
-          <Link to="/gallery" onClick={() => setNavOpen(false)}>Gallery</Link>
-          <Link to="/announcements" onClick={() => setNavOpen(false)}>Announcements</Link>
-          <Link to="/contact" onClick={() => setNavOpen(false)}>Contact</Link>
-          <span>Secure portal</span>
-        </nav>
-        <button type="button" className="login-public-menu" onClick={() => setNavOpen((value) => !value)} aria-label="Toggle navigation" aria-expanded={navOpen}>{navOpen ? <X /> : <Menu />}</button>
-      </header>
+      <div className="public-site login-page-public-header">
+        <PublicHeader />
+      </div>
 
       <section className="login-card" aria-label="Emmanuel Hospital patient portal">
         <div className="login-form-panel">
@@ -113,9 +159,14 @@ const LoginPage = () => {
               />
             </div>
 
-            <button type="button" className="forgot-password">
-              Forgot Password?
-            </button>
+            <div className="login-options">
+              <label className="login-remember">
+                <input type="checkbox" checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} />
+                <span aria-hidden="true" />
+                Remember me
+              </label>
+              <button type="button" className="forgot-password" onClick={() => { setResetForm((value) => ({ ...value, identifier: value.identifier || loginId })); setResetOpen(true); }}>Forgot Password?</button>
+            </div>
 
             {error && <p className="login-error" role="alert">{error}</p>}
 
@@ -151,6 +202,23 @@ const LoginPage = () => {
           </div>
         </div>
       </section>
+
+      <Modal isOpen={resetOpen} onClose={() => { if (!resetLoading) { setResetOpen(false); setResetStep("request"); setResetToken(""); } }} title="Reset your password" maxWidth="max-w-md">
+        {resetStep === "request" ? <form onSubmit={requestReset} className="password-reset-form">
+          <p>Enter the email, Patient ID, or Doctor ID connected to your account. A reset code will be sent to your verified email.</p>
+          <div className="login-field"><label htmlFor="resetIdentifier">Email or account ID</label><input id="resetIdentifier" value={resetForm.identifier} onChange={(event) => setResetForm((value) => ({ ...value, identifier: event.target.value }))} placeholder="Email, PAT- ID, or DOC- ID" autoComplete="username" required /></div>
+          <button type="submit" className="login-button" disabled={resetLoading}>{resetLoading ? "Sending code..." : "Send reset code"}</button>
+        </form> : resetStep === "verify" ? <form onSubmit={verifyResetCode} className="password-reset-form">
+          <p>Enter the six-digit code sent to the account’s verified email.</p>
+          <div className="login-field"><label htmlFor="resetCode">6-digit reset code</label><input id="resetCode" inputMode="numeric" value={resetForm.code} onChange={(event) => setResetForm((value) => ({ ...value, code: event.target.value.replace(/\D/g, "").slice(0, 6) }))} placeholder="000000" required /></div>
+          <div className="password-reset-actions"><button type="button" onClick={() => setResetStep("request")} disabled={resetLoading}>Back</button><button type="submit" className="login-button" disabled={resetLoading}>{resetLoading ? "Verifying..." : "Verify code"}</button></div>
+        </form> : <form onSubmit={completeReset} className="password-reset-form">
+          <p>Your code is verified. Create a new password for your account.</p>
+          <div className="login-field"><label htmlFor="resetPassword">New password</label><input id="resetPassword" type="password" value={resetForm.newPassword} onChange={(event) => setResetForm((value) => ({ ...value, newPassword: event.target.value }))} autoComplete="new-password" required /></div>
+          <div className="login-field"><label htmlFor="resetConfirmPassword">Confirm new password</label><input id="resetConfirmPassword" type="password" value={resetForm.confirmPassword} onChange={(event) => setResetForm((value) => ({ ...value, confirmPassword: event.target.value }))} autoComplete="new-password" required /></div>
+          <div className="password-reset-actions"><button type="button" onClick={() => { setResetStep("verify"); setResetToken(""); }} disabled={resetLoading}>Back</button><button type="submit" className="login-button" disabled={resetLoading}>{resetLoading ? "Resetting..." : "Reset password"}</button></div>
+        </form>}
+      </Modal>
 
       {loading && <Loader fullScreen label="Logging in..." />}
     </main>

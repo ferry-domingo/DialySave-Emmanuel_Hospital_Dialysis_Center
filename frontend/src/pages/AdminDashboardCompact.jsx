@@ -54,7 +54,7 @@ const CardHeading = ({ title, subtitle, action }) => (
 );
 
 const AdminMetric = ({ to, icon: Icon, label, value, footer, iconClass, footerClass = "text-emerald-600" }) => (
-  <Link to={to} className="flex h-full min-h-[84px] min-w-0 flex-col justify-center bg-white px-3 py-2 transition hover:bg-slate-50">
+  <Link to={to} className="flex h-full min-h-[5.25rem] min-w-0 flex-col justify-center bg-white px-3 py-2 transition hover:bg-slate-50">
     <span className="flex items-center gap-2">
       <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg ${iconClass}`}><Icon size={14} /></span>
       <strong className="text-base leading-none text-slate-900">{value ?? "—"}</strong>
@@ -107,10 +107,10 @@ const AdminDashboardCompact = () => {
 
       {error && <div className="mt-2.5 flex items-center gap-2 rounded-xl bg-red-50 px-3 py-2 text-xs font-bold text-red-700"><CircleAlert size={14} />{error}</div>}
 
-      <div className="grid w-full grid-cols-1 items-stretch gap-2.5 xl:mt-2.5 xl:min-h-0 xl:flex-1 xl:grid-cols-[minmax(680px,1fr)_270px_215px]">
+      <div className="grid w-full grid-cols-1 items-stretch gap-2.5 xl:mt-2.5 xl:min-h-0 xl:flex-1 xl:grid-cols-[minmax(42.5rem,1fr)_16.875rem_13.4375rem]">
         <div className="h-full space-y-2.5 xl:grid xl:min-h-0 xl:grid-rows-[auto_minmax(0,1fr)_minmax(0,1fr)] xl:space-y-0 xl:gap-2.5">
-          <div className="grid min-h-[86px] w-full grid-cols-1 items-stretch gap-2.5 md:grid-cols-[minmax(220px,.72fr)_minmax(0,1.58fr)]" aria-label="Administration overview and account totals">
-            <section className="relative h-full min-h-[86px] w-full overflow-hidden rounded-xl bg-[#173d31] p-3 text-white shadow-sm">
+          <div className="grid min-h-[5.375rem] w-full grid-cols-1 items-stretch gap-2.5 md:grid-cols-[minmax(13.75rem,.72fr)_minmax(0,1.58fr)]" aria-label="Administration overview and account totals">
+            <section className="relative h-full min-h-[5.375rem] w-full overflow-hidden rounded-xl bg-[#173d31] p-3 text-white shadow-sm">
               <div className="absolute -right-10 -top-20 h-44 w-44 rounded-full bg-emerald-400/20 blur-3xl" />
               <div className="relative flex h-full items-center">
                 <div className="min-w-0">
@@ -120,7 +120,7 @@ const AdminDashboardCompact = () => {
               </div>
             </section>
 
-            <section className="grid h-full min-h-[86px] min-w-0 grid-cols-2 items-stretch divide-x divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm sm:grid-cols-4 sm:divide-y-0" aria-label="Administrator totals">
+            <section className="grid h-full min-h-[5.375rem] min-w-0 grid-cols-2 items-stretch divide-x divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm sm:grid-cols-4 sm:divide-y-0" aria-label="Administrator totals">
               <AdminMetric to="/users" icon={Users} label="Total accounts" value={stats?.totalUsers} footer={`↗ ${stats?.newUsersThisWeek ?? 0} new this week`} iconClass="bg-slate-100 text-slate-600" />
               <AdminMetric to="/users" icon={UserCheck} label="Active accounts" value={stats?.activeUsers} footer={`↗ ${activeRate}% active`} iconClass="bg-emerald-50 text-emerald-600" />
               <AdminMetric to="/activity-logs" icon={Activity} label="Activity today" value={stats?.activityToday} footer="↗ Audit events" iconClass="bg-indigo-50 text-indigo-600" />
@@ -128,8 +128,8 @@ const AdminDashboardCompact = () => {
             </section>
           </div>
 
-          <div className="grid min-h-0 w-full grid-cols-1 items-stretch gap-2.5 overflow-hidden lg:grid-cols-[minmax(400px,1fr)_240px]">
-            <section className="flex h-full min-h-[210px] min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200/70 bg-white p-3 shadow-sm">
+          <div className="grid min-h-0 w-full grid-cols-1 items-stretch gap-2.5 overflow-hidden lg:grid-cols-[minmax(25rem,1fr)_15rem]">
+            <section className="flex h-full min-h-[13.125rem] min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200/70 bg-white p-3 shadow-sm">
               <CardHeading title="System activity" subtitle={`Audit and security events · ${activityPeriod === "all" ? "All history" : activityPeriod}`} action={(
                 <select value={activityPeriod} onChange={(event) => setActivityPeriod(event.target.value)} className="h-7 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-600 outline-none focus:border-emerald-400" aria-label="System activity period">
                   <option value="week">Week</option>
@@ -179,7 +179,7 @@ const AdminDashboardCompact = () => {
             </section>
           </div>
 
-          <div className="grid min-h-0 w-full grid-cols-1 items-stretch gap-2.5 overflow-hidden lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="grid min-h-0 w-full grid-cols-1 items-stretch gap-2.5 overflow-hidden lg:grid-cols-[minmax(0,1fr)_20rem]">
             <section className="flex h-full min-w-0 flex-col rounded-xl border border-slate-200/70 bg-white p-3 shadow-sm">
               <CardHeading title="Recent audit activity" subtitle="Latest account and system changes" action={<Link to="/activity-logs" className="text-[9px] font-bold text-emerald-700">View all</Link>} />
               <div className="audit-activity-scroll mt-2 min-h-0 flex-1 overflow-y-auto">

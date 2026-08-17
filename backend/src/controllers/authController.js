@@ -1,8 +1,8 @@
 import User from "../models/User.js";
 import crypto from "crypto";
-import { createAuthToken, generateTemporaryPassword, hashPassword, verifyPassword } from "../utils/auth.js";
+import { createAuthToken, generateTemporaryPassword, hashPassword, verifyAuthToken, verifyPassword } from "../utils/auth.js";
 import { recordActivity } from "../utils/activityLog.js";
-import { sendEmailVerificationCode } from "../utils/email.js";
+import { sendEmailVerificationCode, sendPasswordResetCode } from "../utils/email.js";
 import { normalizeRole, ROLES } from "../utils/roles.js";
 import { Doctor } from "../models/Doctor.js";
 
@@ -10,6 +10,12 @@ const patientName = (patient) =>
   [patient?.first_name, patient?.middle_name, patient?.last_name].filter(Boolean).join(" ");
 const doctorName = (doctor) =>
   [doctor?.first_name, doctor?.middle_name, doctor?.last_name].filter(Boolean).join(" ");
+
+const accountForIdentifier = (identifier) => {
+  const value = String(identifier || "").trim();
+  const portalId = /^(?:PAT|DOC)-/i.test(value) ? value.toUpperCase() : value;
+  return User.findOne({ $or: [{ email: value.toLowerCase() }, { username: portalId }] });
+};
 
 const publicUser = (user) => ({
   id: user._id,
@@ -39,7 +45,7 @@ const publicUser = (user) => ({
 
 export const loginUser = async (req, res) => {
   try {
-    const { loginId: submittedLoginId, password } = req.body;
+    const { loginId: submittedLoginId, password, rememberMe } = req.body;
     const loginId = String(submittedLoginId || "").trim();
     const portalLoginId = /^(?:PAT|DOC)-/i.test(loginId) ? loginId.toUpperCase() : loginId;
 
@@ -148,7 +154,7 @@ export const loginUser = async (req, res) => {
       role: user.role,
       patient: user.patient,
       doctor: user.doctor,
-    });
+    }, rememberMe === true ? "30d" : "8h");
 
     await recordActivity({ req, actor: user, action: "USER_LOGIN", target: user, details: "User signed in." });
 
@@ -164,6 +170,87 @@ export const loginUser = async (req, res) => {
       message: "Login failed.",
       error: error.message,
     });
+  }
+};
+
+export const requestPasswordReset = async (req, res) => {
+  const genericResponse = {
+    success: true,
+    message: "If that active account has a verified email, a reset code has been sent. It expires in 10 minutes.",
+  };
+  try {
+    const identifier = String(req.body.identifier || "").trim();
+    if (!identifier) return res.status(400).json({ success: false, message: "Enter your email or account ID." });
+
+    const user = await accountForIdentifier(identifier).select("+passwordResetRequestedAt");
+    if (!user || user.status !== "Active" || !user.email) return res.json(genericResponse);
+    if (user.passwordResetRequestedAt && Date.now() - user.passwordResetRequestedAt.getTime() < 60_000) return res.json(genericResponse);
+
+    const code = String(crypto.randomInt(100000, 1000000));
+    const codeHash = crypto.createHash("sha256").update(code).digest("hex");
+    await sendPasswordResetCode({ email: user.email, name: user.name || user.username, code });
+    user.passwordResetCodeHash = codeHash;
+    user.passwordResetExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    user.passwordResetAttempts = 0;
+    user.passwordResetRequestedAt = new Date();
+    await user.save();
+
+    await recordActivity({ req, actor: user, action: "PASSWORD_RESET_REQUESTED", target: user, details: "A password reset code was requested." });
+    return res.json(genericResponse);
+  } catch (error) {
+    console.error("Password reset delivery failed:", { code: error.code || "UNKNOWN", message: error.message });
+    return res.status(503).json({ success: false, message: "The reset email could not be sent. Please try again shortly." });
+  }
+};
+
+export const verifyPasswordResetCode = async (req, res) => {
+  try {
+    const identifier = String(req.body.identifier || "").trim();
+    const code = String(req.body.code || "").trim();
+    if (!identifier || !/^\d{6}$/.test(code)) return res.status(400).json({ success: false, message: "Enter your account and the 6-digit reset code." });
+
+    const user = await accountForIdentifier(identifier).select("+passwordResetCodeHash +passwordResetExpiresAt +passwordResetAttempts +passwordResetRequestedAt");
+    const submittedHash = crypto.createHash("sha256").update(code).digest("hex");
+    const validCode = user?.passwordResetCodeHash &&
+      user.passwordResetAttempts < 5 &&
+      user.passwordResetExpiresAt > new Date() &&
+      crypto.timingSafeEqual(Buffer.from(submittedHash), Buffer.from(user.passwordResetCodeHash));
+    if (!validCode) {
+      if (user?.passwordResetCodeHash) {
+        user.passwordResetAttempts = Math.min(5, (user.passwordResetAttempts || 0) + 1);
+        await user.save();
+      }
+      return res.status(400).json({ success: false, message: "The reset code is invalid or expired." });
+    }
+
+    const resetToken = createAuthToken({ id: user._id, purpose: "password-reset", resetCodeHash: user.passwordResetCodeHash }, "10m");
+    return res.json({ success: true, message: "Code verified. Create your new password.", resetToken });
+  } catch {
+    return res.status(500).json({ success: false, message: "Could not verify the reset code." });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const resetToken = String(req.body.resetToken || "");
+    const newPassword = String(req.body.newPassword || "");
+    if (newPassword.length < 8) return res.status(400).json({ success: false, message: "New password must be at least 8 characters." });
+    const decoded = verifyAuthToken(resetToken);
+    if (decoded.purpose !== "password-reset") return res.status(400).json({ success: false, message: "The password reset session is invalid or expired." });
+    const user = await User.findById(decoded.id).select("+passwordResetCodeHash +passwordResetExpiresAt +passwordResetAttempts +passwordResetRequestedAt");
+    if (!user?.passwordResetCodeHash || user.passwordResetCodeHash !== decoded.resetCodeHash) return res.status(400).json({ success: false, message: "The password reset session is invalid or already used." });
+
+    user.password = await hashPassword(newPassword);
+    user.passwordResetCodeHash = "";
+    user.passwordResetExpiresAt = null;
+    user.passwordResetAttempts = 0;
+    user.passwordResetRequestedAt = null;
+    await user.save();
+    await recordActivity({ req, actor: user, action: "PASSWORD_RESET_COMPLETED", target: user, details: "Password was reset using an email verification code." });
+    return res.json({ success: true, message: "Password reset successfully. You can now sign in." });
+  } catch (error) {
+    const tokenError = ["JsonWebTokenError", "TokenExpiredError"].includes(error.name);
+    return res.status(tokenError ? 400 : 500).json({ success: false, message: tokenError ? "The password reset session is invalid or expired." : "Could not reset the password." });
   }
 };
 
@@ -245,10 +332,6 @@ export const updateMyProfile = async (req, res) => {
 
 export const requestEmailChange = async (req, res) => {
   try {
-    if ([ROLES.PATIENT, ROLES.DOCTOR].includes(req.user.role)) {
-      return res.status(403).json({ success: false, message: "Portal accounts use an assigned ID to sign in." });
-    }
-
     const email = String(req.body.email || "").trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ success: false, message: "Enter a valid email address." });

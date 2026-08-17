@@ -25,6 +25,7 @@ import { useMessageStore } from "../../store/messageStore";
 import { useOnlineUsersStore } from "../../store/onlineUsersStore";
 import { getSocket } from "../../lib/socket";
 import UserAvatar from "../../components/common/UserAvatar";
+import { normalizeRole, ROLES } from "../../utils/roles";
 
 const getUserId = (user) => String(user?._id ?? user?.id ?? "");
 
@@ -61,10 +62,10 @@ const isEmojiOnly = (value) => {
     /^(?:\p{Extended_Pictographic}|\p{Emoji_Presentation}|\uFE0F|\u200D|\s)+$/u.test(text);
 };
 
-const Avatar = ({ user, online = false, size = "h-11 w-11" }) => (
+const Avatar = ({ user, online = false, size = "h-11 w-11", statusSize = "h-3 w-3" }) => (
   <UserAvatar user={user} name={displayName(user)} className={`relative ${size} text-slate-600`}>
     {online && (
-      <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
+      <span className={`absolute bottom-0 right-0 rounded-full border-2 border-white bg-emerald-500 ${statusSize}`} />
     )}
   </UserAvatar>
 );
@@ -114,6 +115,7 @@ const MessageMedia = ({ message }) => {
 const MessagesPage = () => {
   const currentUser = useAuthStore((state) => state.user);
   const currentUserId = getUserId(currentUser);
+  const isPatient = normalizeRole(currentUser?.role) === ROLES.PATIENT;
   const onlineUserIds = useOnlineUsersStore((state) => state.onlineUserIds);
   const {
     contacts,
@@ -199,7 +201,15 @@ const MessagesPage = () => {
       contact.username?.toLowerCase().includes(term) ||
       contact.role?.toLowerCase().includes(term) ||
       JSON.stringify(contact).toLowerCase().includes(term);
-  }), [contacts, term]);
+  }).sort((first, second) => {
+    const firstOnline = onlineUserIds.includes(getUserId(first));
+    const secondOnline = onlineUserIds.includes(getUserId(second));
+    if (firstOnline !== secondOnline) return firstOnline ? -1 : 1;
+    return displayName(first).localeCompare(displayName(second));
+  }), [contacts, term, onlineUserIds]);
+  const onlineContacts = useMemo(() => contacts
+    .filter((contact) => onlineUserIds.includes(getUserId(contact)))
+    .sort((first, second) => displayName(first).localeCompare(displayName(second))), [contacts, onlineUserIds]);
   const forwardContacts = contacts.filter((contact) => {
     const forwardTerm = forwardSearch.trim().toLowerCase();
     return !forwardTerm ||
@@ -355,17 +365,17 @@ const MessagesPage = () => {
 
   return (
     <div className="flex h-[calc(100dvh-4.5rem)] min-h-0 flex-col gap-2 overflow-hidden md:h-full">
-      <Topbar title="Messages" />
+      <div className="hidden md:block"><Topbar title="Messages" /></div>
 
       <div className="flex min-h-0 flex-1 overflow-hidden rounded-xl bg-white shadow-sm">
         <aside className={`messages-conversation-list ${activeConversationId ? "hidden md:flex" : "flex"} w-full min-w-0 flex-col border-r border-slate-100 md:w-80 lg:w-96`}>
           <div className="border-b border-slate-100 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="font-bold text-slate-900">{newChatOpen ? "New message" : showArchived ? "Archived chats" : "Chats"}</h2>
+                <h2 className="font-bold text-slate-900">{newChatOpen ? (isPatient ? "People" : "New message") : showArchived ? "Archived chats" : "Chats"}</h2>
                 <p className="text-xs text-slate-400">
                   {newChatOpen
-                    ? "Choose someone to message"
+                    ? (isPatient ? "Online and offline hospital users" : "Choose someone to message")
                     : showArchived
                       ? `${conversations.filter((item) => item.archived).length} archived`
                       : `${conversations.filter((item) => !item.archived).length} conversation${conversations.filter((item) => !item.archived).length === 1 ? "" : "s"}`}
@@ -381,7 +391,7 @@ const MessagesPage = () => {
                     }}
                     aria-label={showArchived ? "Back to chats" : "View archived chats"}
                     title={showArchived ? "Back to chats" : "Archived chats"}
-                    className={`grid h-10 w-10 place-items-center rounded-full transition ${showArchived ? "bg-slate-950 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                    className={`${isPatient ? "hidden sm:grid" : "grid"} h-10 w-10 place-items-center rounded-full transition ${showArchived ? "bg-slate-950 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
                   >
                     {showArchived ? <ArrowLeft size={18} /> : <Archive size={18} />}
                   </button>
@@ -395,22 +405,51 @@ const MessagesPage = () => {
                   aria-label={newChatOpen ? "Close new message" : "Start new message"}
                   className="grid h-10 w-10 place-items-center rounded-full bg-slate-950 text-white transition hover:bg-slate-800"
                 >
-                  {newChatOpen ? <X size={18} /> : <MessageCircle size={18} />}
+                  {newChatOpen ? <X size={18} /> : isPatient ? <Pencil size={18} /> : <MessageCircle size={18} />}
                 </button>
               </div>
             </div>
-            <label className="mt-4 flex items-center gap-2 rounded-2xl bg-slate-100 px-3.5 py-2.5">
-              <Search size={16} className="shrink-0 text-slate-400" />
+            <label className={`mt-4 flex items-center gap-2 bg-slate-100 ${isPatient ? "h-11 rounded-full px-4" : "rounded-2xl px-3.5 py-2.5"}`}>
+              <Search size={isPatient ? 19 : 16} className="shrink-0 text-slate-400" />
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder={newChatOpen ? "Search people" : "Search chats"}
+                placeholder={newChatOpen ? "Search people" : isPatient ? "Search chats or people" : "Search chats"}
                 className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
               />
             </label>
+            {isPatient && onlineContacts.length > 0 && (
+              <div className="-mx-4 mt-3">
+                <div className="scrollbar-hide flex snap-x snap-mandatory gap-5 overflow-x-auto overscroll-x-contain px-4 pb-2 pt-2 touch-pan-x">
+                  {onlineContacts.map((contact) => (
+                    <button
+                      key={`online-${contact._id}`}
+                      type="button"
+                      onClick={() => handleStartConversation(contact)}
+                      className="group flex w-[4.5rem] shrink-0 snap-start flex-col items-center gap-2 text-center"
+                      title={`Message ${displayName(contact)}`}
+                    >
+                      <Avatar user={contact} online size="h-16 w-16" statusSize="h-4 w-4" />
+                      <span className="w-full truncate text-xs font-medium text-slate-800 group-hover:text-emerald-700">{displayName(contact).split(" ")[0]}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="scrollbar-hide flex-1 overflow-y-auto">
+            {!newChatOpen && isPatient && term && filteredContacts.length > 0 && (
+              <section className="border-b border-slate-100 bg-slate-50/60 py-1" aria-label="Matching people">
+                <p className="px-4 py-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">People</p>
+                {filteredContacts.slice(0, 5).map((contact) => (
+                  <button key={`search-${contact._id}`} type="button" onClick={() => handleStartConversation(contact)} className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition hover:bg-white">
+                    <Avatar user={contact} online={onlineUserIds.includes(getUserId(contact))} size="h-10 w-10" />
+                    <span className="min-w-0 flex-1"><b className="block truncate text-sm text-slate-900">{displayName(contact)}</b><small className={`block text-[10px] font-semibold ${onlineUserIds.includes(getUserId(contact)) ? "text-emerald-600" : "text-slate-400"}`}>{contact.role} · {onlineUserIds.includes(getUserId(contact)) ? "Online" : "Offline"}</small></span>
+                  </button>
+                ))}
+              </section>
+            )}
             {newChatOpen ? (
               filteredContacts.length ? filteredContacts.map((contact) => (
                 <button
@@ -419,11 +458,12 @@ const MessagesPage = () => {
                   onClick={() => handleStartConversation(contact)}
                   className="flex w-full items-center gap-3 border-b border-slate-50 px-4 py-3 text-left transition hover:bg-slate-50"
                 >
-                  <Avatar user={contact} online={onlineUserIds.includes(contact._id)} />
-                  <div className="min-w-0">
+                  <Avatar user={contact} online={onlineUserIds.includes(getUserId(contact))} />
+                  <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold text-slate-900">{displayName(contact)}</p>
                     <p className="truncate text-xs text-slate-400">{contact.role} · @{contact.username}</p>
                   </div>
+                  <span className={`ml-auto shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${onlineUserIds.includes(getUserId(contact)) ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"}`}>{onlineUserIds.includes(getUserId(contact)) ? "Online" : "Offline"}</span>
                 </button>
               )) : (
                 <div className="px-6 py-12 text-center text-sm text-slate-400">No people found.</div>

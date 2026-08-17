@@ -42,6 +42,30 @@ const UserSchema = new mongoose.Schema(
       select: false,
     },
 
+    passwordResetCodeHash: {
+      type: String,
+      default: "",
+      select: false,
+    },
+
+    passwordResetExpiresAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
+    passwordResetAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+
+    passwordResetRequestedAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
     password: {
       type: String,
       required: true,

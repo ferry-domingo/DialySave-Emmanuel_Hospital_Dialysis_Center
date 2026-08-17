@@ -3,10 +3,11 @@ const Input = ({
   required,
   error,
   className = "",
+  containerClassName = "",
   ...props
 }) => {
   return (
-    <div className="space-y-0.5">
+    <div className={`space-y-0.5 ${containerClassName}`}>
       {label && (
         <label className="text-[9px] font-bold uppercase tracking-wide text-blue-700">
           {label}
@@ -19,7 +20,7 @@ const Input = ({
           error ? "border-red-300" : "border-slate-200"
         } ${className}`}
         {...props}
-        style={{ ...props.style, fontSize: "12px" }}
+        style={props.style}
       />
 
       {error && <p className="text-xs font-semibold text-red-500">{error}</p>}

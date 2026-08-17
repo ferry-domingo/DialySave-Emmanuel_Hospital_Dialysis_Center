@@ -54,6 +54,9 @@ export const initSocket = (httpServer, allowedOrigins = true) => {
     }
     onlineUsers.get(userId).add(socket.id);
     io.emit("online-users", Array.from(onlineUsers.keys()));
+    socket.on("online-users:request", () => {
+      socket.emit("online-users", Array.from(onlineUsers.keys()));
+    });
 
     socket.on("disconnect", () => {
       const sockets = onlineUsers.get(userId);

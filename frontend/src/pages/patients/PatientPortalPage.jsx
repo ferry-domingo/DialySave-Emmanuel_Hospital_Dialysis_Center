@@ -51,7 +51,7 @@ const StatTile = ({ icon: Icon, label, value }) => (
 
 const PatientSummary = ({ sessionCount, phicSessions, cashSessions, className = "" }) => (
   <section className={`overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm ${className}`} aria-label="Patient summary">
-    <div className="grid min-h-[86px] grid-cols-3 divide-x divide-slate-100">
+    <div className="grid min-h-[5.375rem] grid-cols-3 divide-x divide-slate-100">
       <StatTile icon={Activity} label="Total Sessions" value={sessionCount} />
       <StatTile icon={ShieldCheck} label="PHIC Sessions" value={`${phicSessions}/156`} />
       <StatTile icon={Banknote} label="Cash Sessions" value={cashSessions} />
@@ -60,7 +60,7 @@ const PatientSummary = ({ sessionCount, phicSessions, cashSessions, className = 
 );
 
 const CompactTreatmentDetail = ({ label, value, subvalue }) => (
-  <div className="flex min-h-[48px] min-w-0 flex-col justify-center rounded-md bg-slate-50 px-2.5 py-2">
+  <div className="flex min-h-[3rem] min-w-0 flex-col justify-center rounded-md bg-slate-50 px-2.5 py-2">
     <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">{label}</p>
     <p className="mt-0.5 line-clamp-2 text-xs font-bold leading-snug text-slate-900" title={String(value || "")}>{value || "Not recorded"}</p>
     {subvalue && <p className="mt-0.5 line-clamp-2 text-[9px] leading-snug text-slate-500">{subvalue}</p>}
@@ -165,9 +165,9 @@ const PatientPortalPage = () => {
       {error && <div className="mt-2.5 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600">{error}</div>}
 
       {!loading && !error && (
-        <div className="grid min-h-0 w-full gap-2.5 xl:mt-2.5 xl:grid-cols-2 2xl:flex-1 2xl:grid-cols-[minmax(240px,262px)_minmax(420px,1fr)_270px_215px] 2xl:overflow-hidden">
+        <div className="grid min-h-0 w-full gap-2.5 xl:mt-2.5 xl:grid-cols-2 2xl:flex-1 2xl:grid-cols-[minmax(15rem,16.375rem)_minmax(26.25rem,1fr)_16.875rem_13.4375rem] 2xl:overflow-hidden">
           <div className="grid min-h-0 gap-2.5 2xl:grid-rows-[96px_auto_minmax(0,1fr)]">
-            <section className="relative min-h-[96px] overflow-hidden rounded-xl bg-[#173d31] p-4 text-white shadow-sm">
+            <section className="relative min-h-[6rem] overflow-hidden rounded-xl bg-[#173d31] p-4 text-white shadow-sm">
               <div className="absolute -right-10 -top-20 h-44 w-44 rounded-full bg-emerald-400/20 blur-3xl" />
               <div className="relative flex h-full items-center"><div className="min-w-0"><p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-100"><HeartPulse size={13} />Patient overview</p><h1 className="mt-1 break-words text-base font-black leading-tight" title={portalData?.profile?.fullName || "Patient"}>Welcome, {portalData?.profile?.fullName || "Patient"}.</h1><p className="mt-1 text-[11px] font-medium text-emerald-50">Your dialysis care summary at a glance.</p></div></div>
             </section>
@@ -225,7 +225,7 @@ const PatientPortalPage = () => {
             <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm"><PanelHeader icon={CalendarDays} title="Admission Overview" subtitle="Current admission record" tone="bg-amber-50 text-amber-600" />{portalData?.admissionReport ? <div className="p-3"><div className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2"><p className="text-[8px] font-bold uppercase text-emerald-600">Admission status</p><div className="mt-1 flex justify-between"><strong className="text-sm text-slate-900">{portalData.admissionReport.status}</strong><CheckCircle2 size={14} className="text-emerald-600" /></div></div><div className="mt-2 grid grid-cols-2 gap-1.5"><InfoTile label="Admission Date" value={formatDate(portalData.admissionReport.admission_date)} /><InfoTile label="Discharge Date" value={portalData.admissionReport.status === "Discharged" && portalData.admissionReport.discharge_date ? formatDate(portalData.admissionReport.discharge_date) : "N/A"} /></div></div> : <p className="p-4 text-center text-[9px] text-slate-400">No admission report</p>}</section>
           </div>
 
-          <aside className="h-full min-h-0 overflow-hidden"><OnlineUsersCard tall /></aside>
+          <aside className="hidden h-full min-h-0 overflow-hidden md:block"><OnlineUsersCard tall /></aside>
         </div>
       )}
     </div>

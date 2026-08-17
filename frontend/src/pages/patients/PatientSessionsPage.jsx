@@ -106,28 +106,28 @@ const PatientSessionsPage = () => {
         </button>
 
         {sortedSessions.length > 1 && (
-          <div className="relative">
-            <div className="flex h-8 items-center gap-2 rounded-xl bg-white px-3 shadow-sm">
+          <div className="relative z-30 w-full sm:w-auto">
+            <div className="flex h-8 w-full items-center gap-2 rounded-xl bg-white px-3 shadow-sm sm:w-auto">
               <Search size={14} className="text-slate-400" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by session # or date"
-                className="w-48 bg-transparent text-[10px] text-black outline-none placeholder:text-slate-400"
+                className="min-w-0 flex-1 bg-transparent text-[10px] text-black outline-none placeholder:text-slate-400 sm:w-48 sm:flex-none"
               />
             </div>
 
             {searchResults.length > 0 && (
-              <div className="absolute right-0 z-10 mt-2 w-72 overflow-hidden rounded-2xl bg-white shadow-lg">
+              <div className="absolute right-0 left-0 z-40 mt-2 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl sm:left-auto sm:w-72">
                 <div className="max-h-64 overflow-y-auto py-1.5">
                   {searchResults.map(({ session, number }) => (
                     <button
                       key={session._id}
                       onClick={() => handleSelectResult(session)}
-                      className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-sm transition hover:bg-slate-50"
+                      className="flex w-full min-w-0 items-center justify-between gap-3 px-4 py-2.5 text-left text-sm transition hover:bg-slate-50"
                     >
-                      <span className="font-semibold text-slate-900">Session {number}</span>
-                      <span className="text-xs text-slate-500">{formatDate(session.createdAt)}</span>
+                      <span className="shrink-0 font-semibold text-slate-900">Session {number}</span>
+                      <span className="min-w-0 truncate text-right text-xs text-slate-500">{formatDate(session.createdAt)}</span>
                     </button>
                   ))}
                 </div>
@@ -135,7 +135,7 @@ const PatientSessionsPage = () => {
             )}
 
             {search.trim() && searchResults.length === 0 && (
-              <div className="absolute right-0 z-10 mt-2 w-72 rounded-2xl bg-white p-4 text-center text-sm text-slate-400 shadow-lg">
+              <div className="absolute right-0 left-0 z-40 mt-2 rounded-2xl border border-slate-100 bg-white p-4 text-center text-sm text-slate-400 shadow-xl sm:left-auto sm:w-72">
                 No matching session.
               </div>
             )}

@@ -35,12 +35,14 @@ const Layout = () => {
 
     const socket = connectSocket(token);
     const syncMessages = () => {
+      socket.emit("online-users:request");
       fetchConversations();
       const activeConversationId = useMessageStore.getState().activeConversationId;
       if (activeConversationId) useMessageStore.getState().loadMessages(activeConversationId);
     };
     const handleNewMessage = (message) => receiveMessage(message, false);
     socket.on("online-users", setOnlineUserIds);
+    socket.emit("online-users:request");
     socket.on("connect", syncMessages);
     socket.on("message:new", handleNewMessage);
     socket.on("message:updated", replaceMessage);

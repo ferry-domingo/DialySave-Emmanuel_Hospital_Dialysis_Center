@@ -17,7 +17,16 @@ const verificationMessage = ({ name, code }) => {
   };
 };
 
-const sendWithBrevo = async ({ email, name, code }) => {
+const passwordResetMessage = ({ name, code }) => {
+  const recipientName = name || "there";
+  return {
+    subject: "Reset your EHDC portal password",
+    text: `Hello ${recipientName},\n\nYour EHDC password reset code is ${code}. It expires in 10 minutes.\n\nIf you did not request a password reset, ignore this email.`,
+    html: `<p>Hello ${escapeHtml(recipientName)},</p><p>Your EHDC password reset code is:</p><p style="font-size:28px;font-weight:700;letter-spacing:6px">${escapeHtml(code)}</p><p>This code expires in 10 minutes. If you did not request a password reset, ignore this email.</p>`,
+  };
+};
+
+const sendWithBrevo = async ({ email, name, message, tag }) => {
   const apiKey = process.env.BREVO_API_KEY;
   const senderEmail = process.env.BREVO_SENDER_EMAIL;
   const senderName = process.env.BREVO_SENDER_NAME || "EHDC";
@@ -27,7 +36,6 @@ const sendWithBrevo = async ({ email, name, code }) => {
     throw error;
   }
 
-  const message = verificationMessage({ name, code });
   let response;
   try {
     response = await fetch("https://api.brevo.com/v3/smtp/email", {
@@ -43,7 +51,7 @@ const sendWithBrevo = async ({ email, name, code }) => {
         subject: message.subject,
         textContent: message.text,
         htmlContent: message.html,
-        tags: ["email-verification"],
+        tags: [tag],
       }),
       signal: AbortSignal.timeout(15000),
     });
@@ -65,6 +73,21 @@ const sendWithBrevo = async ({ email, name, code }) => {
     error.status = response.status;
     throw error;
   }
+};
+
+const deliverEmail = async ({ email, name, message, tag }) => {
+  const provider = String(process.env.EMAIL_PROVIDER || "").trim().toLowerCase();
+  if (provider === "brevo" || (!provider && process.env.BREVO_API_KEY)) {
+    await sendWithBrevo({ email, name, message, tag });
+    return;
+  }
+
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.MAIL_FROM) {
+    throw new Error("Email delivery is not configured.");
+  }
+
+  const transporter = nodemailer.createTransport(await smtpConfig());
+  await transporter.sendMail({ from: process.env.MAIL_FROM, to: email, subject: message.subject, text: message.text, html: message.html });
 };
 
 const smtpConfig = async () => {
@@ -100,28 +123,9 @@ const smtpConfig = async () => {
 };
 
 export const sendEmailVerificationCode = async ({ email, name, code }) => {
-  const provider = String(process.env.EMAIL_PROVIDER || "").trim().toLowerCase();
-  if (provider === "brevo" || (!provider && process.env.BREVO_API_KEY)) {
-    await sendWithBrevo({ email, name, code });
-    return;
-  }
+  await deliverEmail({ email, name, message: verificationMessage({ name, code }), tag: "email-verification" });
+};
 
-  if (
-    !process.env.SMTP_HOST ||
-    !process.env.SMTP_USER ||
-    !process.env.SMTP_PASS ||
-    !process.env.MAIL_FROM
-  ) {
-    throw new Error("Email delivery is not configured.");
-  }
-
-  const transporter = nodemailer.createTransport(await smtpConfig());
-  const message = verificationMessage({ name, code });
-  await transporter.sendMail({
-    from: process.env.MAIL_FROM,
-    to: email,
-    subject: message.subject,
-    text: message.text,
-    html: message.html,
-  });
+export const sendPasswordResetCode = async ({ email, name, code }) => {
+  await deliverEmail({ email, name, message: passwordResetMessage({ name, code }), tag: "password-reset" });
 };

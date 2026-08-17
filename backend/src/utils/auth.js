@@ -24,8 +24,8 @@ export const generateTemporaryPassword = (lastName, birthdate) => {
   return `${formattedLastName}${month}${day}${year}`;
 };
 
-export const createAuthToken = (payload) => {
-  return jwt.sign(payload, getJwtSecret(), { expiresIn: "8h" });
+export const createAuthToken = (payload, expiresIn = "8h") => {
+  return jwt.sign(payload, getJwtSecret(), { expiresIn });
 };
 
 export const verifyAuthToken = (token) => {
