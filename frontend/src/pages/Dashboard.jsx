@@ -5,7 +5,6 @@ import { Activity, Banknote, CreditCard, HeartPulse, Stethoscope, Users } from "
 import Topbar from "../components/layout/Topbar";
 import StatCard from "../components/dashboard/StatCard";
 import RecentSessionsCard from "../components/dashboard/RecentSessionsCard";
-import QuickPatientForm from "../components/dashboard/QuickPatientForm";
 import PatientDemographicsCard from "../components/dashboard/PatientDemographicsCard";
 import OnlineUsersCard from "../components/dashboard/OnlineUsersCard";
 import SessionTrendsChart from "../components/dashboard/SessionTrendsChart";
@@ -23,7 +22,7 @@ const Dashboard = () => {
   const { summary, loading, fetchSummary } = useDashboardStore();
   const role = normalizeRole(user?.role);
   const isAdmin = role === ROLES.ADMIN;
-  const isPhilHealth = role === ROLES.PHILHEALTH_OFFICER;
+  const usesPhilHealthDashboard = [ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER].includes(role);
   const { patients, loading: patientsLoading, fetchPatients } = usePatientStore();
 
   useEffect(() => {
@@ -37,8 +36,8 @@ const Dashboard = () => {
   }, [user, role, fetchSummary]);
 
   useEffect(() => {
-    if (isPhilHealth) fetchPatients();
-  }, [isPhilHealth, fetchPatients]);
+    if (usesPhilHealthDashboard) fetchPatients();
+  }, [usesPhilHealthDashboard, fetchPatients]);
 
   if (role === ROLES.PATIENT) return null;
 
@@ -97,9 +96,9 @@ const Dashboard = () => {
       {!isAdmin && <section className="h-full min-h-[4.875rem] w-full overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm" aria-label="Center monitoring"><div className="grid h-full grid-cols-3 divide-x divide-slate-100">{monitoringItems.map(({ label, value, icon: Icon, tone, to }) => <Link key={label} to={to} title={`${label}: ${value ?? "—"}`} className="flex min-w-0 flex-col justify-center px-2 py-2 transition hover:bg-slate-50"><span className="flex items-center gap-1.5"><span className={`grid h-6 w-6 shrink-0 place-items-center rounded-lg ${tone}`}><Icon size={13} /></span><strong className="text-base leading-none text-slate-900">{value ?? "—"}</strong></span><small className="mt-1.5 block whitespace-normal text-[8px] font-semibold leading-[9px] text-slate-500">{label}</small></Link>)}</div></section>}
       </div>
 
-      <div className={`grid min-h-0 w-full grid-cols-1 items-stretch gap-2.5 overflow-hidden ${isAdmin ? "lg:grid-cols-2" : isPhilHealth ? "lg:grid-cols-[minmax(20rem,0.95fr)_minmax(25rem,1.05fr)]" : "lg:grid-cols-[minmax(20rem,1fr)_21.25rem]"}`}>
+      <div className={`grid min-h-0 w-full grid-cols-1 items-stretch gap-2.5 overflow-hidden ${isAdmin ? "lg:grid-cols-2" : "lg:grid-cols-[minmax(20rem,0.95fr)_minmax(25rem,1.05fr)]"}`}>
         <RecentSessionsCard sessions={summary?.recentSessions ?? []} loading={loading} showLink={!isAdmin} />
-        {!isAdmin && (isPhilHealth ? <PatientDemographicsCard patients={patients} loading={patientsLoading} /> : <QuickPatientForm />)}
+        {!isAdmin && <PatientDemographicsCard patients={patients} loading={patientsLoading} />}
       </div>
 
       <div className="grid min-h-0 w-full grid-cols-1 items-stretch gap-2.5 overflow-hidden lg:grid-cols-[minmax(25rem,1fr)_15rem]">
