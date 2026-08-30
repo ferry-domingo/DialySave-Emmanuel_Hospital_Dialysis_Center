@@ -6,8 +6,8 @@ export const useNotificationStore = create((set) => ({
   unreadCount: 0,
   loading: false,
 
-  fetchNotifications: async () => {
-    set({ loading: true });
+  fetchNotifications: async (options = {}) => {
+    if (!options.silent) set({ loading: true });
     try {
       const { data } = await api.get("/notifications");
       set({ notifications: data.data, unreadCount: data.unread, loading: false });

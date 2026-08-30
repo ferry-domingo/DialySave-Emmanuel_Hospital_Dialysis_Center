@@ -39,7 +39,15 @@ const SignatureBlock = ({ sessionId, role, label, defaultName, signature, onSign
       setName(nextSignature.name);
       setSavedName(nextSignature.name);
       setSavedAt(nextSignature.signedAt);
-      onSignatureChange?.(role, nextSignature);
+      if (role === "witness") {
+        const returnedSignatures = response.data?.data?.signatures || {};
+        ["patient", "witness", "facilityRepresentative"].forEach((signatureRole) => {
+          const returned = returnedSignatures[signatureRole];
+          if (returned?.signedAt) onSignatureChange?.(signatureRole, returned);
+        });
+      } else {
+        onSignatureChange?.(role, nextSignature);
+      }
       setEditing(false);
       toast.success(`${label} signature recorded`);
     } catch (error) {

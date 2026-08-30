@@ -7,9 +7,11 @@ export const useDashboardStore = create((set) => ({
   cashierSummary: null,
   loading: false,
   error: null,
+  lastSummaryDate: null,
+  lastAdminFilters: null,
 
-  fetchSummary: async (date) => {
-    set({ loading: true, error: null });
+  fetchSummary: async (date, options = {}) => {
+    set({ lastSummaryDate: date || null, ...(options.silent ? {} : { loading: true, error: null }) });
 
     try {
       const res = await dashboardApi.getDashboardSummary(date);
@@ -26,8 +28,8 @@ export const useDashboardStore = create((set) => ({
     }
   },
 
-  fetchAdminSummary: async (filters) => {
-    set({ loading: true, error: null });
+  fetchAdminSummary: async (filters, options = {}) => {
+    set({ lastAdminFilters: filters || null, ...(options.silent ? {} : { loading: true, error: null }) });
     try {
       const res = await dashboardApi.getAdminDashboardSummary(filters);
       set({ adminSummary: res.data.data, loading: false });
@@ -36,8 +38,8 @@ export const useDashboardStore = create((set) => ({
     }
   },
 
-  fetchCashierSummary: async () => {
-    set({ loading: true, error: null });
+  fetchCashierSummary: async (options = {}) => {
+    if (!options.silent) set({ loading: true, error: null });
     try {
       const res = await dashboardApi.getCashierDashboardSummary();
       set({ cashierSummary: res.data.data, loading: false });

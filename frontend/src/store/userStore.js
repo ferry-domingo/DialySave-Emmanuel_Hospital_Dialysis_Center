@@ -8,9 +8,10 @@ export const useUserStore = create((set) => ({
   error: null,
   activityLogs: [],
   logsLoading: false,
+  activeLogsArchived: false,
 
-  fetchUsers: async () => {
-    set({ loading: true, error: null });
+  fetchUsers: async (options = {}) => {
+    if (!options.silent) set({ loading: true, error: null });
 
     try {
       const res = await userApi.getUsers();
@@ -61,8 +62,8 @@ export const useUserStore = create((set) => ({
     return res.data;
   },
 
-  fetchActivityLogs: async (archived = false) => {
-    set({ logsLoading: true, error: null });
+  fetchActivityLogs: async (archived = false, options = {}) => {
+    set({ activeLogsArchived: archived, ...(options.silent ? {} : { logsLoading: true, error: null }) });
     try {
       const res = await userApi.getActivityLogs(archived);
       set({ activityLogs: res.data.data, logsLoading: false });

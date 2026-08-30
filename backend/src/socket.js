@@ -9,8 +9,8 @@ export const emitToUser = (userId, event, payload) => {
   if (ioInstance) ioInstance.to(`user:${userId}`).emit(event, payload);
 };
 
-export const broadcastDataChange = (resource, payload = {}) => {
-  if (ioInstance) ioInstance.emit("data:changed", { resource, ...payload });
+export const broadcastDataChange = (payload) => {
+  if (ioInstance) ioInstance.emit("data:changed", payload);
 };
 
 export const initSocket = (httpServer, allowedOrigins = true) => {

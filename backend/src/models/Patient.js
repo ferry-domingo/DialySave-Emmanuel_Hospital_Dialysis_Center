@@ -59,6 +59,16 @@ const patientSchema = new mongoose.Schema(
       trim: true,
     },
 
+    admission_date: {
+      type: Date,
+      default: null,
+    },
+
+    discharge_date: {
+      type: Date,
+      default: null,
+    },
+
     info_relayed: {
       nurse: {
         type: String,

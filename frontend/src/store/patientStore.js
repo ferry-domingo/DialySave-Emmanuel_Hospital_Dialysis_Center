@@ -7,8 +7,8 @@ export const usePatientStore = create((set) => ({
   error: null,
 
   // GET ALL
-  fetchPatients: async () => {
-    set({ loading: true, error: null });
+  fetchPatients: async (options = {}) => {
+    if (!options.silent) set({ loading: true, error: null });
 
     try {
       const res = await patientApi.getPatients();

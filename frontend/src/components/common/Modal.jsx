@@ -10,13 +10,13 @@ const Modal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="app-viewport-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-3">
+    <div className="app-viewport-overlay ui-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-3">
 
-      <div className={`app-modal-panel max-h-[96vh] w-full ${maxWidth} overflow-y-auto rounded-2xl bg-white p-3 shadow-2xl`}>
+      <div className={`app-modal-panel ui-modal-panel max-h-[96vh] w-full ${maxWidth} overflow-y-auto rounded-3xl p-4`}>
 
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
 
-          <h2 className="text-lg font-bold text-slate-900">
+          <h2 className="text-lg font-black tracking-[-0.025em] text-slate-900">
             {title}
           </h2>
 

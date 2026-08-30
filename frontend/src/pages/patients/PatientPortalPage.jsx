@@ -99,9 +99,9 @@ const PatientPortalPage = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchPortal = async () => {
+    const fetchPortal = async (silent = false) => {
       try {
-        setLoading(true);
+        if (!silent) setLoading(true);
         const identifier = user?.patient?._id || (typeof user?.patient === "string" ? user.patient : "") || user?.loginId || user?.id;
         const [patientRes, portalRes] = await Promise.all([api.get(`/patients/${identifier}`), api.get(`/patient-portal/${identifier}`)]);
         const patient = patientRes.data.data;
@@ -118,11 +118,11 @@ const PatientPortalPage = () => {
       } catch (err) {
         setError(err.response?.data?.message || "Unable to load your portal.");
       } finally {
-        setLoading(false);
+        if (!silent) setLoading(false);
       }
     };
     const handleRealtimeUpdate = (event) => {
-      if (["patients", "dialysis-sessions", "monitoring", "admission-report"].includes(event.detail?.resource)) fetchPortal();
+      if (["patients", "dialysis-sessions", "monitoring", "admission-report"].includes(event.detail?.resource)) fetchPortal(true);
     };
     if (user) fetchPortal();
     window.addEventListener("dialysave:data-changed", handleRealtimeUpdate);

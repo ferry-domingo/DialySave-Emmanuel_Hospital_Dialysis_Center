@@ -13,6 +13,8 @@ import { useMonitoringStore } from "../../store/monitoringStore";
 import { useAdmissionReportStore } from "../../store/admissionReportStore";
 import { useUserStore } from "../../store/userStore";
 import { useNotificationStore } from "../../store/notificationStore";
+import { useAnnouncementStore } from "../../store/announcementStore";
+import { useDoctorPortalStore } from "../../store/doctorPortalStore";
 import { normalizeRole, ROLES } from "../../utils/roles";
 
 const Layout = () => {
@@ -34,11 +36,85 @@ const Layout = () => {
     if (!token) return undefined;
 
     const socket = connectSocket(token);
+    const refreshTimers = new Map();
+    const refreshResource = (resource, detail = {}) => {
+      const role = normalizeRole(useAuthStore.getState().user?.role);
+      const path = window.location.pathname;
+      const canUseOperationalPages = [ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER].includes(role);
+      const onDashboard = path === "/dashboard";
+      const actions = {
+        patients: () => canUseOperationalPages && ["/patients", "/monitoring", "/alerts", "/dashboard"].includes(path) && usePatientStore.getState().fetchPatients({ silent: true }),
+        doctors: () => canUseOperationalPages && path === "/doctors" && useDoctorStore.getState().fetchDoctors({ silent: true }),
+        "dialysis-sessions": () => canUseOperationalPages && path === "/sessions" && useDialysisSessionStore.getState().fetchSessions({ silent: true }),
+        dashboard: () => {
+          if (!onDashboard) return;
+          const store = useDashboardStore.getState();
+          if (role === ROLES.ADMIN) return store.fetchAdminSummary(store.lastAdminFilters, { silent: true });
+          if (canUseOperationalPages) return store.fetchSummary(store.lastSummaryDate, { silent: true });
+        },
+        monitoring: () => {
+          if (!canUseOperationalPages || path !== "/monitoring") return;
+          const store = useMonitoringStore.getState();
+          if (store.activePatientId) store.fetchMonitoring(store.activePatientId, store.activeYear, { silent: true });
+        },
+        "admission-report": () => canUseOperationalPages && path === "/admission-report" && useAdmissionReportStore.getState().fetchReports({ silent: true }),
+        users: () => {
+          const currentUser = useAuthStore.getState().user;
+          const currentId = currentUser?.id || currentUser?._id;
+          if (detail.entityId && String(detail.entityId) === String(currentId)) useAuthStore.getState().loadUser({ silent: true });
+          if (role === ROLES.ADMIN && path === "/users") useUserStore.getState().fetchUsers({ silent: true });
+        },
+        "online-directory": () => path === "/messages" && Promise.all([useUserStore.getState().fetchOnlineDirectory(), useMessageStore.getState().fetchContacts()]),
+        "activity-logs": () => {
+          if (role !== ROLES.ADMIN || path !== "/activity-logs") return;
+          const store = useUserStore.getState();
+          store.fetchActivityLogs(store.activeLogsArchived, { silent: true });
+        },
+        notifications: () => useNotificationStore.getState().fetchNotifications({ silent: true }),
+        announcements: () => role === ROLES.ADMIN && path === "/admin-announcements" && useAnnouncementStore.getState().fetchAnnouncements({ silent: true }),
+        "doctor-portal": () => role === ROLES.DOCTOR && path.startsWith("/doctor-") && useDoctorPortalStore.getState().fetchPortal({ silent: true }).catch(() => {}),
+        profile: () => {
+          const currentUser = useAuthStore.getState().user;
+          const currentId = currentUser?.id || currentUser?._id;
+          if (!detail.actorUserId || String(detail.actorUserId) === String(currentId)) useAuthStore.getState().loadUser({ silent: true });
+        },
+      };
+      actions[resource]?.();
+      window.dispatchEvent(new CustomEvent("dialysave:data-changed", { detail: { ...detail, resource } }));
+    };
+    const queueRefresh = (resource, detail) => {
+      clearTimeout(refreshTimers.get(resource));
+      refreshTimers.set(resource, window.setTimeout(() => {
+        refreshTimers.delete(resource);
+        refreshResource(resource, detail);
+      }, 150));
+    };
+    const handleDataChange = (payload = {}) => {
+      const resources = payload.resources || (payload.resource ? [payload.resource] : []);
+      [...new Set(resources)].forEach((resource) => queueRefresh(resource, payload));
+    };
+    let hasConnected = false;
     const syncMessages = () => {
       socket.emit("online-users:request");
       fetchConversations();
       const activeConversationId = useMessageStore.getState().activeConversationId;
       if (activeConversationId) useMessageStore.getState().loadMessages(activeConversationId);
+      if (hasConnected) {
+        const path = window.location.pathname;
+        const routeResources = path === "/dashboard" ? ["dashboard", "patients", "notifications"]
+          : path === "/monitoring" ? ["monitoring", "patients", "notifications"]
+          : path === "/sessions" ? ["dialysis-sessions", "notifications"]
+          : path === "/patients" ? ["patients", "notifications"]
+          : path === "/doctors" ? ["doctors", "notifications"]
+          : path === "/admission-report" ? ["admission-report", "notifications"]
+          : path === "/users" ? ["users", "notifications"]
+          : path === "/activity-logs" ? ["activity-logs", "notifications"]
+          : path === "/admin-announcements" ? ["announcements", "notifications"]
+          : path.startsWith("/doctor-") ? ["doctor-portal", "notifications"]
+          : ["notifications"];
+        routeResources.forEach((resource) => queueRefresh(resource, { reconnect: true }));
+      }
+      hasConnected = true;
     };
     const handleNewMessage = (message) => receiveMessage(message, false);
     socket.on("online-users", setOnlineUserIds);
@@ -50,41 +126,6 @@ const Layout = () => {
     socket.on("message:read", applyReadReceipt);
     socket.on("conversation:new", syncMessages);
     socket.on("notification:new", receiveNotification);
-    const handleDataChange = ({ resource }) => {
-      const role = normalizeRole(useAuthStore.getState().user?.role);
-      const canUseOperationalPages = [ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER].includes(role);
-      const refreshers = {
-        patients: () => canUseOperationalPages && usePatientStore.getState().fetchPatients(),
-        doctors: () => canUseOperationalPages && useDoctorStore.getState().fetchDoctors(),
-        "dialysis-sessions": () => canUseOperationalPages && useDialysisSessionStore.getState().fetchSessions(),
-        dashboard: () => {
-          if (role === ROLES.ADMIN) return useDashboardStore.getState().fetchAdminSummary();
-          if (canUseOperationalPages) return useDashboardStore.getState().fetchSummary();
-        },
-        monitoring: () => {
-          if (!canUseOperationalPages) return;
-          const store = useMonitoringStore.getState();
-          if (store.activePatientId) store.fetchMonitoring(store.activePatientId);
-        },
-        "admission-report": () => canUseOperationalPages && useAdmissionReportStore.getState().fetchReports(),
-        users: () => {
-          useAuthStore.getState().loadUser();
-          if (role === ROLES.ADMIN) {
-            useUserStore.getState().fetchUsers();
-            useDashboardStore.getState().fetchAdminSummary();
-          }
-        },
-        "activity-logs": () => {
-          if (role === ROLES.ADMIN) {
-            useUserStore.getState().fetchActivityLogs();
-            useDashboardStore.getState().fetchAdminSummary();
-          }
-        },
-        notifications: () => useNotificationStore.getState().fetchNotifications(),
-      };
-      refreshers[resource]?.();
-      window.dispatchEvent(new CustomEvent("dialysave:data-changed", { detail: { resource } }));
-    };
     socket.on("data:changed", handleDataChange);
     fetchConversations();
     fetchNotifications();
@@ -99,6 +140,7 @@ const Layout = () => {
       socket.off("conversation:new", syncMessages);
       socket.off("notification:new", receiveNotification);
       socket.off("data:changed", handleDataChange);
+      refreshTimers.forEach((timer) => clearTimeout(timer));
       disconnectSocket();
       clearMessages();
     };

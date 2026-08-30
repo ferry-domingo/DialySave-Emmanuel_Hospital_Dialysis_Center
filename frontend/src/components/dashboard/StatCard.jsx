@@ -27,7 +27,7 @@ const StatCard = ({ label, unit, value, icon: Icon, iconClass, periodDays, chang
   }
 
   return (
-    <div className="rounded-xl bg-white p-3 shadow-sm">
+    <div className="ui-stat-card rounded-2xl bg-white p-4">
       <div className="flex items-center gap-2 text-sm font-semibold text-slate-500">
         <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${iconClass}`}>
           <Icon size={16} />

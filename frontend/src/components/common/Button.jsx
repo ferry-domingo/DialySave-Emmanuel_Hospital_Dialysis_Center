@@ -1,7 +1,7 @@
 const VARIANTS = {
-  primary: "bg-slate-950 text-white hover:bg-slate-800",
-  secondary: "border border-slate-200 text-slate-600 hover:bg-slate-50",
-  danger: "bg-red-600 text-white hover:bg-red-700",
+  primary: "ui-button-primary text-white",
+  secondary: "ui-button-secondary text-slate-700",
+  danger: "ui-button-danger text-white",
 };
 
 const Button = ({
@@ -14,7 +14,7 @@ const Button = ({
   return (
     <button
       type={type}
-      className={`rounded-md px-2.5 py-0.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${VARIANTS[variant]} ${className}`}
+      className={`ui-button min-h-8 rounded-xl px-3 py-1.5 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-60 ${VARIANTS[variant]} ${className}`}
       {...props}
     >
       {children}

@@ -36,7 +36,7 @@ const PatientSessionsPage = () => {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    const loadSessions = async () => {
+    const loadSessions = async (silent = false) => {
       const identifier =
         user?.patient?._id ||
         (typeof user?.patient === "string" ? user.patient : "") ||
@@ -44,19 +44,19 @@ const PatientSessionsPage = () => {
         user?.id;
       if (!identifier) return;
       try {
-        setLoading(true);
+        if (!silent) setLoading(true);
         setError("");
         const response = await api.get(`/patient-portal/${identifier}`);
         setSessions(response.data?.data?.sessions || []);
       } catch (err) {
         setError(err.response?.data?.message || "Unable to load your dialysis sessions.");
       } finally {
-        setLoading(false);
+        if (!silent) setLoading(false);
       }
     };
     loadSessions();
     const handleRealtimeUpdate = (event) => {
-      if (event.detail?.resource === "dialysis-sessions") loadSessions();
+      if (event.detail?.resource === "dialysis-sessions") loadSessions(true);
     };
     window.addEventListener("dialysave:data-changed", handleRealtimeUpdate);
     return () => window.removeEventListener("dialysave:data-changed", handleRealtimeUpdate);

@@ -324,10 +324,22 @@ export const signAgreement = async (req, res) => {
       });
     }
 
+    const signedAt = new Date();
     session.agreement.signatures[role] = {
       name: name.trim(),
-      signedAt: new Date(),
+      signedAt,
     };
+
+    if (role === "witness") {
+      for (const linkedRole of ["patient", "facilityRepresentative"]) {
+        if (!session.agreement.signatures[linkedRole]?.signedAt) {
+          session.agreement.signatures[linkedRole] = {
+            name: session.agreement.signatures[linkedRole]?.name || "",
+            signedAt,
+          };
+        }
+      }
+    }
 
     await session.save();
 

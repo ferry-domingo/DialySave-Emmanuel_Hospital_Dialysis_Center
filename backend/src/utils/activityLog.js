@@ -19,7 +19,13 @@ export const recordActivity = async ({
       details,
       ipAddress: req?.ip || "",
     });
-    broadcastDataChange("activity-logs", { timestamp: new Date().toISOString() });
+    broadcastDataChange({
+      resources: ["activity-logs"],
+      method: "ACTIVITY",
+      source: "activity-log",
+      actorUserId: actor?._id || actor?.id ? String(actor?._id || actor?.id) : undefined,
+      timestamp: new Date().toISOString(),
+    });
   } catch (error) {
     console.error("Activity Log Error:", error);
   }

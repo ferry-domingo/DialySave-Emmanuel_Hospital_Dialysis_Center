@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import toast from "react-hot-toast";
+
+const dateInputValue = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);
+};
 
 const AdmissionReportModal = ({
   patient,
@@ -11,7 +18,10 @@ const AdmissionReportModal = ({
   const [form, setForm] = useState({
     nurse: "",
     phic_staff: "",
+    admission_date: "",
+    discharge_date: "",
   });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
 
@@ -21,6 +31,8 @@ const AdmissionReportModal = ({
         nurse: patient.info_relayed?.nurse || "",
         phic_staff:
           patient.info_relayed?.phic_staff || "",
+        admission_date: dateInputValue(patient.admission_date),
+        discharge_date: dateInputValue(patient.discharge_date),
       });
 
     }
@@ -37,7 +49,7 @@ const AdmissionReportModal = ({
 
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-base font-bold text-slate-900">
-            Update Info Relayed
+            Update Admission Report
           </h2>
           <button
             onClick={onClose}
@@ -49,6 +61,17 @@ const AdmissionReportModal = ({
         </div>
 
         <div className="space-y-2">
+
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-0.5">
+              <label className="text-[9px] font-bold uppercase tracking-wide text-blue-700">Admission Date</label>
+              <input type="date" required className="h-7 w-full rounded-md border border-slate-200 px-2 text-xs text-black outline-none focus:border-blue-400" value={form.admission_date} onChange={(e) => setForm({ ...form, admission_date: e.target.value })} />
+            </div>
+            <div className="space-y-0.5">
+              <label className="text-[9px] font-bold uppercase tracking-wide text-blue-700">Discharge Date</label>
+              <input type="date" min={form.admission_date || undefined} className="h-7 w-full rounded-md border border-slate-200 px-2 text-xs text-black outline-none focus:border-blue-400" value={form.discharge_date} onChange={(e) => setForm({ ...form, discharge_date: e.target.value })} />
+            </div>
+          </div>
 
           <div className="space-y-0.5">
             <label className="text-[9px] font-bold uppercase tracking-wide text-blue-700">
@@ -94,10 +117,17 @@ const AdmissionReportModal = ({
           </button>
 
           <button
-            onClick={() => onSave(form)}
-            className="h-7 rounded-md bg-slate-950 px-3 text-xs font-semibold text-white transition hover:bg-slate-800"
+            disabled={saving || !form.admission_date}
+            onClick={async () => {
+              if (form.discharge_date && form.discharge_date < form.admission_date) return toast.error("Discharge date cannot be earlier than admission date.");
+              setSaving(true);
+              try { await onSave(form); toast.success("Admission report updated."); }
+              catch (error) { toast.error(error.response?.data?.message || "Failed to update admission report."); }
+              finally { setSaving(false); }
+            }}
+            className="h-7 rounded-md bg-slate-950 px-3 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Save
+            {saving ? "Saving..." : "Save"}
           </button>
 
         </div>

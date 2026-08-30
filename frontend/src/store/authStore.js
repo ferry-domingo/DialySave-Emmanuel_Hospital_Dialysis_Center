@@ -60,7 +60,7 @@ export const useAuthStore = create((set) => ({
     return res.data;
   },
 
-  loadUser: async () => {
+  loadUser: async (options = {}) => {
     const token = getStoredToken();
 
     if (!token) {
@@ -68,7 +68,7 @@ export const useAuthStore = create((set) => ({
       return;
     }
 
-    set({ loading: true, error: null });
+    if (!options.silent) set({ loading: true, error: null });
 
     try {
       const res = await axios.get("/auth/me", {

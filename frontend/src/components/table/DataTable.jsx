@@ -9,17 +9,17 @@ const DataTable = ({
   if (loading) return <Loader />;
 
   return (
-    <div className="overflow-x-auto bg-white rounded-xl shadow">
+    <div className="ui-data-table overflow-x-auto rounded-2xl bg-white">
 
       <table className="w-full text-xs">
 
-        <thead className="bg-slate-100">
+        <thead>
 
           <tr>
             {columns.map((column) => (
               <th
                 key={column.accessor}
-                className="px-2.5 py-1.5 text-left text-[10px] uppercase"
+                className="px-3 py-2.5 text-left text-[9px] font-black uppercase tracking-[0.12em] text-slate-500"
               >
                 {column.header}
               </th>
@@ -43,12 +43,12 @@ const DataTable = ({
             data.map((row) => (
               <tr
                 key={row._id}
-                className="border-t"
+                className="border-t border-slate-100 transition hover:bg-emerald-50/40"
               >
                 {columns.map((column) => (
                   <td
                     key={column.accessor}
-                    className="px-2.5 py-1.5"
+                    className="px-3 py-2.5 text-slate-700"
                   >
                     {column.render
                       ? column.render(row)

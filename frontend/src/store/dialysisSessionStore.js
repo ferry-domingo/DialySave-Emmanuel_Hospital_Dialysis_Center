@@ -6,8 +6,8 @@ export const useDialysisSessionStore = create((set) => ({
   loading: false,
   error: null,
 
-  fetchSessions: async () => {
-    set({ loading: true, error: null });
+  fetchSessions: async (options = {}) => {
+    if (!options.silent) set({ loading: true, error: null });
 
     try {
       const res = await sessionApi.getDialysisSessions();

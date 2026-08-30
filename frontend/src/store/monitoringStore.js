@@ -5,27 +5,29 @@ export const useMonitoringStore = create((set, get) => ({
 
   monitoring: null,
   activePatientId: null,
+  activeYear: null,
 
   loading: false,
 
   error: null,
 
-  fetchMonitoring: async (patientId) => {
+  fetchMonitoring: async (patientId, year, options = {}) => {
 
     if (!patientId) return;
 
     set({
-      monitoring: null,
+      ...(options.silent ? {} : { monitoring: null }),
       activePatientId: patientId,
-      loading: true,
+      activeYear: year || null,
+      ...(options.silent ? {} : { loading: true }),
       error: null,
     });
 
     try {
 
-      const { data } = await api.getPatientMonitoring(patientId);
+      const { data } = await api.getPatientMonitoring(patientId, year);
 
-      if (get().activePatientId === patientId) {
+      if (get().activePatientId === patientId && get().activeYear === (year || null)) {
         set({
           monitoring: data,
           loading: false,
@@ -55,6 +57,7 @@ export const useMonitoringStore = create((set, get) => ({
     set({
       monitoring: null,
       activePatientId: null,
+      activeYear: null,
       loading: false,
       error: null,
     }),

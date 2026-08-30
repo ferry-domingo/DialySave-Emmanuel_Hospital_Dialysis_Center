@@ -6,8 +6,8 @@ export const useDoctorPortalStore = create((set) => ({
   loading: false,
   error: "",
 
-  fetchPortal: async () => {
-    set({ loading: true, error: "" });
+  fetchPortal: async (options = {}) => {
+    if (!options.silent) set({ loading: true, error: "" });
     try {
       const response = await api.get("/doctors/me/dashboard");
       set({ data: response.data.data, loading: false });

@@ -37,7 +37,7 @@ const DoctorSessionsPage = () => {
   useEffect(() => {
     fetchPortal().catch(() => {});
     const refresh = (event) => {
-      if (event.detail?.resource === "dialysis-sessions") fetchPortal().catch(() => {});
+      if (event.detail?.resource === "dialysis-sessions") fetchPortal({ silent: true }).catch(() => {});
     };
     window.addEventListener("dialysave:data-changed", refresh);
     return () => window.removeEventListener("dialysave:data-changed", refresh);

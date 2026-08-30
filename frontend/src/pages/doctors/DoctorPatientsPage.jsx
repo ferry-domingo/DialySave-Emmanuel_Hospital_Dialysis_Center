@@ -32,7 +32,7 @@ const DoctorPatientsPage = () => {
   useEffect(() => {
     fetchPortal().catch(() => {});
     const refresh = (event) => {
-      if (["patients", "dialysis-sessions"].includes(event.detail?.resource)) fetchPortal().catch(() => {});
+      if (["patients", "dialysis-sessions"].includes(event.detail?.resource)) fetchPortal({ silent: true }).catch(() => {});
     };
     window.addEventListener("dialysave:data-changed", refresh);
     return () => window.removeEventListener("dialysave:data-changed", refresh);

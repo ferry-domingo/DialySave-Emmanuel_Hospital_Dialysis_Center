@@ -9,7 +9,7 @@ const SearchBar = ({
       value={value}
       onChange={onChange}
       placeholder={placeholder}
-      className="w-full md:w-72 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="ui-field h-10 w-full rounded-xl border px-4 text-sm outline-none md:w-72"
     />
   );
 };

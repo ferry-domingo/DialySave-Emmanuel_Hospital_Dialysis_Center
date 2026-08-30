@@ -6,8 +6,8 @@ export const useDoctorStore = create((set) => ({
   loading: false,
   error: null,
 
-  fetchDoctors: async () => {
-    set({ loading: true, error: null });
+  fetchDoctors: async (options = {}) => {
+    if (!options.silent) set({ loading: true, error: null });
 
     try {
       const res = await doctorApi.getDoctors();

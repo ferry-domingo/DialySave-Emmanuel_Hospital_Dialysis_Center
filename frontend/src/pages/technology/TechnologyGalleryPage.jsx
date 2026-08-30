@@ -39,6 +39,14 @@ const TechnologyGalleryPage = () => {
 
   useEffect(() => { loadPhotos(); }, []);
 
+  useEffect(() => {
+    const handleChange = (event) => {
+      if (event.detail?.resource === "technology-gallery") loadPhotos();
+    };
+    window.addEventListener("dialysave:data-changed", handleChange);
+    return () => window.removeEventListener("dialysave:data-changed", handleChange);
+  }, []);
+
   const upload = async (event) => {
     const files = [...event.target.files];
     event.target.value = "";

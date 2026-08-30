@@ -34,6 +34,7 @@ const MonitoringPage = () => {
   } = useMonitoringStore();
 
   const [selectedPatient, setSelectedPatient] = useState("");
+  const [selectedYear, setSelectedYear] = useState(null);
   const [patientSearch, setPatientSearch] = useState("");
   const [patientSearchOpen, setPatientSearchOpen] = useState(false);
 
@@ -53,12 +54,14 @@ const MonitoringPage = () => {
 
   const handlePickPatient = (patient) => {
     setSelectedPatient(patient._id);
+    setSelectedYear(null);
     setPatientSearch(`${patient.last_name}, ${patient.first_name}`);
     setPatientSearchOpen(false);
   };
 
   const handleClearPatient = () => {
     setSelectedPatient("");
+    setSelectedYear(null);
     setPatientSearch("");
     setPatientSearchOpen(false);
     clearMonitoring();
@@ -96,11 +99,15 @@ const MonitoringPage = () => {
 
     if (selectedPatient) {
 
-      fetchMonitoring(selectedPatient);
+      fetchMonitoring(selectedPatient, selectedYear);
 
     }
 
-  }, [selectedPatient]);
+  }, [selectedPatient, selectedYear]);
+
+  useEffect(() => {
+    if (monitoring?.activeYear && selectedYear === null) setSelectedYear(monitoring.activeYear);
+  }, [monitoring?.activeYear, selectedYear]);
 
   return (
 
@@ -184,6 +191,15 @@ const MonitoringPage = () => {
 
           </div>
 
+          {monitoring && (
+            <label className="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+              Year
+              <select value={monitoring.activeYear || selectedYear || ""} onChange={(event) => setSelectedYear(Number(event.target.value))} className="h-7 rounded-md border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-800 outline-none">
+                {(monitoring.availableYears?.length ? monitoring.availableYears : [monitoring.activeYear]).filter(Boolean).map((year) => <option key={year} value={year}>{year}</option>)}
+              </select>
+            </label>
+          )}
+
           {activeTab === "phic" && monitoring?.phic && (
             <div className="flex items-center gap-1">
               <button type="button" onClick={handlePhicPrint} className="flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-50">
@@ -237,7 +253,14 @@ const MonitoringPage = () => {
           )}
 
           {activeTab === "package" && (
-            <MonitoringPackage package={monitoring.package} />
+            <MonitoringPackage
+              patientId={selectedPatient}
+              patientHasDoctor={Boolean(selectedPatientObj?.doctor)}
+              onImported={(year) => {
+                setSelectedYear(year);
+                fetchMonitoring(selectedPatient, year);
+              }}
+            />
           )}
 
           {activeTab === "agreement" && (

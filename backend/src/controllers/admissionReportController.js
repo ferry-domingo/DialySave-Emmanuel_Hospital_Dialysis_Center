@@ -21,12 +21,9 @@ export const getAdmissionReport = async (req, res) => {
             " " +
             patient.last_name,
 
-          admission_date: patient.createdAt,
+          admission_date: patient.admission_date || patient.createdAt,
 
-          discharge_date:
-            patient.status === "Discharged"
-              ? patient.updatedAt
-              : null,
+          discharge_date: patient.discharge_date || null,
 
           dialysis_sessions: totalSessions,
 
@@ -55,20 +52,47 @@ export const getAdmissionReport = async (req, res) => {
 };
 
 export const updateInfoRelayed = async (req, res) => {
+  try {
+    const patient = await Patient.findById(req.params.id);
+    if (!patient) return res.status(404).json({ success: false, message: "Patient not found." });
 
-  const patient =
-    await Patient.findById(req.params.id);
+    const parseDateInput = (value, fieldName, required = false) => {
+      const text = String(value ?? "").trim();
+      if (!text) {
+        if (required) throw new Error(`${fieldName} is required.`);
+        return null;
+      }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) throw new Error(`${fieldName} must be a valid date.`);
+      const date = new Date(`${text}T12:00:00.000Z`);
+      if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== text) throw new Error(`${fieldName} must be a valid date.`);
+      return date;
+    };
 
-  patient.info_relayed = {
-    ...patient.info_relayed,
-    ...req.body,
-  };
+    const admissionDate = parseDateInput(req.body.admission_date, "Admission date", true);
+    const dischargeDate = parseDateInput(req.body.discharge_date, "Discharge date");
+    if (dischargeDate && dischargeDate < admissionDate) {
+      return res.status(400).json({ success: false, message: "Discharge date cannot be earlier than admission date." });
+    }
 
-  await patient.save();
+    patient.info_relayed = {
+      ...patient.info_relayed,
+      nurse: String(req.body.nurse || "").trim(),
+      phic_staff: String(req.body.phic_staff || "").trim(),
+    };
+    patient.admission_date = admissionDate;
+    patient.discharge_date = dischargeDate;
+    await patient.save();
 
-  res.json({
-    success: true,
-    data: patient,
-  });
-
+    return res.json({
+      success: true,
+      data: {
+        admission_date: patient.admission_date,
+        discharge_date: patient.discharge_date,
+        info_relayed: patient.info_relayed,
+      },
+    });
+  } catch (error) {
+    const validationError = /required|valid date/i.test(error.message || "");
+    return res.status(validationError ? 400 : 500).json({ success: false, message: error.message || "Failed to update admission report." });
+  }
 };

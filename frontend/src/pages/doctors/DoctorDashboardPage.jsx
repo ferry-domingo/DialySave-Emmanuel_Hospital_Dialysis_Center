@@ -55,23 +55,23 @@ const DoctorDashboardPage = () => {
   const [selectedPatient, setSelectedPatient] = useState("");
   const [activityPeriod, setActivityPeriod] = useState("week");
 
-  const loadDashboard = async () => {
+  const loadDashboard = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setError("");
       const response = await api.get("/doctors/me/dashboard");
       setData(response.data.data);
     } catch (err) {
       setError(err.response?.data?.message || "Unable to load your doctor dashboard.");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
     loadDashboard();
     const refresh = (event) => {
-      if (["patients", "dialysis-sessions", "doctors"].includes(event.detail?.resource)) loadDashboard();
+      if (["patients", "dialysis-sessions", "doctors"].includes(event.detail?.resource)) loadDashboard(true);
     };
     window.addEventListener("dialysave:data-changed", refresh);
     return () => window.removeEventListener("dialysave:data-changed", refresh);

@@ -5,8 +5,8 @@ export const useAnnouncementStore = create((set) => ({
   announcements: [],
   loading: false,
   error: "",
-  fetchAnnouncements: async () => {
-    set({ loading: true, error: "" });
+  fetchAnnouncements: async (options = {}) => {
+    if (!options.silent) set({ loading: true, error: "" });
     try {
       const { data } = await api.get("/announcements");
       set({ announcements: data.data, loading: false });

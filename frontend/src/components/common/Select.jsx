@@ -11,7 +11,7 @@ const Select = ({
   return (
     <div className="space-y-0.5">
       {label && (
-        <label className="text-[9px] font-bold uppercase tracking-wide text-blue-700">
+        <label className="ui-field-label text-[9px] font-bold uppercase tracking-wide">
           {label}
           {required && <span className="ml-0.5 text-red-500">*</span>}
         </label>
@@ -19,7 +19,7 @@ const Select = ({
 
       <div className="relative">
         <select
-          className={`h-6 w-full appearance-none rounded-md border bg-white px-2 py-0 pr-6 text-xs text-black outline-none transition focus:border-slate-400 ${
+          className={`ui-field h-8 w-full appearance-none rounded-xl border bg-white px-2.5 py-0 pr-7 text-xs text-slate-900 outline-none transition ${
             error ? "border-red-300" : "border-slate-200"
           } ${className}`}
           {...props}

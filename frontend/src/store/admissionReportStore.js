@@ -5,8 +5,8 @@ export const useAdmissionReportStore = create((set) => ({
   reports: [],
   loading: false,
 
-  fetchReports: async () => {
-    set({ loading: true });
+  fetchReports: async (options = {}) => {
+    if (!options.silent) set({ loading: true });
 
     try {
       const res = await api.getAdmissionReport();
@@ -25,17 +25,17 @@ export const useAdmissionReportStore = create((set) => ({
   },
 
   updateInfo: async (id, data) => {
-  await api.updateInfoRelayed(id, data);
+  const response = await api.updateInfoRelayed(id, data);
+  const updated = response.data.data;
 
   set((state) => ({
     reports: state.reports.map((r) =>
       r._id === id
         ? {
             ...r,
-            info_relayed: {
-              ...r.info_relayed,
-              ...data,
-            },
+            admission_date: updated.admission_date,
+            discharge_date: updated.discharge_date,
+            info_relayed: updated.info_relayed,
           }
         : r
     ),
