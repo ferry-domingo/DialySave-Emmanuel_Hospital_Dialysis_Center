@@ -6,7 +6,7 @@ import { useAuthStore } from "../../store/authStore";
 import { signAgreement } from "../../api/dialysisSessionApi";
 import { patientName, signatureDate, signatureName, userName } from "../../utils/agreementSignatures";
 
-const SignatureBlock = ({ sessionId, role, label, defaultName, signature }) => {
+const SignatureBlock = ({ sessionId, role, label, defaultName, signature, onSignatureChange }) => {
   const [name, setName] = useState(() => signatureName(signature, defaultName));
   const [savedName, setSavedName] = useState(() => signatureName(signature, defaultName));
   const [savedAt, setSavedAt] = useState(() => signatureDate(signature));
@@ -15,7 +15,7 @@ const SignatureBlock = ({ sessionId, role, label, defaultName, signature }) => {
   const accountIdentityLocked = ["patient", "facilityRepresentative"].includes(role) && Boolean(defaultName?.trim());
   const isSigned = Boolean(savedAt) || accountIdentityLocked;
   const signedName = savedName || defaultName;
-  const canEditSignedName = ["patient", "facilityRepresentative"].includes(role);
+  const canEditSignedName = ["patient", "witness", "facilityRepresentative"].includes(role);
 
   useEffect(() => {
     const nextName = signatureName(signature, defaultName);
@@ -32,8 +32,14 @@ const SignatureBlock = ({ sessionId, role, label, defaultName, signature }) => {
     try {
       const response = await signAgreement(sessionId, { role, name: name.trim() });
       const savedSignature = response.data?.data?.signatures?.[role];
-      setSavedName(savedSignature?.name || name.trim());
-      setSavedAt(savedSignature?.signedAt || new Date().toISOString());
+      const nextSignature = {
+        name: savedSignature?.name || name.trim(),
+        signedAt: savedSignature?.signedAt || new Date().toISOString(),
+      };
+      setName(nextSignature.name);
+      setSavedName(nextSignature.name);
+      setSavedAt(nextSignature.signedAt);
+      onSignatureChange?.(role, nextSignature);
       setEditing(false);
       toast.success(`${label} signature recorded`);
     } catch (error) {
@@ -99,7 +105,7 @@ const SignatureBlock = ({ sessionId, role, label, defaultName, signature }) => {
   );
 };
 
-const AgreementSignature = ({ session }) => {
+const AgreementSignature = ({ session, onSignatureChange }) => {
   const { user } = useAuthStore();
 
   if (!session) return null;
@@ -126,6 +132,7 @@ const AgreementSignature = ({ session }) => {
           label="Patient"
           defaultName={patientName(session.patient)}
           signature={signatures.patient}
+          onSignatureChange={onSignatureChange}
         />
 
         <SignatureBlock
@@ -133,6 +140,7 @@ const AgreementSignature = ({ session }) => {
           role="witness"
           label="Witness"
           signature={signatures.witness}
+          onSignatureChange={onSignatureChange}
         />
 
         <SignatureBlock
@@ -141,6 +149,7 @@ const AgreementSignature = ({ session }) => {
           label="HD Facility Representative"
           defaultName={userName(user)}
           signature={signatures.facilityRepresentative}
+          onSignatureChange={onSignatureChange}
         />
 
       </div>

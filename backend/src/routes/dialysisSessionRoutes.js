@@ -8,6 +8,7 @@ import {
   acknowledgeAgreement,
   signAgreement,
   updateAgreementHeparin,
+  updateAgreementCopayments,
   updateCashReason,
 } from "../controllers/dialysisSessionController.js";
 import { protect, roleOnly } from "../middleware/authMiddleware.js";
@@ -24,6 +25,7 @@ router.delete("/:id", deleteDialysisSession);
 router.patch("/:id/agreement/acknowledge", acknowledgeAgreement);
 router.patch("/:id/agreement/sign", signAgreement);
 router.patch("/:id/agreement/heparin", updateAgreementHeparin);
+router.patch("/:id/agreement/copayments", updateAgreementCopayments);
 router.patch("/:id/cash-reason", updateCashReason);
 
 export default router;

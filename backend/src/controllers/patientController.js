@@ -1,16 +1,21 @@
 import { Patient } from "../models/Patient.js";
-import { generatePatientId } from "../utils/generatePatientId.js";
+import { formatPatientId, generatePatientId } from "../utils/generatePatientId.js";
 import bcrypt from "bcrypt";
 import User from "../models/User.js";
 import { generateTemporaryPassword } from "../utils/auth.js";
 import { buildPatientLookupFilter } from "../utils/patientLookup.js";
 
+const patientIdFromParts = (year, number) => {
+  if (!/^\d{4}$/.test(String(year || "")) || !/^\d+$/.test(String(number || ""))) return null;
+  return formatPatientId(String(year), String(number));
+};
+
 // CREATE PATIENT
 export const createPatient = async (req, res) => {
   try {
-    const generatedPatientId = await generatePatientId();
-
     const {
+      patient_id_year,
+      patient_id_number,
       doctor,
       first_name,
       last_name,
@@ -22,6 +27,17 @@ export const createPatient = async (req, res) => {
       status,
       info_relayed,
     } = req.body;
+
+    const hasManualId = patient_id_year !== undefined || patient_id_number !== undefined;
+    const generatedPatientId = hasManualId
+      ? patientIdFromParts(patient_id_year, patient_id_number)
+      : await generatePatientId();
+    if (!generatedPatientId) {
+      return res.status(400).json({ success: false, message: "Patient ID year must have 4 digits and number must contain digits only." });
+    }
+    if (await Patient.exists({ patient_id: generatedPatientId }) || await User.exists({ username: generatedPatientId })) {
+      return res.status(409).json({ success: false, message: "Patient ID already exists." });
+    }
 
     if (
       !first_name ||
@@ -163,6 +179,8 @@ export const updatePatient = async (req, res) => {
     }
 
     const {
+      patient_id_year,
+      patient_id_number,
       doctor,
       first_name,
       last_name,
@@ -174,6 +192,19 @@ export const updatePatient = async (req, res) => {
       status,
       info_relayed,
     } = req.body;
+
+    if (patient_id_year !== undefined || patient_id_number !== undefined) {
+      const updatedPatientId = patientIdFromParts(patient_id_year, patient_id_number);
+      if (!updatedPatientId) {
+        return res.status(400).json({ success: false, message: "Patient ID year must have 4 digits and number must contain digits only." });
+      }
+      const duplicatePatient = await Patient.exists({ patient_id: updatedPatientId, _id: { $ne: patient._id } });
+      const duplicateUser = await User.exists({ username: updatedPatientId, patient: { $ne: patient._id } });
+      if (duplicatePatient || duplicateUser) {
+        return res.status(409).json({ success: false, message: "Patient ID already exists." });
+      }
+      patient.patient_id = updatedPatientId;
+    }
 
     patient.doctor = doctor ?? patient.doctor;
     patient.first_name = first_name ?? patient.first_name;
@@ -187,6 +218,10 @@ export const updatePatient = async (req, res) => {
     patient.info_relayed = info_relayed ?? patient.info_relayed;
     
     await patient.save();
+
+    if (patient_id_year !== undefined || patient_id_number !== undefined) {
+      await User.updateOne({ patient: patient._id, role: "Patient" }, { username: patient.patient_id });
+    }
 
     const updatedPatient = await Patient.findById(patient._id)
       .populate("doctor");

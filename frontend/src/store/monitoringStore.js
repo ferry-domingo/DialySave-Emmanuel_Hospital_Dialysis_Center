@@ -106,4 +106,52 @@ export const useMonitoringStore = create((set, get) => ({
       };
     }),
 
+  setAgreementSignature: (sessionId, role, signature) =>
+    set((state) => {
+      if (!state.monitoring?.agreement?.sessions) return state;
+
+      const sessions = state.monitoring.agreement.sessions.map((session) =>
+        session.sessionId === sessionId
+          ? {
+              ...session,
+              agreement: {
+                ...session.agreement,
+                signatures: {
+                  ...session.agreement?.signatures,
+                  [role]: signature,
+                },
+              },
+            }
+          : session
+      );
+
+      return {
+        monitoring: {
+          ...state.monitoring,
+          agreement: {
+            ...state.monitoring.agreement,
+            sessions,
+          },
+        },
+      };
+    }),
+
+  setAgreementCopayments: (sessionId, copayments) =>
+    set((state) => {
+      if (!state.monitoring?.agreement?.sessions) return state;
+      return {
+        monitoring: {
+          ...state.monitoring,
+          agreement: {
+            ...state.monitoring.agreement,
+            sessions: state.monitoring.agreement.sessions.map((session) =>
+              session.sessionId === sessionId
+                ? { ...session, agreement: { ...session.agreement, copayments } }
+                : session
+            ),
+          },
+        },
+      };
+    }),
+
 }));

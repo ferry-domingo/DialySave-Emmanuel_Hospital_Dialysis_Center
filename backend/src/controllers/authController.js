@@ -13,7 +13,7 @@ const doctorName = (doctor) =>
 
 const accountForIdentifier = (identifier) => {
   const value = String(identifier || "").trim();
-  const portalId = /^(?:PAT|DOC)-/i.test(value) ? value.toUpperCase() : value;
+  const portalId = /^(?:EHDC|PAT|DOC)-/i.test(value) ? value.toUpperCase() : value;
   return User.findOne({ $or: [{ email: value.toLowerCase() }, { username: portalId }] });
 };
 
@@ -47,7 +47,7 @@ export const loginUser = async (req, res) => {
   try {
     const { loginId: submittedLoginId, password, rememberMe } = req.body;
     const loginId = String(submittedLoginId || "").trim();
-    const portalLoginId = /^(?:PAT|DOC)-/i.test(loginId) ? loginId.toUpperCase() : loginId;
+    const portalLoginId = /^(?:EHDC|PAT|DOC)-/i.test(loginId) ? loginId.toUpperCase() : loginId;
 
     if (!loginId || !password) {
       return res.status(400).json({

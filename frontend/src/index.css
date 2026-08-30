@@ -895,6 +895,35 @@ section:has(a[href="/messages"]) > div:last-child::-webkit-scrollbar {
   }
   .agreement-monitoring-print {
     display: block !important;
+    font-family: Georgia, "Times New Roman", serif !important;
+  }
+  .agreement-monitoring-print * {
+    font-family: inherit !important;
+    font-size: 11pt !important;
+  }
+  .agreement-monitoring-print .agreement-print-benefits-title {
+    font-size: 10pt !important;
+    position: relative;
+    left: 16px;
+  }
+  .agreement-monitoring-print .agreement-print-form-title {
+    position: relative;
+    left: 16px;
+    margin-top: 2pt !important;
+  }
+  .agreement-monitoring-print .agreement-lab-row,
+  .agreement-monitoring-print .agreement-lab-row > td {
+    height: 10pt !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 10pt !important;
+  }
+  .agreement-monitoring-print table th,
+  .agreement-monitoring-print table td {
+    padding-block: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 0.9 !important;
   }
   .no-print {
     display: none !important;
@@ -918,10 +947,58 @@ section:has(a[href="/messages"]) > div:last-child::-webkit-scrollbar {
     margin-bottom: 0.08in !important;
   }
   .agreement-print-first-title {
-    margin-bottom: 0.08in !important;
+    margin-bottom: 11pt !important;
   }
   .agreement-print-first-intro > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 0.2rem !important;
+    margin-top: 1.5pt !important;
+  }
+  .agreement-print-first-intro {
+    margin-top: 16.5pt !important;
+  }
+  .agreement-print-first-table {
+    margin-top: 11pt !important;
+  }
+  .agreement-monitoring-print .agreement-coverage-header,
+  .agreement-monitoring-print .agreement-coverage-header > th {
+    height: 30pt !important;
+  }
+  .agreement-monitoring-print .agreement-items-header {
+    padding-top: 2pt !important;
+  }
+  .agreement-monitoring-print .agreement-item-mark {
+    display: block;
+    width: 100%;
+    transform: translateX(-12%);
+  }
+  .agreement-monitoring-print .agreement-copayment-paragraph {
+    margin-top: 16.5pt !important;
+    margin-bottom: 16.5pt !important;
+  }
+  .agreement-monitoring-print .agreement-funding-paragraph {
+    margin-top: 11pt !important;
+    margin-bottom: 22pt !important;
+  }
+  .agreement-monitoring-print .agreement-conforme-label {
+    margin-bottom: 11pt !important;
+  }
+  .agreement-monitoring-print .agreement-signature-caption-double-space {
+    margin-bottom: 22pt !important;
+  }
+  .agreement-monitoring-print .agreement-signature-caption-double-space + div {
+    margin-top: 0 !important;
+  }
+  .agreement-monitoring-print .agreement-facility-signature > div:last-child {
+    position: relative;
+    top: 10pt;
+  }
+  .agreement-monitoring-print .agreement-witness-section {
+    margin-top: 22pt !important;
+  }
+  .agreement-monitoring-print .agreement-witness-label {
+    margin-bottom: 33pt !important;
+  }
+  .agreement-monitoring-print .agreement-witness-caption {
+    margin-bottom: 187pt !important;
   }
   .agreement-print-first-footer {
     margin-top: 0.04in !important;

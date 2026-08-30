@@ -24,13 +24,13 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
   const [selectedSession, setSelectedSession] = useState(0);
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const { setAgreementHeparin } = useMonitoringStore();
+  const { setAgreementHeparin, setAgreementSignature, setAgreementCopayments } = useMonitoringStore();
   const user = useAuthStore((state) => state.user);
 
   const handlePrint = () => {
     const pageStyle = document.createElement("style");
     pageStyle.dataset.agreementPrint = "true";
-    pageStyle.textContent = "@media print { @page { size: A4 portrait; margin: 0 0.6in; } }";
+    pageStyle.textContent = "@media print { @page { size: A4 portrait; margin: 0 0.80in; } }";
     document.head.appendChild(pageStyle);
 
     const cleanup = () => pageStyle.remove();
@@ -57,6 +57,14 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
 
   const handleHeparinChange = (sessionId, heparin) => {
     setAgreementHeparin(sessionId, heparin);
+  };
+
+  const handleSignatureChange = (role, signature) => {
+    setAgreementSignature(session.sessionId, role, signature);
+  };
+
+  const handleCopaymentsChange = (sessionId, copayments) => {
+    setAgreementCopayments(sessionId, copayments);
   };
 
   const filteredResults = agreement.sessions
@@ -182,8 +190,8 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
       </div>
 
       <div className="no-print space-y-3">
-        <AgreementItemsCovered session={session} onHeparinChange={handleHeparinChange} />
-        <AgreementSignature session={session} />
+        <AgreementItemsCovered session={session} onHeparinChange={handleHeparinChange} onCopaymentsChange={handleCopaymentsChange} />
+        <AgreementSignature session={session} onSignatureChange={handleSignatureChange} />
       </div>
 
       <div className="print-page agreement-monitoring-print">

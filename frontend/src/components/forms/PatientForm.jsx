@@ -38,6 +38,8 @@ const SectionHeader = ({ icon: Icon, title }) => (
 );
 
 const DEFAULT_VALUES = {
+  patient_id_year: "",
+  patient_id_number: "",
   doctor: "",
   first_name: "",
   last_name: "",
@@ -49,7 +51,7 @@ const DEFAULT_VALUES = {
   status: "Active",
 };
 
-const PatientForm = ({ patient, onClose, onCreated }) => {
+const PatientForm = ({ patient, creationMode = "new", onClose, onCreated }) => {
   const {
     createPatient,
     updatePatient,
@@ -89,6 +91,8 @@ const PatientForm = ({ patient, onClose, onCreated }) => {
   useEffect(() => {
     if (patient && doctors.length > 0) {
       reset({
+        patient_id_year: patient.patient_id?.split("-")[1] || "",
+        patient_id_number: patient.patient_id?.split("-")[2] || "",
         doctor: patient.doctor?._id || "",
         first_name: patient.first_name,
         last_name: patient.last_name,
@@ -106,13 +110,20 @@ const PatientForm = ({ patient, onClose, onCreated }) => {
     }
   }, [patient, doctors, reset]);
 
+  const showPatientIdFields = Boolean(patient) || creationMode === "old";
+
   const onSubmit = async (data) => {
     try {
+      const patientData = { ...data };
+      if (!showPatientIdFields) {
+        delete patientData.patient_id_year;
+        delete patientData.patient_id_number;
+      }
       if (patient) {
-        await updatePatient(patient._id, data);
+        await updatePatient(patient._id, patientData);
         toast.success("Patient updated successfully");
       } else {
-        const response = await createPatient(data);
+        const response = await createPatient(patientData);
         toast.success("Patient created successfully");
         onCreated?.(response.data?.credentials);
       }
@@ -130,6 +141,29 @@ const PatientForm = ({ patient, onClose, onCreated }) => {
         <SectionHeader icon={UserRound} title="Personal Information" />
 
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          {showPatientIdFields && <>
+            <Input label="Patient ID Prefix" value="EHDC" disabled readOnly />
+            <Input
+              label="Patient ID Year"
+              required
+              inputMode="numeric"
+              error={errors.patient_id_year?.message}
+              {...register("patient_id_year", {
+                required: "Patient ID year is required",
+                pattern: { value: /^\d{4}$/, message: "Enter a 4-digit year" },
+              })}
+            />
+            <Input
+              label="Patient ID Number"
+              required
+              inputMode="numeric"
+              error={errors.patient_id_number?.message}
+              {...register("patient_id_number", {
+                required: "Patient ID number is required",
+                pattern: { value: /^\d+$/, message: "Use numbers only" },
+              })}
+            />
+          </>}
           <Input
             label="First Name"
             required

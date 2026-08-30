@@ -200,6 +200,44 @@ export const updateAgreementHeparin = async (req, res) => {
   }
 };
 
+export const updateAgreementCopayments = async (req, res) => {
+  try {
+    if (!Array.isArray(req.body.items)) {
+      return res.status(400).json({ success: false, message: "Copayment items must be an array." });
+    }
+
+    const items = req.body.items.map((entry) => ({
+      item: String(entry.item || "").trim(),
+      unitQuantity: String(entry.unitQuantity || "").trim(),
+      price: Number(entry.price),
+    }));
+
+    const invalidItem = items.some((entry) =>
+      !entry.item || !entry.unitQuantity || !Number.isFinite(entry.price) || entry.price < 0
+    );
+    if (invalidItem) {
+      return res.status(400).json({ success: false, message: "Each copayment item requires an item, unit/quantity, and valid price." });
+    }
+
+    const session = await DialysisSession.findById(req.params.id);
+    if (!session) {
+      return res.status(404).json({ success: false, message: "Dialysis session not found." });
+    }
+
+    session.agreement.copayments = items;
+    await session.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Copayment items updated.",
+      data: session.agreement,
+    });
+  } catch (error) {
+    console.error("Update Agreement Copayments Error:", error);
+    return res.status(500).json({ success: false, message: "Failed to update copayment items.", error: error.message });
+  }
+};
+
 export const updateCashReason = async (req, res) => {
   try {
     const session = await DialysisSession.findById(req.params.id);

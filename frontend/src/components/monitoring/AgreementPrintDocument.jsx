@@ -2,8 +2,20 @@ import { useAuthStore } from "../../store/authStore";
 import { agreementInjectionMatches } from "../../utils/agreementInjection";
 import { patientName, signatureDate, signatureName, userName } from "../../utils/agreementSignatures";
 
+const properName = (value) => value
+  .toLocaleLowerCase()
+  .replace(/\b\p{L}/gu, (letter) => letter.toLocaleUpperCase());
+
+const formatSignatureDate = (value) => value
+  ? new Date(value).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    })
+  : "";
+
 const Mark = ({ ok }) => (
-  <span className="text-sm font-bold">{ok ? "✓" : "✗"}</span>
+  <span className="agreement-item-mark text-sm font-bold">{ok ? "✓" : "✗"}</span>
 );
 
 const PageHeader = ({ className = "" }) => (
@@ -11,25 +23,25 @@ const PageHeader = ({ className = "" }) => (
 );
 
 const PageFooter = () => (
-  <img src="/images/footer.png" alt="" className="h-8" />
+  <img src="/images/footer.png" alt="" className="h-14" />
 );
 
 const FormTitle = ({ className = "" }) => (
   <div className={`mb-4 text-center leading-none ${className}`}>
-    <p className="text-[12px] font-bold">PHILHEALTH HEMODIALYSIS BENEFITS PACKAGE</p>
-    <p className="text-[12px] font-bold">AGREEMENT FORM</p>
+    <p className="agreement-print-benefits-title text-[10pt] font-bold">PHILHEALTH HEMODIALYSIS BENEFITS PACKAGE</p>
+    <p className="agreement-print-form-title text-[12px] font-bold">AGREEMENT FORM</p>
   </div>
 );
 
-const SignatureLine = ({ name, signedAt, caption, dateOffset = false }) => (
-  <div>
-    <div className="flex h-7 items-end justify-center border-b border-black text-xs font-semibold">
+const SignatureLine = ({ name, signedAt, caption, dateOffset = false, captionAlign = "center", captionDoubleSpace = false, className = "", nameLineClassName = "w-full", dateLineClassName = "w-full" }) => (
+  <div className={className}>
+    <div className={`flex h-7 items-end justify-center border-b border-black text-xs font-normal ${nameLineClassName}`}>
       {name || ""}
     </div>
-    <p className="mt-0.5 flex min-h-[22px] items-start justify-center text-center text-[11px] leading-tight">{caption}</p>
-    <div className={`mt-2 flex items-center gap-1 text-[11px] ${dateOffset ? "relative top-[6px]" : ""}`}>
+    <p className={`mt-0.5 flex min-h-[22px] items-start text-[11px] leading-tight ${captionAlign === "left" ? "justify-start text-left" : "justify-center text-center"} ${captionDoubleSpace ? "agreement-signature-caption-double-space" : ""}`}>{caption}</p>
+    <div className={`mt-2 flex items-center gap-1 text-[11px] ${dateLineClassName} ${dateOffset ? "relative top-[6px]" : ""}`}>
       <span>Date:</span>
-      <span className="flex-1 border-b border-black px-1">{signedAt ? new Date(signedAt).toLocaleDateString() : ""}</span>
+      <span className="flex-1 border-b border-black px-1 text-center">{formatSignatureDate(signedAt)}</span>
     </div>
   </div>
 );
@@ -47,8 +59,13 @@ const AgreementPrintDocument = ({ session }) => {
     (session.agreement?.heparin || "Heparin sodium 5000 IU/mL, 5 mL vial") === name;
 
   const signatures = session.agreement?.signatures || {};
+  const copayments = session.agreement?.copayments || [];
+  const copaymentTotal = copayments.reduce((sum, entry) => sum + Number(entry.price || 0), 0);
   const patientSignatureName = signatureName(signatures.patient, patientName(session.patient));
-  const representativeSignatureName = signatureName(signatures.facilityRepresentative, userName(user));
+  const representativeDisplayName = userName(user)
+    ? properName(userName(user))
+    : "the HD Facility Representative";
+  const representativeSignatureName = signatureName(signatures.facilityRepresentative, representativeDisplayName);
 
   return (
     <div className="mx-auto max-w-[850px] bg-white font-serif text-black">
@@ -59,46 +76,60 @@ const AgreementPrintDocument = ({ session }) => {
         <PageHeader className="agreement-print-first-header" />
         <FormTitle className="agreement-print-first-title" />
 
-        <div className="flex justify-between text-[11px]">
-          <p><span className="font-semibold">HD Treatment Session No.</span> {session.sessionNo}</p>
-          <p><span className="font-semibold">Date (Month/Day/Year):</span> {new Date(session.date).toLocaleDateString()}</p>
+        <div className="text-[11px] leading-tight">
+          <p className="relative">
+            <span className="font-semibold">HD Treatment Session No.</span>
+            <span className="absolute left-1/2 -translate-x-1/2 text-center">{session.sessionNo}</span>
+          </p>
+          <p className="relative">
+            <span className="font-semibold">Date (Month/Day/Year):</span>
+            <span className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center">
+              {new Date(session.date).toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
+          </p>
         </div>
 
-        <div className="agreement-print-first-intro space-y-2 text-justify text-[11px] leading-[1.45]">
+        <div className="agreement-print-first-intro space-y-2 text-left text-[11pt] leading-[1.2]">
           <p>
-            This document is intended to verify that you have received adequate information verbally and in writing,
-            including PhilHealth's guidelines for availing of the benefits package for hemodialysis (HD). The HD
-            Facility should clearly explain to you the significance of the contents of this Agreement Form in the
-            language that you understand and will furnish you a copy of this form for each unique treatment session.
+            <span className="block whitespace-nowrap">This document is intended to verify that you have received adequate information verbally and in writing,</span>
+            <span className="block whitespace-nowrap">including PhilHealth's guidelines for availing of the benefits package for hemodialysis (HD). The HD Facility</span>
+            <span className="block whitespace-nowrap">should clearly explain to you the significances of the contents of this Agreement Form in the language that you</span>
+            <span className="block whitespace-nowrap">understand and will furnish you with a copy of the form for each unique treatment session.</span>
           </p>
           <p>
-            I have been fully informed by Dr./Ms./Mr. {user?.username || "the HD Facility Representative"} of
-            the PhilHealth policies on availing of the benefits package for HD.
+            <span className="block whitespace-nowrap">I have been fully informed by Dr./Ms./Mr. <span className="underline underline-offset-2">{representativeSignatureName}</span> of the PhilHealth policies on availing of the</span>
+            <span className="block whitespace-nowrap">benefits package for HD.</span>
           </p>
           <p>
-            I understand that PhilHealth provides coverage for up to 156 treatment sessions per calendar year for
-            patients with chronic kidney disease (CKD5).
+            <span className="block whitespace-nowrap">I understand that PhilHealth covers up to 156 treatment sessions per calendar year for patients with chronic</span>
+            <span className="block whitespace-nowrap">kidney stage 5 (CKD5).</span>
           </p>
           <p>
-            I understand that the HD package provides coverage for the minimum standards required by CKD5 patients,
-            as enumerated in the applicable PhilHealth policy.
+            <span className="block whitespace-nowrap">I understand that the HD package provides coverage for the minimum standards required by CKD5 patients,</span>
+            <span className="block whitespace-nowrap">as enumerated in the applicable PhilHealth policy.</span>
           </p>
           <p>
-            I understand that the package rate for HD is PHP 6,350 per treatment session. This includes the fee for
-            the health facility and the professional.
+            <span className="block whitespace-nowrap">I understand that the package rate for HD is PHP 6,350 per treatment session. This includes the fee for the</span>
+            <span className="block whitespace-nowrap">health facility and the professional.</span>
           </p>
           <p>
-            I understand that the provision of items and services depends on the patient's status; therefore, I have
+            <span className="block whitespace-nowrap">I understand that the provision of the services depends on the patient's status; therefore, I will receive the</span>
+            <span className="block whitespace-nowrap">following service that are clinically indicated and necessary for my treatment session:</span>
+            <span className="hidden">I understand that the provision of items and services depends on the patient's status; therefore, I have
             been informed which items are clinically indicated. Please check (✓) if indicated and cross mark (✗) if
-            not indicated for the below-listed items and services covered by PhilHealth for hemodialysis.
+            not indicated for the below-listed items and services covered by PhilHealth for hemodialysis.</span>
           </p>
         </div>
 
-        <table className="w-full border border-black text-[10px] leading-[1.05]">
+        <table className="agreement-print-first-table w-full border border-black text-[10px] leading-[1.05]">
           <thead>
-            <tr>
-              <th className="border border-black px-1.5 py-px text-left">Items Covered by PhilHealth</th>
-              <th className="w-2/5 border border-black px-1.5 py-px text-center">
+            <tr className="agreement-coverage-header">
+              <th className="agreement-items-header border border-black px-1.5 py-px text-center align-top">Items Covered by PhilHealth</th>
+              <th className="w-[44%] border border-black px-1.5 py-px text-center">
                 Put a check (✓) if indicated and cross mark (✗) if not indicated
               </th>
             </tr>
@@ -106,38 +137,38 @@ const AgreementPrintDocument = ({ session }) => {
           <tbody>
             <tr><td colSpan={2} className="border border-black px-1.5 py-px font-semibold">Drugs / Medicine</td></tr>
 
-            <tr><td className="border border-black px-1.5 py-px pl-3 font-semibold">Epoetin alpha (Human Recombinant Erythropoietin)</td><td className="border border-black"></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-5">1. 2000 IU / 0.5 mL pre-filled syringe</td><td className="border border-black text-center"><Mark ok={injection("2000 IU / 0.5 mL pre-filled syringe")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-5">2. 4000 IU / 0.4 mL pre-filled syringe</td><td className="border border-black text-center"><Mark ok={injection("4000 IU / 0.4 mL pre-filled syringe")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-5">3. 4000 IU / mL, 1mL vial</td><td className="border border-black text-center"><Mark ok={injection("4000 IU / mL, 1mL vial")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-5">4. 4000 IU / mL solution for injection in 1mL pre-filled syringe</td><td className="border border-black text-center"><Mark ok={injection("4000 IU / mL solution for injection in 1mL pre-filled syringe")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-5">5. 10,000 IU / mL pre-filled syringe</td><td className="border border-black text-center"><Mark ok={injection("10000 IU / mL pre-filled syringe")} /></td></tr>
+            <tr><td className="border border-black px-1.5 py-px pl-3 font-normal">Epoetin alpha (Human Recombinant Erythropoietin)</td><td className="border border-black"></td></tr>
+            <tr><td className="border border-black py-px pl-[12%] pr-1.5 text-left">1. 2000 IU / 0.5 mL pre-filled syringe</td><td className="border border-black text-center"><Mark ok={injection("2000 IU / 0.5 mL pre-filled syringe")} /></td></tr>
+            <tr><td className="border border-black py-px pl-[12%] pr-1.5 text-left">2. 4000 IU / 0.4 mL pre-filled syringe</td><td className="border border-black text-center"><Mark ok={injection("4000 IU / 0.4 mL pre-filled syringe")} /></td></tr>
+            <tr><td className="border border-black py-px pl-[12%] pr-1.5 text-left">3. 4000 IU / mL, 1mL vial</td><td className="border border-black text-center"><Mark ok={injection("4000 IU / mL, 1mL vial")} /></td></tr>
+            <tr><td className="border border-black py-px pl-[12%] pr-1.5 text-left">4. 4000 IU / mL solution for injection in 1mL syringe</td><td className="border border-black text-center"><Mark ok={injection("4000 IU / mL solution for injection in 1mL pre-filled syringe")} /></td></tr>
+            <tr><td className="border border-black py-px pl-[12%] pr-1.5 text-left">5. 10,000 IU / mL pre-filled syringe</td><td className="border border-black text-center"><Mark ok={injection("10000 IU / mL pre-filled syringe")} /></td></tr>
 
-            <tr><td className="border border-black px-1.5 py-px pl-3 font-semibold">Epoetin beta (Human Recombinant Erythropoietin)</td><td className="border border-black"></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-5">1. 2000 IU / 0.3 mL pre-filled syringe</td><td className="border border-black text-center"><Mark ok={injection("2000 IU / 0.3 mL pre-filled syringe")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-5">2. 5000 IU / 0.3 mL pre-filled syringe</td><td className="border border-black text-center"><Mark ok={injection("5000 IU / 0.3 mL pre-filled syringe")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-5">3. 10,000 IU / 0.6 mL pre-filled syringe</td><td className="border border-black text-center"><Mark ok={injection("10000 IU / 0.6 mL pre-filled syringe")} /></td></tr>
+            <tr><td className="border border-black px-1.5 py-px pl-3 font-normal">Epoetin beta (Human Recombinant Erythropoietin)</td><td className="border border-black"></td></tr>
+            <tr><td className="border border-black py-px pl-[12%] pr-1.5 text-left">1. 2000 IU / 0.3 mL pre-filled syringe</td><td className="border border-black text-center"><Mark ok={injection("2000 IU / 0.3 mL pre-filled syringe")} /></td></tr>
+            <tr><td className="border border-black py-px pl-[12%] pr-1.5 text-left">2. 5000 IU / 0.3 mL pre-filled syringe</td><td className="border border-black text-center"><Mark ok={injection("5000 IU / 0.3 mL pre-filled syringe")} /></td></tr>
+            <tr><td className="border border-black py-px pl-[12%] pr-1.5 text-left">3. 10,000 IU / 0.6 mL pre-filled syringe</td><td className="border border-black text-center"><Mark ok={injection("10000 IU / 0.6 mL pre-filled syringe")} /></td></tr>
 
-            <tr><td className="border border-black px-1.5 py-px pl-3 font-semibold">Iron Sucrose 20 mg/mL, 5mL ampule</td><td className="border border-black text-center"><Mark ok={iron} /></td></tr>
+            <tr><td className="border border-black px-1.5 py-px pl-3 font-normal">Iron Sucrose 20 mg/mL, 5mL ampule</td><td className="border border-black text-center"><Mark ok={iron} /></td></tr>
 
-            <tr><td className="border border-black px-1.5 py-px pl-3 font-semibold">Heparin</td><td className="border border-black"></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-5">1. Heparin sodium 1000 IU/mL, 5 mL vial</td><td className="border border-black text-center"><Mark ok={heparin("Heparin sodium 1000 IU/mL, 5 mL vial")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-5">2. Heparin sodium 5000 IU/mL, 5 mL vial</td><td className="border border-black text-center"><Mark ok={heparin("Heparin sodium 5000 IU/mL, 5 mL vial")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-5">3. Heparin sodium 1000 IU/mL, 30 mL vial</td><td className="border border-black text-center"><Mark ok={heparin("Heparin sodium 1000 IU/mL, 30 mL vial")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-5">4. Heparin sodium 5000 IU/mL, 30 mL vial</td><td className="border border-black text-center"><Mark ok={heparin("Heparin sodium 5000 IU/mL, 30 mL vial")} /></td></tr>
+            <tr><td className="border border-black px-1.5 py-px pl-3 font-normal">Heparin</td><td className="border border-black"></td></tr>
+            <tr><td className="border border-black py-px pl-[12%] pr-1.5 text-left">1. Heparin sodium 1000 IU/mL, 5 mL vial</td><td className="border border-black text-center"><Mark ok={heparin("Heparin sodium 1000 IU/mL, 5 mL vial")} /></td></tr>
+            <tr><td className="border border-black py-px pl-[12%] pr-1.5 text-left">2. Heparin sodium 5000 IU/mL, 5 mL vial</td><td className="border border-black text-center"><Mark ok={heparin("Heparin sodium 5000 IU/mL, 5 mL vial")} /></td></tr>
+            <tr><td className="border border-black py-px pl-[12%] pr-1.5 text-left">3. Heparin sodium 1000 IU/mL, 30 mL vial</td><td className="border border-black text-center"><Mark ok={heparin("Heparin sodium 1000 IU/mL, 30 mL vial")} /></td></tr>
+            <tr><td className="border border-black py-px pl-[12%] pr-1.5 text-left">4. Heparin sodium 5000 IU/mL, 30 mL vial</td><td className="border border-black text-center"><Mark ok={heparin("Heparin sodium 5000 IU/mL, 30 mL vial")} /></td></tr>
 
             <tr><td colSpan={2} className="border border-black px-1.5 py-px font-semibold">Laboratory tests</td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-3">1. Complete blood count</td><td className="border border-black text-center"><Mark ok={hasLab("CBC")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-3">2. Serum creatinine</td><td className="border border-black text-center"><Mark ok={hasLab("CREA")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-3">3. BUN</td><td className="border border-black text-center"><Mark ok={hasLab("BUN")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-3">4. Hepatitis profile</td><td className="border border-black text-center"><Mark ok={hasLab("HEPA PROFILE")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-3">5. Alkaline phosphatase</td><td className="border border-black text-center"><Mark ok={hasLab("ALKALINE")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-3">6. Potassium</td><td className="border border-black text-center"><Mark ok={hasLab("POTASSIUM")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-3">7. Phosphorus</td><td className="border border-black text-center"><Mark ok={hasLab("PHOSPHORUS")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-3">8. Calcium</td><td className="border border-black text-center"><Mark ok={hasLab("CALCIUM")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-3">9. Sodium</td><td className="border border-black text-center"><Mark ok={hasLab("SODIUM")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-3">10. Serum iron / ferritin / transferrin, total iron binding capacity</td><td className="border border-black text-center"><Mark ok={hasLab("SERUM IRON/FERRITIN")} /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-3">11. Albumin</td><td className="border border-black text-center"><Mark ok={hasLab("ALBUMIN")} /></td></tr>
+            <tr className="agreement-lab-row"><td className="border border-black px-1.5 py-px pl-3">1. Complete blood count</td><td className="border border-black text-center"><Mark ok={hasLab("CBC")} /></td></tr>
+            <tr className="agreement-lab-row"><td className="border border-black px-1.5 py-px pl-3">2. Serum creatinine</td><td className="border border-black text-center"><Mark ok={hasLab("CREA")} /></td></tr>
+            <tr className="agreement-lab-row"><td className="border border-black px-1.5 py-px pl-3">3. BUN</td><td className="border border-black text-center"><Mark ok={hasLab("BUN")} /></td></tr>
+            <tr className="agreement-lab-row"><td className="border border-black px-1.5 py-px pl-3">4. Hepatitis profile</td><td className="border border-black text-center"><Mark ok={hasLab("HEPA PROFILE")} /></td></tr>
+            <tr className="agreement-lab-row"><td className="border border-black px-1.5 py-px pl-3">5. Alkaline phosphatase</td><td className="border border-black text-center"><Mark ok={hasLab("ALKALINE")} /></td></tr>
+            <tr className="agreement-lab-row"><td className="border border-black px-1.5 py-px pl-3">6. Potassium</td><td className="border border-black text-center"><Mark ok={hasLab("POTASSIUM")} /></td></tr>
+            <tr className="agreement-lab-row"><td className="border border-black px-1.5 py-px pl-3">7. Phosphorus</td><td className="border border-black text-center"><Mark ok={hasLab("PHOSPHORUS")} /></td></tr>
+            <tr className="agreement-lab-row"><td className="border border-black px-1.5 py-px pl-3">8. Calcium</td><td className="border border-black text-center"><Mark ok={hasLab("CALCIUM")} /></td></tr>
+            <tr className="agreement-lab-row"><td className="border border-black px-1.5 py-px pl-3">9. Sodium</td><td className="border border-black text-center"><Mark ok={hasLab("SODIUM")} /></td></tr>
+            <tr className="agreement-lab-row"><td className="border border-black px-1.5 py-px pl-3">10. Serum iron / ferritin / transferrin, total iron binding capacity</td><td className="border border-black text-center"><Mark ok={hasLab("SERUM IRON/FERRITIN")} /></td></tr>
+            <tr className="agreement-lab-row"><td className="border border-black px-1.5 py-px pl-3">11. Albumin</td><td className="border border-black text-center"><Mark ok={hasLab("ALBUMIN")} /></td></tr>
           </tbody>
         </table>
 
@@ -154,9 +185,9 @@ const AgreementPrintDocument = ({ session }) => {
 
         <table className="w-full border border-black text-[10px] leading-[1.05]">
           <thead>
-            <tr>
-              <th className="border border-black px-1.5 py-px text-left">Items Covered by PhilHealth</th>
-              <th className="w-2/5 border border-black px-1.5 py-px text-center">
+            <tr className="agreement-coverage-header">
+              <th className="agreement-items-header border border-black px-1.5 py-px text-center align-top">Items Covered by PhilHealth</th>
+              <th className="w-[44%] border border-black px-1.5 py-px text-center">
                 Put a check (✓) if indicated and cross mark (✗) if not indicated
               </th>
             </tr>
@@ -168,66 +199,98 @@ const AgreementPrintDocument = ({ session }) => {
             <tr><td className="border border-black px-1.5 py-px pl-3">Hemodialysis Solutions</td><td className="border border-black text-center"><Mark ok /></td></tr>
             <tr><td className="border border-black px-1.5 py-px pl-3">Dialysis Kit</td><td className="border border-black text-center"><Mark ok /></td></tr>
 
-            <tr><td colSpan={2} className="border border-black px-1.5 py-px font-semibold">Administrative &amp; Other fees</td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-3">Use of Hemodialysis Machine</td><td className="border border-black text-center"><Mark ok /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-3">Facility Fee</td><td className="border border-black text-center"><Mark ok /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-3">Nursing Service and Staff fee</td><td className="border border-black text-center"><Mark ok /></td></tr>
-            <tr><td className="border border-black px-1.5 py-px pl-3">Utilities</td><td className="border border-black text-center"><Mark ok /></td></tr>
+            <tr><td colSpan={2} className="border border-black px-1.5 py-px font-semibold">Administrative &amp; Other fees, specify:</td></tr>
+            <tr><td className="border border-black px-1.5 py-px text-center">Use of Hemodialysis Machine</td><td className="border border-black text-center"><Mark ok /></td></tr>
+            <tr><td className="border border-black px-1.5 py-px text-center">Facility Fee</td><td className="border border-black text-center"><Mark ok /></td></tr>
+            <tr><td className="border border-black px-1.5 py-px text-center">Nursing Service and Staff fee</td><td className="border border-black text-center"><Mark ok /></td></tr>
+            <tr><td className="border border-black px-1.5 py-px text-center">Utilities</td><td className="border border-black text-center"><Mark ok /></td></tr>
           </tbody>
         </table>
 
-        <p className="text-justify text-[11px] leading-[1.45]">
+        <p className="agreement-copayment-paragraph text-justify text-[11px] leading-[1.45]">
           I understand that I may be charged a copayment for the following items, amenities, additional services,
           and premium services that are not covered by PhilHealth (attach additional sheet as necessary).
         </p>
 
-        <table className="w-full border border-black text-[10px]">
+        <table className="agreement-copayment-table w-full table-fixed border border-black text-[10px]">
+          <colgroup>
+            <col className="w-[47.25%]" />
+            <col className="w-[17%]" />
+            <col className="w-[35.75%]" />
+          </colgroup>
           <thead>
             <tr>
-              <th className="border border-black px-1.5 py-px text-left">Item</th>
-              <th className="border border-black px-1.5 py-px text-left">Unit/Quantity</th>
-              <th className="border border-black px-1.5 py-px text-left">Price (PHP)</th>
+              <th className="border border-black px-1.5 py-px text-center">Item</th>
+              <th className="border border-black px-1.5 py-px text-center">Unit/Quantity</th>
+              <th className="border border-black px-1.5 py-px text-center">Price (PHP)</th>
             </tr>
           </thead>
           <tbody>
-            <tr><td className="h-4 border border-black px-1.5"></td><td className="border border-black px-1.5"></td><td className="border border-black px-1.5"></td></tr>
-            <tr><td className="h-4 border border-black px-1.5"></td><td className="border border-black px-1.5"></td><td className="border border-black px-1.5"></td></tr>
-            <tr><td className="h-4 border border-black px-1.5"></td><td className="border border-black px-1.5"></td><td className="border border-black px-1.5"></td></tr>
-            <tr className="font-semibold"><td colSpan={2} className="border border-black px-1.5 py-px text-right">Total</td><td className="border border-black px-1.5"></td></tr>
+            {Array.from({ length: Math.max(3, copayments.length) }, (_, index) => {
+              const entry = copayments[index];
+              return (
+                <tr key={entry?._id || index}>
+                  <td className="h-4 border border-black px-1.5 text-center">{entry?.item || ""}</td>
+                  <td className="border border-black px-1.5 text-center">{entry?.unitQuantity || ""}</td>
+                  <td className="border border-black px-1.5 text-center">{entry ? Number(entry.price).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ""}</td>
+                </tr>
+              );
+            })}
+            <tr className="font-semibold">
+              <td colSpan={2} className="border border-black px-1.5"></td>
+              <td className="relative border border-black px-1.5 py-px">
+                <span className="absolute left-1.5">Total</span>
+                <span className="block text-center">{copayments.length ? copaymentTotal.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ""}</span>
+              </td>
+            </tr>
           </tbody>
         </table>
 
-        <p className="text-[11px] leading-[1.45]">
+        <p className="agreement-funding-paragraph text-[11px] leading-[1.45]">
           I have been furnished with a list of possible funding sources for medical assistance that may complement
           the PhilHealth benefits for HD.
         </p>
 
-        <p className="text-[11px] font-bold">Conforme:</p>
+        <p className="agreement-conforme-label text-[11px] font-bold">Conforme:</p>
 
         <div className="grid grid-cols-2 gap-8 pt-0.5">
           <SignatureLine
             name={patientSignatureName}
             signedAt={signatureDate(signatures.patient)}
             caption="Printed name and signature of patient"
+            captionAlign="left"
+            captionDoubleSpace
             dateOffset
+            nameLineClassName="w-[75%]"
+            dateLineClassName="w-[75%]"
           />
           <SignatureLine
             name={representativeSignatureName}
             signedAt={signatureDate(signatures.facilityRepresentative)}
             caption={<>Printed name and signature<br />HD Facility Representative</>}
+            captionAlign="left"
+            className="agreement-facility-signature"
           />
         </div>
 
-        <div className="w-1/2 pt-1">
-          <p className="mb-0.5 text-[11px] font-bold">Witness:</p>
-          <SignatureLine
-            name={signatureName(signatures.witness)}
-            signedAt={signatureDate(signatures.witness)}
-            caption="Printed name and signature"
-          />
+        <div className="agreement-witness-section w-full pt-1">
+          <p className="agreement-witness-label mb-0.5 text-[11px] font-bold">Witness:</p>
+          <div className="grid grid-cols-2 gap-x-8">
+            <div className="flex h-7 w-[75%] items-end justify-center border-b border-black text-xs font-normal">
+              {signatureName(signatures.witness) || ""}
+            </div>
+            <div className="flex h-7 items-end gap-1 text-[11px]">
+              <span>Date:</span>
+              <span className="flex-1 border-b border-black px-1 text-center">
+                {formatSignatureDate(signatureDate(signatures.witness))}
+              </span>
+            </div>
+            <p className="agreement-witness-caption mt-0.5 text-left text-[11px] leading-tight">Printed name and signature</p>
+            <div />
+          </div>
         </div>
 
-        <div className="flex justify-start pt-1">
+        <div className="agreement-print-first-footer flex justify-start pt-0.5">
           <PageFooter />
         </div>
 

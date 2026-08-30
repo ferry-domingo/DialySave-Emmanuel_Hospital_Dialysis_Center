@@ -24,6 +24,7 @@ const PatientPage = () => {
   const [page, setPage] = useState(1);
   const [openModal, setOpenModal] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [creationMode, setCreationMode] = useState("new");
   const [credentials, setCredentials] = useState(null);
 
   useEffect(() => {
@@ -39,8 +40,9 @@ const PatientPage = () => {
   const currentPage = Math.min(page, totalPages);
   const paginatedPatients = filteredPatients.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  const handleAdd = () => {
+  const handleAdd = (mode) => {
     setSelectedPatient(null);
+    setCreationMode(mode);
     setOpenModal(true);
   };
 
@@ -71,13 +73,14 @@ const PatientPage = () => {
           />
         </div>
 
-        <button
-          onClick={handleAdd}
-          className="flex items-center justify-center gap-1 rounded-md bg-slate-950 px-2 py-1 text-[10px] font-semibold text-white transition hover:bg-slate-800"
-        >
-          <Plus size={14} />
-          Add Patient
-        </button>
+        <div className="flex gap-1.5">
+          <button onClick={() => handleAdd("old")} className="flex items-center justify-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-1 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-50">
+            <Plus size={14} /> Add Old Patient
+          </button>
+          <button onClick={() => handleAdd("new")} className="flex items-center justify-center gap-1 rounded-md bg-slate-950 px-2 py-1 text-[10px] font-semibold text-white transition hover:bg-slate-800">
+            <Plus size={14} /> Add New Patient
+          </button>
+        </div>
 
       </div>
 
@@ -97,11 +100,12 @@ const PatientPage = () => {
         title={
           selectedPatient
             ? "Update Patient"
-            : "Add Patient"
+            : creationMode === "old" ? "Add Old Patient" : "Add New Patient"
         }
       >
         <PatientForm
           patient={selectedPatient}
+          creationMode={creationMode}
           onClose={handleClose}
           onCreated={(value) => setCredentials(value)}
         />

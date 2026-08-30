@@ -100,6 +100,14 @@ const DialysisSessionSchema = new mongoose.Schema(
         itemsAcknowledged: { type: Boolean, default: true },
       },
 
+      copayments: [
+        {
+          item: { type: String, required: true, trim: true },
+          unitQuantity: { type: String, required: true, trim: true },
+          price: { type: Number, required: true, min: 0 },
+        },
+      ],
+
       signatures: {
         patient: {
           name: { type: String, default: "" },

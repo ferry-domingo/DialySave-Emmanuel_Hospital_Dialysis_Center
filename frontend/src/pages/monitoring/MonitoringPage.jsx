@@ -39,12 +39,17 @@ const MonitoringPage = () => {
 
   const selectedPatientObj = patients.find((p) => p._id === selectedPatient) || null;
 
-  const filteredPatients = patients.filter((p) => {
-    const term = patientSearch.trim().toLowerCase();
-    if (!term) return true;
-    const fullName = `${p.first_name} ${p.last_name}`.toLowerCase();
-    return fullName.includes(term) || p.patient_id?.toLowerCase().includes(term);
-  });
+  const filteredPatients = patients
+    .filter((p) => {
+      const term = patientSearch.trim().toLowerCase();
+      if (!term) return true;
+      const fullName = `${p.first_name} ${p.last_name}`.toLowerCase();
+      return fullName.includes(term) || p.patient_id?.toLowerCase().includes(term);
+    })
+    .sort((first, second) =>
+      String(first.last_name || "").localeCompare(String(second.last_name || ""), undefined, { sensitivity: "base" })
+      || String(first.first_name || "").localeCompare(String(second.first_name || ""), undefined, { sensitivity: "base" })
+    );
 
   const handlePickPatient = (patient) => {
     setSelectedPatient(patient._id);

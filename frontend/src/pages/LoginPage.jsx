@@ -206,7 +206,7 @@ const LoginPage = () => {
       <Modal isOpen={resetOpen} onClose={() => { if (!resetLoading) { setResetOpen(false); setResetStep("request"); setResetToken(""); } }} title="Reset your password" maxWidth="max-w-md">
         {resetStep === "request" ? <form onSubmit={requestReset} className="password-reset-form">
           <p>Enter the email, Patient ID, or Doctor ID connected to your account. A reset code will be sent to your verified email.</p>
-          <div className="login-field"><label htmlFor="resetIdentifier">Email or account ID</label><input id="resetIdentifier" value={resetForm.identifier} onChange={(event) => setResetForm((value) => ({ ...value, identifier: event.target.value }))} placeholder="Email, PAT- ID, or DOC- ID" autoComplete="username" required /></div>
+          <div className="login-field"><label htmlFor="resetIdentifier">Email or account ID</label><input id="resetIdentifier" value={resetForm.identifier} onChange={(event) => setResetForm((value) => ({ ...value, identifier: event.target.value }))} placeholder="Email, EHDC- ID, or DOC- ID" autoComplete="username" required /></div>
           <button type="submit" className="login-button" disabled={resetLoading}>{resetLoading ? "Sending code..." : "Send reset code"}</button>
         </form> : resetStep === "verify" ? <form onSubmit={verifyResetCode} className="password-reset-form">
           <p>Enter the six-digit code sent to the account’s verified email.</p>

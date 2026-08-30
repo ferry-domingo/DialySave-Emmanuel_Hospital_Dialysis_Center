@@ -62,7 +62,7 @@ const AgreementAcknowledgement = ({ session, onUpdated }) => {
               className="mt-0.5 h-4 w-4 accent-emerald-600"
             />
             <span className="font-medium text-slate-700">
-              I have been informed by Dr./Ms./Mr. {user?.username || "the HD Facility Representative"} of the PhilHealth
+              I have been informed by Dr./Ms./Mr. <span className="underline underline-offset-2">{user?.username || "the HD Facility Representative"}</span> of the PhilHealth
               policies on availing of the benefits package for HD. I understand the contents of this agreement.
             </span>
           </label>

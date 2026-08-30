@@ -1,8 +1,10 @@
-import { Check, X } from "lucide-react";
+import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { updateAgreementHeparin } from "../../api/dialysisSessionApi";
+import { updateAgreementCopayments, updateAgreementHeparin } from "../../api/dialysisSessionApi";
 import { agreementInjectionMatches } from "../../utils/agreementInjection";
+import Modal from "../common/Modal";
+import Input from "../common/Input";
 
 const HEPARIN_OPTIONS = [
   "Heparin sodium 1000 IU/mL, 5 mL vial",
@@ -23,8 +25,12 @@ const CheckBadge = ({ covered }) =>
     </span>
   );
 
-const AgreementItemsCovered = ({ session, onHeparinChange }) => {
+const AgreementItemsCovered = ({ session, onHeparinChange, onCopaymentsChange }) => {
   const [savingHeparin, setSavingHeparin] = useState(false);
+  const [copaymentModalOpen, setCopaymentModalOpen] = useState(false);
+  const [savingCopayment, setSavingCopayment] = useState(false);
+  const [editingCopaymentIndex, setEditingCopaymentIndex] = useState(null);
+  const [copaymentForm, setCopaymentForm] = useState({ item: "", unitQuantity: "", price: "" });
 
   if (!session) return null;
 
@@ -33,6 +39,8 @@ const AgreementItemsCovered = ({ session, onHeparinChange }) => {
       (x) => x.name === lab && x.done
     );
   const selectedHeparin = session.agreement?.heparin || DEFAULT_HEPARIN;
+  const copayments = session.agreement?.copayments || [];
+  const copaymentTotal = copayments.reduce((sum, entry) => sum + Number(entry.price || 0), 0);
   const injection = (name) => agreementInjectionMatches(session.injection?.name, name);
   const selectHeparin = async (heparin) => {
     if (savingHeparin || heparin === selectedHeparin) return;
@@ -49,6 +57,64 @@ const AgreementItemsCovered = ({ session, onHeparinChange }) => {
     } finally {
       setSavingHeparin(false);
     }
+  };
+
+  const saveCopayments = async (items, successMessage) => {
+    setSavingCopayment(true);
+    try {
+      const response = await updateAgreementCopayments(session.sessionId, items);
+      const savedItems = response.data?.data?.copayments || items;
+      onCopaymentsChange?.(session.sessionId, savedItems);
+      toast.success(successMessage);
+      return true;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update copayment items.");
+      return false;
+    } finally {
+      setSavingCopayment(false);
+    }
+  };
+
+  const saveCopayment = async (event) => {
+    event.preventDefault();
+    const price = Number(copaymentForm.price);
+    if (!copaymentForm.item.trim() || !copaymentForm.unitQuantity.trim() || !Number.isFinite(price) || price < 0) {
+      toast.error("Complete all fields with a valid price.");
+      return;
+    }
+    const nextItem = { item: copaymentForm.item.trim(), unitQuantity: copaymentForm.unitQuantity.trim(), price };
+    const nextItems = editingCopaymentIndex === null
+      ? [...copayments, nextItem]
+      : copayments.map((entry, index) => index === editingCopaymentIndex ? nextItem : entry);
+    const saved = await saveCopayments(nextItems, editingCopaymentIndex === null ? "Copayment item added." : "Copayment item updated.");
+    if (saved) {
+      setCopaymentForm({ item: "", unitQuantity: "", price: "" });
+      setEditingCopaymentIndex(null);
+      setCopaymentModalOpen(false);
+    }
+  };
+
+  const openAddCopayment = () => {
+    setEditingCopaymentIndex(null);
+    setCopaymentForm({ item: "", unitQuantity: "", price: "" });
+    setCopaymentModalOpen(true);
+  };
+
+  const openEditCopayment = (entry, index) => {
+    setEditingCopaymentIndex(index);
+    setCopaymentForm({ item: entry.item, unitQuantity: entry.unitQuantity, price: String(entry.price) });
+    setCopaymentModalOpen(true);
+  };
+
+  const closeCopaymentModal = () => {
+    if (savingCopayment) return;
+    setCopaymentModalOpen(false);
+    setEditingCopaymentIndex(null);
+    setCopaymentForm({ item: "", unitQuantity: "", price: "" });
+  };
+
+  const removeCopayment = (index) => {
+    saveCopayments(copayments.filter((_, itemIndex) => itemIndex !== index), "Copayment item removed.");
   };
 
   return (
@@ -327,9 +393,12 @@ const AgreementItemsCovered = ({ session, onHeparinChange }) => {
 
       <div className="border-t border-slate-100 px-3 pb-3 pt-3">
 
-        <h3 className="mb-1 text-xs font-bold text-slate-900">
-          Copayment (Not Covered by PhilHealth)
-        </h3>
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <h3 className="text-xs font-bold text-slate-900">Copayment (Not Covered by PhilHealth)</h3>
+          <button type="button" onClick={openAddCopayment} className="inline-flex h-7 items-center gap-1 rounded-lg bg-slate-950 px-2.5 text-[10px] font-semibold text-white transition hover:bg-slate-800">
+            <Plus size={13} /> Add Item
+          </button>
+        </div>
 
         <p className="mb-2 text-[10px] leading-4 text-slate-500">
           I understand that I may be charged a copayment for the following items,
@@ -344,20 +413,33 @@ const AgreementItemsCovered = ({ session, onHeparinChange }) => {
             <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-400">
 
               <tr>
-                <th className="p-2 text-left">Item</th>
+                <th className="p-2 text-center">Item</th>
                 <th className="p-2 text-left">Unit / Quantity</th>
-                <th className="p-2 text-left">Price (PHP)</th>
+                <th className="p-2 text-center">Price (PHP)</th>
+                <th className="w-9" aria-label="Actions" />
               </tr>
 
             </thead>
 
             <tbody>
 
-              <tr>
-                <td colSpan={3} className="p-3 text-center text-slate-400">
-                  No additional charges indicated.
-                </td>
-              </tr>
+              {copayments.length === 0 ? (
+                <tr><td colSpan={4} className="p-3 text-center text-slate-400">No additional charges indicated.</td></tr>
+              ) : copayments.map((entry, index) => (
+                <tr key={entry._id || `${entry.item}-${index}`} className="border-t border-slate-100">
+                  <td className="p-2 text-center text-slate-700">{entry.item}</td>
+                  <td className="p-2 text-slate-700">{entry.unitQuantity}</td>
+                  <td className="p-2 text-center font-semibold text-slate-800">{Number(entry.price).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td className="w-16 p-1"><div className="flex justify-center gap-0.5"><button type="button" disabled={savingCopayment} onClick={() => openEditCopayment(entry, index)} aria-label={`Edit ${entry.item}`} className="grid h-7 w-7 place-items-center rounded-md text-blue-600 hover:bg-blue-50 disabled:opacity-50"><Pencil size={13} /></button><button type="button" disabled={savingCopayment} onClick={() => removeCopayment(index)} aria-label={`Remove ${entry.item}`} className="grid h-7 w-7 place-items-center rounded-md text-rose-500 hover:bg-rose-50 disabled:opacity-50"><Trash2 size={13} /></button></div></td>
+                </tr>
+              ))}
+              {copayments.length > 0 && (
+                <tr className="border-t border-slate-200 bg-slate-50 font-bold">
+                  <td colSpan={2} className="p-2 text-left">Total</td>
+                  <td className="p-2 text-center">PHP {copaymentTotal.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td />
+                </tr>
+              )}
 
             </tbody>
 
@@ -366,6 +448,18 @@ const AgreementItemsCovered = ({ session, onHeparinChange }) => {
         </div>
 
       </div>
+
+      <Modal isOpen={copaymentModalOpen} onClose={closeCopaymentModal} title={editingCopaymentIndex === null ? "Add Copayment Item" : "Edit Copayment Item"} maxWidth="max-w-md">
+        <form onSubmit={saveCopayment} className="space-y-3">
+          <Input label="Item" required value={copaymentForm.item} onChange={(event) => setCopaymentForm((form) => ({ ...form, item: event.target.value }))} placeholder="Enter item or service" />
+          <Input label="Unit / Quantity" required value={copaymentForm.unitQuantity} onChange={(event) => setCopaymentForm((form) => ({ ...form, unitQuantity: event.target.value }))} />
+          <Input label="Price (PHP)" required type="number" min="0" step="0.01" value={copaymentForm.price} onChange={(event) => setCopaymentForm((form) => ({ ...form, price: event.target.value }))} placeholder="0.00" />
+          <div className="flex justify-end gap-2 pt-1">
+            <button type="button" disabled={savingCopayment} onClick={closeCopaymentModal} className="h-8 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600 disabled:opacity-50">Cancel</button>
+            <button type="submit" disabled={savingCopayment} className="h-8 rounded-lg bg-slate-950 px-4 text-xs font-semibold text-white disabled:opacity-50">{savingCopayment ? "Saving..." : editingCopaymentIndex === null ? "Add Item" : "Save Changes"}</button>
+          </div>
+        </form>
+      </Modal>
 
     </div>
 
