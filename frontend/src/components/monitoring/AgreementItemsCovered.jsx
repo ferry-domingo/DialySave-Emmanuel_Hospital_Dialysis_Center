@@ -227,11 +227,10 @@ const AgreementItemsCovered = ({ session, onHeparinChange, onCopaymentsChange })
                       type="button"
                       disabled={savingHeparin}
                       onClick={() => selectHeparin(option)}
-                      className={`w-full rounded-lg px-2 py-1.5 text-left transition ${
-                        selectedHeparin === option
+                      className={`w-full rounded-lg px-2 py-1.5 text-left transition ${selectedHeparin === option
                           ? "bg-emerald-50 font-semibold text-emerald-800 ring-1 ring-emerald-200"
                           : "hover:bg-slate-50"
-                      }`}
+                        }`}
                     >
                       {index + 1}. {option}
                     </button>
@@ -433,13 +432,13 @@ const AgreementItemsCovered = ({ session, onHeparinChange, onCopaymentsChange })
                   <td className="w-16 p-1"><div className="flex justify-center gap-0.5"><button type="button" disabled={savingCopayment} onClick={() => openEditCopayment(entry, index)} aria-label={`Edit ${entry.item}`} className="grid h-7 w-7 place-items-center rounded-md text-blue-600 hover:bg-blue-50 disabled:opacity-50"><Pencil size={13} /></button><button type="button" disabled={savingCopayment} onClick={() => removeCopayment(index)} aria-label={`Remove ${entry.item}`} className="grid h-7 w-7 place-items-center rounded-md text-rose-500 hover:bg-rose-50 disabled:opacity-50"><Trash2 size={13} /></button></div></td>
                 </tr>
               ))}
-              {copayments.length > 0 && (
-                <tr className="border-t border-slate-200 bg-slate-50 font-bold">
-                  <td colSpan={2} className="p-2 text-left">Total</td>
-                  <td className="p-2 text-center">PHP {copaymentTotal.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                  <td />
-                </tr>
-              )}
+
+              <tr className="border-t border-slate-200 bg-slate-50 font-bold">
+                <td className="p-2 text-left">Total</td>
+                <td className="p-2 text-left" />
+                <td className="p-2 text-center text-slate-900">PHP {copayments.length === 0 ? "0.00" : copaymentTotal.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td className="p-2" />
+              </tr>
 
             </tbody>
 

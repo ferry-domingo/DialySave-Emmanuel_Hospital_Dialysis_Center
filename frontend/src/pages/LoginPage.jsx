@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, HeartPulse, LockKeyhole } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, EyeOff, HeartPulse, LockKeyhole } from "lucide-react";
 import Loader from "../components/common/Loader";
 import Modal from "../components/common/Modal";
 import { useAuthStore } from "../store/authStore";
@@ -29,6 +29,7 @@ const highlights = [
 const LoginPage = () => {
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
   const [resetOpen, setResetOpen] = useState(false);
@@ -131,16 +132,16 @@ const LoginPage = () => {
             <h1>Welcome back</h1>
             <p>Sign in to manage dialysis care and patient records.</p>
           </div>
-          
+
           <form onSubmit={handleSubmit} className="login-form">
             <div className="login-field">
-              <label htmlFor="loginId">Email or account ID</label>
+              <label htmlFor="loginId">Email or Account ID</label>
               <input
                 id="loginId"
                 type="text"
                 value={loginId}
                 onChange={(event) => setLoginId(event.target.value)}
-                placeholder="Enter email, Patient ID, or Doctor ID"
+                placeholder="Enter Email or Account ID"
                 autoComplete="username"
                 required
               />
@@ -148,15 +149,25 @@ const LoginPage = () => {
 
             <div className="login-field">
               <label htmlFor="password">Password</label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="Enter your password"
-                autoComplete="current-password"
-                required
-              />
+              <div className="password-input-wrap">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword((value) => !value)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             <div className="login-options">

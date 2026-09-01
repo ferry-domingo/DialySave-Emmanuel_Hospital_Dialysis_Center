@@ -3,6 +3,7 @@ import { ArrowRight, CalendarClock, ImagePlus, Megaphone, Pencil, Plus, Search, 
 import toast from "react-hot-toast";
 import Button from "../../components/common/Button";
 import AnnouncementImageSlider from "../../components/common/AnnouncementImageSlider";
+import OneClickImageLightbox from "../../components/common/OneClickImageLightbox";
 import Modal from "../../components/common/Modal";
 import Topbar from "../../components/layout/Topbar";
 import { useAnnouncementStore } from "../../store/announcementStore";
@@ -24,6 +25,7 @@ const AnnouncementsPage = () => {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => { fetchAnnouncements(); }, [fetchAnnouncements]);
 
@@ -94,6 +96,8 @@ const AnnouncementsPage = () => {
       </article>}
     </Modal>
 
+    <OneClickImageLightbox image={previewImage} onClose={() => setPreviewImage(null)} />
+
     <section className="shrink-0 rounded-xl border border-slate-200/80 bg-white p-2 shadow-sm">
       <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -111,7 +115,23 @@ const AnnouncementsPage = () => {
       {visible.map((item) => {
         const createdAt = new Date(item.createdAt);
         return <article key={item._id} role="button" tabIndex={0} aria-label={`View full announcement: ${item.title}`} onClick={() => setSelectedAnnouncement(item)} onKeyDown={(event) => { if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); setSelectedAnnouncement(item); } }} className="flex min-h-[400px] min-w-0 cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-          {item.media?.[0] ? <div className="relative h-60 min-h-0 min-w-0 shrink-0 overflow-hidden border-b border-slate-100 bg-slate-900"><img src={item.media[0].dataUrl} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-45 blur-md" /><div className="relative z-10 grid h-full w-full place-items-center bg-slate-950/15"><img src={item.media[0].dataUrl} alt={item.media[0].name || item.title} loading="lazy" className="block h-full w-full object-contain" style={{ objectFit: "contain", objectPosition: "center" }} /></div>{item.media.length > 1 && <span className="absolute bottom-2 right-2 z-20 rounded-full bg-slate-950/75 px-2 py-0.5 text-[8px] font-bold text-white">+{item.media.length - 1}</span>}</div> : <div className="grid h-60 shrink-0 place-items-center bg-emerald-50 text-emerald-700"><Megaphone size={44} /></div>}
+          {item.media?.[0] ? (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                setPreviewImage({ src: item.media[0].dataUrl, alt: item.media[0].name || item.title });
+              }}
+              className="relative h-60 min-h-0 min-w-0 shrink-0 overflow-hidden border-b border-slate-100 bg-slate-900 text-left"
+              aria-label={`View ${item.media[0].name || item.title}`}
+            >
+              <img src={item.media[0].dataUrl} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-45 blur-md" />
+              <div className="relative z-10 grid h-full w-full place-items-center bg-slate-950/15">
+                <img src={item.media[0].dataUrl} alt={item.media[0].name || item.title} loading="lazy" className="block h-full w-full object-contain" style={{ objectFit: "contain", objectPosition: "center" }} />
+              </div>
+              {item.media.length > 1 && <span className="absolute bottom-2 right-2 z-20 rounded-full bg-slate-950/75 px-2 py-0.5 text-[8px] font-bold text-white">+{item.media.length - 1}</span>}
+            </button>
+          ) : <div className="grid h-60 shrink-0 place-items-center bg-emerald-50 text-emerald-700"><Megaphone size={44} /></div>}
           <div className="flex min-w-0 flex-1 flex-col p-3"><div className="flex items-start justify-between gap-2"><div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1"><time dateTime={item.createdAt} className="inline-flex items-center gap-1 text-[8px] font-medium text-slate-400"><CalendarClock size={9} />{createdAt.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</time>{item.media?.length > 0 && <span className="text-[8px] font-medium text-slate-400">{item.media.length} {item.media.length === 1 ? "photo" : "photos"}</span>}</div>{isAdmin && <div className="flex shrink-0 gap-1"><button onClick={(event) => { event.stopPropagation(); beginEdit(item); }} aria-label="Edit announcement" title="Edit" className="grid h-7 w-7 place-items-center rounded-md border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"><Pencil size={12} /></button><button onClick={(event) => { event.stopPropagation(); remove(item); }} aria-label="Delete announcement" title="Delete" className="grid h-7 w-7 place-items-center rounded-md border border-red-100 bg-red-50 text-red-600 transition hover:bg-red-100"><Trash2 size={12} /></button></div>}</div><h2 className="mt-2 line-clamp-2 min-w-0 text-sm font-extrabold leading-tight text-slate-950">{item.title}</h2><p className="mt-2 line-clamp-2 text-[11px] leading-4 text-slate-600">{item.message}</p><span className="mt-auto flex items-center gap-1 border-t border-slate-100 pt-3 text-[10px] font-bold text-emerald-700">View announcement <ArrowRight size={11} /></span></div>
         </article>;
       })}

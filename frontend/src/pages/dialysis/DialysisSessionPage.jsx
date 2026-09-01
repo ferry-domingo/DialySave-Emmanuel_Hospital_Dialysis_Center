@@ -31,6 +31,12 @@ const DialysisSessionPage = () => {
   const [selectedDate, setSelectedDate] = useState(() => todayKey());
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(() => todayKey().slice(0, 7));
+  const [calendarView, setCalendarView] = useState("day");
+  const [yearWindowStart, setYearWindowStart] = useState(() => new Date().getFullYear() - 2);
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
 
   const [openModal, setOpenModal] = useState(false);
 
@@ -125,7 +131,13 @@ const DialysisSessionPage = () => {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setCalendarOpen((open) => !open)}
+                onClick={() => {
+                  setCalendarOpen((open) => {
+                    const next = !open;
+                    if (next) setCalendarView("day");
+                    return next;
+                  });
+                }}
                 className="flex h-7 shrink-0 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 text-[9px] font-semibold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50"
                 aria-label="Select session date"
                 aria-expanded={calendarOpen}
@@ -135,45 +147,122 @@ const DialysisSessionPage = () => {
               </button>
 
               {calendarOpen && (
-                <div className="absolute left-0 top-9 z-40 w-56 rounded-xl border border-slate-200 bg-white p-2.5 shadow-xl">
-                  <div className="mb-2 flex items-center justify-between">
-                    <button type="button" onClick={() => changeCalendarMonth(-1)} className="grid h-6 w-6 place-items-center rounded text-slate-500 hover:bg-slate-100" aria-label="Previous month">
-                      <ChevronLeft size={13} />
-                    </button>
-                    <span className="text-[10px] font-extrabold uppercase text-slate-800">
-                      {new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(new Date(calendarYear, calendarMonthNumber - 1, 1))}
-                    </span>
-                    <button type="button" onClick={() => changeCalendarMonth(1)} className="grid h-6 w-6 place-items-center rounded text-slate-500 hover:bg-slate-100" aria-label="Next month">
-                      <ChevronRight size={13} />
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-7 gap-0.5 text-center">
-                    {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
-                      <span key={`${day}-${index}`} className="py-1 text-[7px] font-bold text-slate-400">{day}</span>
-                    ))}
-                    {calendarDays.map((day, index) => {
-                      if (!day) return <span key={`blank-${index}`} />;
-                      const dateKey = `${calendarMonth}-${String(day).padStart(2, "0")}`;
-                      const hasSessions = Boolean(sessionDateCounts[dateKey]);
-                      const isSelected = dateKey === selectedDate;
-                      const isToday = dateKey === todayKey();
-                      return (
+                <div className="absolute left-0 top-9 z-40 w-64 rounded-xl border border-slate-200 bg-white p-2.5 shadow-xl">
+                  {calendarView === "year" ? (
+                    <>
+                      <div className="mb-2 text-center text-[11px] font-extrabold uppercase text-slate-700">Select Year</div>
+                      <div className="mb-2 rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center text-[18px] font-bold text-slate-800">{calendarYear}</div>
+                      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                        <div className="flex items-center justify-between border-b border-slate-200 px-2 py-1.5">
+                          <button type="button" onClick={() => setYearWindowStart((value) => value - 12)} className="grid h-6 w-6 place-items-center rounded text-slate-500 hover:bg-slate-100" aria-label="Previous year set">
+                            <ChevronLeft size={13} />
+                          </button>
+                          <span className="text-[9px] font-extrabold uppercase tracking-wide text-slate-700">{yearWindowStart} - {yearWindowStart + 11}</span>
+                          <button type="button" onClick={() => setYearWindowStart((value) => value + 12)} className="grid h-6 w-6 place-items-center rounded text-slate-500 hover:bg-slate-100" aria-label="Next year set">
+                            <ChevronRight size={13} />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-3 gap-0">
+                          {Array.from({ length: 12 }, (_, index) => yearWindowStart + index).map((year) => {
+                            const isSelected = year === calendarYear;
+                            return (
+                              <button
+                                key={year}
+                                type="button"
+                                onClick={() => {
+                                  setCalendarMonth(`${year}-${String(calendarMonthNumber).padStart(2, "0")}`);
+                                  setCalendarView("month");
+                                }}
+                                className={`h-11 border border-slate-200 text-[16px] font-semibold text-slate-700 transition ${isSelected ? "bg-emerald-50 text-emerald-600" : "bg-white hover:bg-slate-50"}`}
+                              >
+                                {year}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  ) : calendarView === "month" ? (
+                    <>
+                      <div className="mb-2 flex items-center justify-between gap-2">
                         <button
-                          key={dateKey}
                           type="button"
-                          title={hasSessions ? `${sessionDateCounts[dateKey]} dialysis session${sessionDateCounts[dateKey] > 1 ? "s" : ""}` : "No dialysis sessions"}
-                          onClick={() => {
-                            setSelectedDate(dateKey);
-                            setCalendarOpen(false);
-                          }}
-                          className={`relative grid h-6 place-items-center rounded text-[8px] font-bold transition ${isSelected ? "bg-blue-600 text-white" : hasSessions ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200" : "text-slate-500 hover:bg-slate-100"} ${isToday && !isSelected ? "ring-1 ring-blue-400" : ""}`}
+                          onClick={() => setCalendarView("year")}
+                          className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[9px] font-extrabold uppercase text-slate-700"
+                          aria-label="Select year"
                         >
-                          {day}
-                          {hasSessions && <span className={`absolute bottom-0.5 h-0.5 w-2 rounded-full ${isSelected ? "bg-white" : "bg-emerald-500"}`} />}
+                          {calendarYear}
                         </button>
-                      );
-                    })}
-                  </div>
+                        <div className="flex-1 text-center text-[11px] font-extrabold uppercase text-slate-700">Select Month</div>
+                      </div>
+                      <div className="mb-2 rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center text-[16px] font-bold text-slate-800">{monthNames[calendarMonthNumber - 1]}</div>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {monthNames.map((month, index) => {
+                          const monthNumber = index + 1;
+                          const isSelected = monthNumber === calendarMonthNumber;
+                          return (
+                            <button
+                              key={month}
+                              type="button"
+                              onClick={() => {
+                                setCalendarMonth(`${calendarYear}-${String(monthNumber).padStart(2, "0")}`);
+                                setCalendarView("day");
+                              }}
+                              className={`rounded-lg border px-2 py-2 text-[12px] font-semibold transition ${isSelected ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"}`}
+                            >
+                              {month.slice(0, 3)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="mb-2 flex items-center justify-between gap-1">
+                        <button type="button" onClick={() => changeCalendarMonth(-1)} className="grid h-6 w-6 place-items-center rounded text-slate-500 hover:bg-slate-100" aria-label="Previous month">
+                          <ChevronLeft size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCalendarView("month")}
+                          className="flex-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-center text-[10px] font-extrabold uppercase text-slate-800"
+                          aria-label="Select month"
+                        >
+                          {new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(new Date(calendarYear, calendarMonthNumber - 1, 1))}
+                        </button>
+                        <button type="button" onClick={() => changeCalendarMonth(1)} className="grid h-6 w-6 place-items-center rounded text-slate-500 hover:bg-slate-100" aria-label="Next month">
+                          <ChevronRight size={13} />
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-7 gap-0.5 text-center">
+                        {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
+                          <span key={`${day}-${index}`} className="py-1 text-[7px] font-bold text-slate-400">{day}</span>
+                        ))}
+                        {calendarDays.map((day, index) => {
+                          if (!day) return <span key={`blank-${index}`} />;
+                          const dateKey = `${calendarMonth}-${String(day).padStart(2, "0")}`;
+                          const hasSessions = Boolean(sessionDateCounts[dateKey]);
+                          const isSelected = dateKey === selectedDate;
+                          const isToday = dateKey === todayKey();
+                          return (
+                            <button
+                              key={dateKey}
+                              type="button"
+                              title={hasSessions ? `${sessionDateCounts[dateKey]} dialysis session${sessionDateCounts[dateKey] > 1 ? "s" : ""}` : "No dialysis sessions"}
+                              onClick={() => {
+                                setSelectedDate(dateKey);
+                                setCalendarOpen(false);
+                              }}
+                              className={`relative grid h-6 place-items-center rounded text-[8px] font-bold transition ${isSelected ? "bg-blue-600 text-white" : hasSessions ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200" : "text-slate-500 hover:bg-slate-100"} ${isToday && !isSelected ? "ring-1 ring-blue-400" : ""}`}
+                            >
+                              {day}
+                              {hasSessions && <span className={`absolute bottom-0.5 h-0.5 w-2 rounded-full ${isSelected ? "bg-white" : "bg-emerald-500"}`} />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>

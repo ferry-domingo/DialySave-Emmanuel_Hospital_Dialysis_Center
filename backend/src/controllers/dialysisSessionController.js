@@ -311,7 +311,7 @@ const SIGNATURE_ROLES = ["patient", "witness", "facilityRepresentative"];
 
 export const signAgreement = async (req, res) => {
   try {
-    const { role, name } = req.body;
+    const { role, name, image = "", placement = {} } = req.body;
 
     if (!SIGNATURE_ROLES.includes(role) || !name?.trim()) {
       return res.status(400).json({
@@ -319,6 +319,23 @@ export const signAgreement = async (req, res) => {
         message: "A valid role and signer name are required.",
       });
     }
+
+    if (role === "facilityRepresentative" && image && (!/^data:image\/png;base64,/.test(image) || image.length > 250_000)) {
+      return res.status(400).json({
+        success: false,
+        message: "The e-signature must be a valid PNG image smaller than 250 KB.",
+      });
+    }
+
+    const normalizedPlacement = {
+      x: Math.max(-120, Math.min(120, Number(placement.x) || 0)),
+      y: Math.max(-40, Math.min(40, Number(placement.y) || 0)),
+      scale: Math.max(0.5, Math.min(2, Number(placement.scale) || 1)),
+    };
+    const storedImage = role === "facilityRepresentative" ? image : "";
+    const storedPlacement = role === "facilityRepresentative"
+      ? normalizedPlacement
+      : { x: 0, y: 0, scale: 1 };
 
     const session = await DialysisSession.findById(req.params.id);
 
@@ -330,41 +347,56 @@ export const signAgreement = async (req, res) => {
     }
 
     const signedAt = new Date();
-    session.agreement.signatures[role] = {
+    const nextSignature = {
       name: name.trim(),
+      image: storedImage,
+      placement: storedPlacement,
       signedAt,
+    };
+    const signatureUpdates = {
+      [`agreement.signatures.${role}`]: nextSignature,
     };
 
     if (role === "witness") {
       for (const linkedRole of ["patient", "facilityRepresentative"]) {
         if (!session.agreement.signatures[linkedRole]?.signedAt) {
-          session.agreement.signatures[linkedRole] = {
+          signatureUpdates[`agreement.signatures.${linkedRole}`] = {
             name: session.agreement.signatures[linkedRole]?.name || "",
+            image: session.agreement.signatures[linkedRole]?.image || "",
+            placement: session.agreement.signatures[linkedRole]?.placement || { x: 0, y: 0, scale: 1 },
             signedAt,
           };
         }
       }
     }
 
-    await session.save();
+    const updatedSession = await DialysisSession.findByIdAndUpdate(
+      session._id,
+      { $set: signatureUpdates },
+      { new: true, runValidators: true }
+    );
 
-    // The HD facility representative is shared by every agreement belonging
-    // to the patient. Keep each form's original signing date intact while
-    // synchronizing the representative's edited printed name.
+    // The HD facility representative is shared by every agreement in the
+    // system, regardless of patient or treatment session.
     if (role === "facilityRepresentative") {
       await DialysisSession.updateMany(
-        { patient: session.patient, _id: { $ne: session._id } },
-        { $set: { "agreement.signatures.facilityRepresentative.name": name.trim() } }
+        { _id: { $ne: session._id } },
+        { $set: {
+          "agreement.signatures.facilityRepresentative.name": name.trim(),
+          "agreement.signatures.facilityRepresentative.image": image,
+          "agreement.signatures.facilityRepresentative.placement": normalizedPlacement,
+          "agreement.signatures.facilityRepresentative.signedAt": signedAt,
+        } }
       );
     }
 
     return res.status(200).json({
       success: true,
       message: role === "facilityRepresentative"
-        ? "HD representative updated across all patient agreements."
+        ? "HD representative updated across every patient agreement."
         : "Signature recorded.",
-      data: session.agreement,
-      scope: role === "facilityRepresentative" ? "patient" : "session",
+      data: updatedSession.agreement,
+      scope: role === "facilityRepresentative" ? "global" : "session",
     });
   } catch (error) {
     console.error("Sign Agreement Error:", error);

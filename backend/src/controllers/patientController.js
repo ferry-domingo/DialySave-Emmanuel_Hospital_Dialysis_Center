@@ -256,6 +256,13 @@ export const deletePatient = async (req, res) => {
       });
     }
 
+    await User.deleteMany({
+      role: "Patient",
+      $or: [
+        { patient: patient._id },
+        { username: patient.patient_id },
+      ],
+    });
     await patient.deleteOne();
 
     return res.status(200).json({

@@ -216,7 +216,13 @@ export const deleteDoctor = async (req, res) => {
       });
     }
 
-    await User.deleteOne({ doctor: doctor._id });
+    await User.deleteMany({
+      role: "Doctor",
+      $or: [
+        { doctor: doctor._id },
+        { username: doctor.doctor_id },
+      ],
+    });
     await doctor.deleteOne();
 
     return res.status(200).json({

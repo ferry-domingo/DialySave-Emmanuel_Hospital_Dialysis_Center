@@ -25,6 +25,7 @@ import { useMessageStore } from "../../store/messageStore";
 import { useOnlineUsersStore } from "../../store/onlineUsersStore";
 import { getSocket } from "../../lib/socket";
 import UserAvatar from "../../components/common/UserAvatar";
+import OneClickImageLightbox from "../../components/common/OneClickImageLightbox";
 import { normalizeRole, ROLES } from "../../utils/roles";
 
 const getUserId = (user) => String(user?._id ?? user?.id ?? "");
@@ -77,7 +78,7 @@ const mediaLabel = (message) => {
   return kind === "image" ? "📷 Photo" : kind === "video" ? "🎬 Video" : kind === "audio" ? "🎵 Audio" : "";
 };
 
-const MessageMedia = ({ message }) => {
+const MessageMedia = ({ message, onOpenImage }) => {
   const media = message.attachment?.dataUrl ? message.attachment : message.image;
   if (!media?.dataUrl) return null;
   const kind = media.kind || media.mimeType?.split("/")[0] || "image";
@@ -102,13 +103,13 @@ const MessageMedia = ({ message }) => {
     );
   }
   return (
-    <a href={media.dataUrl} target="_blank" rel="noreferrer" aria-label="Open photo">
+    <button type="button" onClick={() => onOpenImage({ src: media.dataUrl, alt: media.name || "Shared photo" })} aria-label="Open photo" className="block w-full text-left">
       <img
         src={media.dataUrl}
         alt={media.name || "Shared photo"}
         className="max-h-80 w-full max-w-sm object-cover"
       />
-    </a>
+    </button>
   );
 };
 
@@ -152,6 +153,7 @@ const MessagesPage = () => {
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [typingUsers, setTypingUsers] = useState([]);
+  const [previewImage, setPreviewImage] = useState(null);
   const messagesEndRef = useRef(null);
   const messagesScrollRef = useRef(null);
   const shouldAutoScrollRef = useRef(true);
@@ -366,6 +368,8 @@ const MessagesPage = () => {
   return (
     <div className="flex h-[calc(100dvh-4.5rem)] min-h-0 flex-col gap-2 overflow-hidden md:h-full">
       <div className="hidden md:block"><Topbar title="Messages" /></div>
+
+      <OneClickImageLightbox image={previewImage} onClose={() => setPreviewImage(null)} />
 
       <div className="flex min-h-0 flex-1 overflow-hidden rounded-xl bg-white shadow-sm">
         <aside className={`messages-conversation-list ${activeConversationId ? "hidden md:flex" : "flex"} w-full min-w-0 flex-col border-r border-slate-100 md:w-80 lg:w-96`}>
@@ -674,7 +678,7 @@ const MessagesPage = () => {
                                   ? "rounded-br-md bg-slate-950 text-white"
                                   : "rounded-bl-md bg-white text-slate-800 shadow-sm"}`
                             }`}>
-                              <MessageMedia message={message} />
+                              <MessageMedia message={message} onOpenImage={setPreviewImage} />
                               {message.text && (
                                 <p className={`whitespace-pre-wrap break-words ${
                                   isEmojiOnly(message.text) && !message.attachment?.dataUrl && !message.image?.dataUrl

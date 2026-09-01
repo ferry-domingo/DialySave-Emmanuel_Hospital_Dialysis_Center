@@ -743,13 +743,40 @@ button {
     box-shadow 160ms,
     background 160ms;
 }
+.password-input-wrap {
+  position: relative;
+}
+.password-input-wrap input {
+  padding-right: 42px;
+}
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #526861;
+  cursor: pointer;
+  transform: translateY(-50%);
+  opacity: 1;
+}
+.password-input-wrap:focus-within .password-toggle,
+.password-input-wrap:hover .password-toggle {
+  color: #17342b;
+}
 .login-field input::placeholder {
   color: #98a7a1;
 }
 .login-field input:focus {
   border-color: #6f9b8a;
   background: #fff;
-  box-shadow: 0 0 0 4px rgba(111, 155, 138, 0.13);
+  box-shadow: 0 0 0 2px rgba(111, 155, 138, 0.13);
 }
 .login-options {
   display: flex;
@@ -3951,6 +3978,11 @@ section:has(a[href="/messages"]) > div:last-child::-webkit-scrollbar {
   display: none;
 }
 
+.agreement-copayment-table th,
+.agreement-copayment-table td {
+  height: 14.3pt;
+}
+
 .admission-report-print {
   display: none;
 }
@@ -4019,6 +4051,13 @@ section:has(a[href="/messages"]) > div:last-child::-webkit-scrollbar {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     line-height: 10pt !important;
+  }
+  .agreement-monitoring-print .agreement-lab-row > td:first-child {
+    padding-left: 2pt !important;
+  }
+  .agreement-monitoring-print .agreement-benefits-table th,
+  .agreement-monitoring-print .agreement-benefits-table td {
+    height: 14.3pt !important;
   }
   .agreement-monitoring-print table th,
   .agreement-monitoring-print table td {

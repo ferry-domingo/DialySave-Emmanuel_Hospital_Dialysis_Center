@@ -175,30 +175,20 @@ const MonitoringPage = () => {
 
           <div className="flex flex-wrap gap-1">
 
-          {visibleTabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`rounded-lg px-2.5 py-1.5 text-[10px] font-semibold transition ${
-                activeTab === tab.key
-                  ? "bg-slate-950 text-white shadow-md"
-                  : "bg-slate-100 text-black hover:bg-slate-200"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+            {visibleTabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`rounded-lg px-2.5 py-1.5 text-[10px] font-semibold transition ${activeTab === tab.key
+                    ? "bg-slate-950 text-white shadow-md"
+                    : "bg-slate-100 text-black hover:bg-slate-200"
+                  }`}
+              >
+                {tab.label}
+              </button>
+            ))}
 
           </div>
-
-          {monitoring && (
-            <label className="flex items-center gap-1 text-[10px] font-bold text-slate-500">
-              Year
-              <select value={monitoring.activeYear || selectedYear || ""} onChange={(event) => setSelectedYear(Number(event.target.value))} className="h-7 rounded-md border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-800 outline-none">
-                {(monitoring.availableYears?.length ? monitoring.availableYears : [monitoring.activeYear]).filter(Boolean).map((year) => <option key={year} value={year}>{year}</option>)}
-              </select>
-            </label>
-          )}
 
           {activeTab === "phic" && monitoring?.phic && (
             <div className="flex items-center gap-1">

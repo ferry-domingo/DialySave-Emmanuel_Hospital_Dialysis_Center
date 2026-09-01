@@ -111,14 +111,32 @@ const DialysisSessionSchema = new mongoose.Schema(
       signatures: {
         patient: {
           name: { type: String, default: "" },
+          image: { type: String, default: "" },
+          placement: {
+            x: { type: Number, default: 0 },
+            y: { type: Number, default: 0 },
+            scale: { type: Number, default: 1 },
+          },
           signedAt: { type: Date, default: null },
         },
         witness: {
           name: { type: String, default: "" },
+          image: { type: String, default: "" },
+          placement: {
+            x: { type: Number, default: 0 },
+            y: { type: Number, default: 0 },
+            scale: { type: Number, default: 1 },
+          },
           signedAt: { type: Date, default: null },
         },
         facilityRepresentative: {
           name: { type: String, default: "" },
+          image: { type: String, default: "" },
+          placement: {
+            x: { type: Number, default: 0 },
+            y: { type: Number, default: 0 },
+            scale: { type: Number, default: 1 },
+          },
           signedAt: { type: Date, default: null },
         },
       },

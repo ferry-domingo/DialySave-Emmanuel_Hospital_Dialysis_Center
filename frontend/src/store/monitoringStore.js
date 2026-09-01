@@ -121,12 +121,7 @@ export const useMonitoringStore = create((set, get) => ({
                 ...session.agreement,
                 signatures: {
                   ...session.agreement?.signatures,
-                  [role]: options.allSessions && session.sessionId !== sessionId
-                    ? {
-                        ...session.agreement?.signatures?.[role],
-                        name: signature.name,
-                      }
-                    : signature,
+                  [role]: signature,
                 },
               },
             }
