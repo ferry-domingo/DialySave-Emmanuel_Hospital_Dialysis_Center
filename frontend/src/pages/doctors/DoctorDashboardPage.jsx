@@ -71,7 +71,7 @@ const DoctorDashboardPage = () => {
   useEffect(() => {
     loadDashboard();
     const refresh = (event) => {
-      if (["patients", "dialysis-sessions", "doctors"].includes(event.detail?.resource)) loadDashboard(true);
+      if (["patients", "dialysis-sessions", "doctors", "notifications"].includes(event.detail?.resource)) loadDashboard(true);
     };
     window.addEventListener("dialysave:data-changed", refresh);
     return () => window.removeEventListener("dialysave:data-changed", refresh);
@@ -148,9 +148,18 @@ const DoctorDashboardPage = () => {
               <div className="relative flex h-full items-center"><div className="min-w-0"><p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-emerald-100"><Stethoscope size={12} />Doctor overview</p><h1 className="mt-1 break-words text-base font-black leading-tight">Good day, {formatDoctorName(data.doctor)}.</h1><p className="mt-1 text-[8px] font-medium text-emerald-50">Your assigned care workload at a glance.</p></div></div>
             </section>
 
-            <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">
-              <PanelHeader icon={CircleUserRound} title="Doctor Profile" subtitle="Professional information" tone="bg-violet-50 text-violet-600" />
-              <div className="grid grid-cols-2 gap-2 p-3"><InfoTile label="Doctor ID" value={data.doctor.doctor_id} /><InfoTile label="Expertise" value={data.doctor.medical_expertise} /><InfoTile label="Contact" value={data.doctor.contact_number} /><InfoTile label="Sex" value={data.doctor.gender} /><InfoTile label="Status" value={data.doctor.status} /><InfoTile label="Assigned Patients" value={data.summary.patientCount} /></div>
+            <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">
+              <PanelHeader icon={CalendarDays} title="Upcoming Appointments" subtitle={`${data.summary.upcomingAppointmentCount} assigned-patient schedule${data.summary.upcomingAppointmentCount === 1 ? "" : "s"}`} tone="bg-violet-50 text-violet-600" to="/alerts" />
+              <div className="max-h-48 min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto px-3">
+                {(data.upcomingAppointments || []).map((appointment) => (
+                  <Link key={appointment._id} to="/alerts" className="flex min-w-0 items-center gap-2 py-2 transition hover:bg-violet-50/50">
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-violet-50 text-violet-600"><CalendarDays size={13} /></span>
+                    <span className="min-w-0 flex-1"><b className="block truncate text-[9px] text-slate-900">{patientName(appointment.patient)}</b><small className="block truncate text-[7px] text-slate-400">{appointment.patient?.patient_id || "—"}</small></span>
+                    <time className="shrink-0 text-right text-[8px] font-bold text-violet-700" dateTime={appointment.scheduledFor}>{formatDate(appointment.scheduledFor)}</time>
+                  </Link>
+                ))}
+                {!data.upcomingAppointments?.length && <p className="py-6 text-center text-[9px] text-slate-400">No upcoming appointments</p>}
+              </div>
             </section>
 
             <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">

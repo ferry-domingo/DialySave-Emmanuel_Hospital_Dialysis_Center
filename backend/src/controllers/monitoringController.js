@@ -186,12 +186,15 @@ const buildMonitoring = async (patient, requestedYear) => {
   const availableYears = await getAvailableYears(patient._id);
   const parsedYear = Number(requestedYear);
   const activeYear = Number.isInteger(parsedYear) && parsedYear >= 1900 && parsedYear <= 2200 ? parsedYear : (availableYears[0] || new Date().getFullYear());
-  const sessions = await DialysisSession.find({ patient: patient._id, createdAt: yearRange(activeYear) })
+  const allSessions = await DialysisSession.find({ patient: patient._id })
     .populate("patient", "patient_id first_name middle_name last_name").sort({ createdAt: 1 });
-  const phicSessions = [], cashSessions = [], dialyzerSessions = [], packageSessions = [], agreementSessions = [];
-  sessions.forEach((session) => {
+  const sessions = allSessions.filter((session) => {
+    const sessionYear = new Date(session.createdAt).getUTCFullYear();
+    return sessionYear === activeYear;
+  });
+  const phicSessions = [], yearlyPhicSessions = [], cashSessions = [], dialyzerSessions = [], packageSessions = [], agreementSessions = [];
+  allSessions.forEach((session) => {
     if (session.payment_type === "PHIC") phicSessions.push(session.createdAt);
-    if (session.payment_type === "CASH") cashSessions.push({ id: session._id, date: session.createdAt, reason: session.reason || "" });
     if (session.dialyzer?.name?.trim()) dialyzerSessions.push({ date: session.createdAt, name: session.dialyzer.name });
     packageSessions.push({ _id: session._id, date: session.createdAt, epoetin: session.injections?.name || "", iron: session.intravenous_iron?.name || "", dialyzer: session.dialyzer?.name || "", laboratory_results: session.laboratory_results || [] });
     agreementSessions.push({
@@ -201,13 +204,17 @@ const buildMonitoring = async (patient, requestedYear) => {
       laboratories: session.laboratory_results, agreement: session.agreement,
     });
   });
+  sessions.forEach((session) => {
+    if (session.payment_type === "PHIC") yearlyPhicSessions.push(session.createdAt);
+    if (session.payment_type === "CASH") cashSessions.push({ id: session._id, date: session.createdAt, reason: session.reason || "" });
+  });
   return {
     success: true, availableYears, activeYear,
-    phic: { total: phicSessions.length, remaining: Math.max(0, PHIC_LIMIT - phicSessions.length), dates: phicSessions, exceeded: phicSessions.length >= PHIC_LIMIT },
+    phic: { total: phicSessions.length, remaining: Math.max(0, PHIC_LIMIT - yearlyPhicSessions.length), dates: phicSessions, exceeded: yearlyPhicSessions.length >= PHIC_LIMIT, yearlyTotal: yearlyPhicSessions.length, cumulative: true },
     cash: { total: cashSessions.length, dates: cashSessions.map((s) => s.date), reasons: cashSessions.map((s) => s.reason), sessions: cashSessions },
-    dialyzer: { total: dialyzerSessions.length, sessions: dialyzerSessions },
-    package: { total: packageSessions.length, sessions: packageSessions },
-    agreement: { total: agreementSessions.length, sessions: agreementSessions },
+    dialyzer: { total: dialyzerSessions.length, sessions: dialyzerSessions, cumulative: true },
+    package: { total: packageSessions.length, sessions: packageSessions, cumulative: true },
+    agreement: { total: agreementSessions.length, sessions: agreementSessions, cumulative: true },
   };
 };
 

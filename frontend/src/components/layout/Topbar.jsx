@@ -25,8 +25,8 @@ const Topbar = ({ title }) => {
   };
 
   return (
-    <div className="flex min-w-0 items-center justify-between rounded-xl bg-white px-3 py-1.5 shadow-sm">
-      <h1 className="min-w-0 truncate text-lg font-bold text-slate-900">{title}</h1>
+    <div className="flex min-w-0 items-center justify-between rounded-xl border border-emerald-300 bg-gradient-to-r from-[#f5faf7] via-[#edf7f2] to-[#dfeee8] px-3 py-1.5 shadow-sm shadow-emerald-200/80">
+      <h1 className="min-w-0 truncate text-lg font-bold text-[#123d31]">{title}</h1>
 
       <div className="flex shrink-0 items-center gap-2">
         <Link

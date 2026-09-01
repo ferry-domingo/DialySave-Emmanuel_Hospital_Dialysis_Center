@@ -156,6 +156,7 @@ const DoctorForm = ({ doctor, onClose, onCreated }) => {
             required
             max={new Date().toISOString().slice(0, 10)}
             error={errors.birthdate?.message}
+            className="h-9"
             {...register("birthdate", {
               required: "Birthdate is required",
               validate: (value) => new Date(`${value}T00:00:00`) <= new Date() || "Birthdate cannot be in the future",
@@ -192,7 +193,7 @@ const DoctorForm = ({ doctor, onClose, onCreated }) => {
                 onFocus={() => setExpertiseOpen(true)}
                 onBlur={() => setExpertiseOpen(false)}
                 placeholder="Select or enter expertise"
-                className="h-6 w-full rounded-md border border-slate-200 py-0 pl-6 pr-2 text-xs text-black outline-none focus:border-slate-400"
+                className="h-9 w-full rounded-xl border border-slate-200 py-0 pl-6 pr-2 text-xs text-black outline-none focus:border-slate-400"
                 style={{ fontSize: "12px" }}
               />
               <input type="hidden" {...register("medical_expertise")} />

@@ -56,7 +56,7 @@ const TechnologyGalleryPage = () => {
     setUploading(true);
     try {
       for (const file of files) {
-        await api.post("/technology-gallery", { name: file.name, mimeType: file.type, dataUrl: await readFile(file), category: uploadCategory });
+        await api.post("/technology-gallery", { name: "", mimeType: file.type, dataUrl: await readFile(file), category: uploadCategory });
       }
       toast.success(`${files.length} ${files.length === 1 ? "photo" : "photos"} uploaded.`);
       await loadPhotos();
@@ -131,7 +131,7 @@ const TechnologyGalleryPage = () => {
     </Modal>
     <Modal isOpen={Boolean(editing)} title="Edit gallery photo" maxWidth="max-w-lg" onClose={() => !saving && setEditing(null)}>
       <form onSubmit={saveEdit} className="space-y-4">
-        <label className="block text-xs font-semibold text-slate-700">Display name<input required maxLength={180} value={editForm.name} onChange={(event) => setEditForm({ ...editForm, name: event.target.value })} className="mt-1 h-9 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500" /></label>
+        <label className="block text-xs font-semibold text-slate-700">Display name<input maxLength={180} value={editForm.name} onChange={(event) => setEditForm({ ...editForm, name: event.target.value })} placeholder="Leave blank for no label" className="mt-1 h-9 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500" /></label>
         <label className="block text-xs font-semibold text-slate-700">Caption<input maxLength={120} value={editForm.caption} onChange={(event) => setEditForm({ ...editForm, caption: event.target.value })} placeholder="Optional public image description" className="mt-1 h-9 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500" /></label>
         <label className="block text-xs font-semibold text-slate-700">Category<select value={editForm.category} onChange={(event) => setEditForm({ ...editForm, category: event.target.value })} className="mt-1 h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-emerald-500"><option value="technology">Facilities & Technology page</option><option value="organization">Organization activities</option><option value="training">Training</option></select></label>
         {editing?.showOnHome && editForm.category !== "technology" && <p className="rounded-lg bg-amber-50 p-3 text-[10px] font-semibold text-amber-800">Moving this photo will also remove it from the Home showcase.</p>}

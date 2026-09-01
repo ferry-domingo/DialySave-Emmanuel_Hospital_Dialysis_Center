@@ -121,7 +121,7 @@ const MonitoringPackage = ({ patientId, patientHasDoctor, onImported }) => {
         <h2 className="text-sm font-bold text-slate-900">Package</h2>
         <div className="flex items-center gap-1.5">
           <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">
-            {monitoring?.package?.total || 0} used
+            {monitoring?.package?.total || 0} total sessions
           </span>
           <button type="button" disabled={uploading} onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1 rounded-md bg-emerald-600 px-2 py-1 text-[10px] font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">
             <Upload size={14} /> {uploading ? "Reading..." : "Upload Excel"}

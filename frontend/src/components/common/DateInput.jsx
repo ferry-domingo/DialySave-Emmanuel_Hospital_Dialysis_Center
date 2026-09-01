@@ -16,9 +16,8 @@ const DateInput = ({
 
       <input
         type="date"
-        className={`h-6 w-full rounded-md border px-2 py-0 text-xs text-black outline-none transition focus:border-slate-400 ${
-          error ? "border-red-300" : "border-slate-200"
-        } ${className}`}
+        className={`h-9 w-full rounded-xl border px-2 py-0 text-xs text-black outline-none transition focus:border-slate-400 ${error ? "border-red-300" : "border-slate-200"
+          } ${className}`}
         {...props}
         style={{ ...props.style, fontSize: "12px" }}
       />

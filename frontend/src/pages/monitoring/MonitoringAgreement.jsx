@@ -59,8 +59,8 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
     setAgreementHeparin(sessionId, heparin);
   };
 
-  const handleSignatureChange = (role, signature) => {
-    setAgreementSignature(session.sessionId, role, signature);
+  const handleSignatureChange = (role, signature, options) => {
+    setAgreementSignature(session.sessionId, role, signature, options);
   };
 
   const handleCopaymentsChange = (sessionId, copayments) => {

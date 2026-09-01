@@ -109,19 +109,24 @@ export const useMonitoringStore = create((set, get) => ({
       };
     }),
 
-  setAgreementSignature: (sessionId, role, signature) =>
+  setAgreementSignature: (sessionId, role, signature, options = {}) =>
     set((state) => {
       if (!state.monitoring?.agreement?.sessions) return state;
 
       const sessions = state.monitoring.agreement.sessions.map((session) =>
-        session.sessionId === sessionId
+        session.sessionId === sessionId || options.allSessions
           ? {
               ...session,
               agreement: {
                 ...session.agreement,
                 signatures: {
                   ...session.agreement?.signatures,
-                  [role]: signature,
+                  [role]: options.allSessions && session.sessionId !== sessionId
+                    ? {
+                        ...session.agreement?.signatures?.[role],
+                        name: signature.name,
+                      }
+                    : signature,
                 },
               },
             }

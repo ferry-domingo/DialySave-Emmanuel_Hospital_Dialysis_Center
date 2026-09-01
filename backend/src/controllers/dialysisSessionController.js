@@ -25,9 +25,14 @@ export const createDialysisSession = async (req, res) => {
 
     if (payment_type === "PHIC") {
 
+        const year = new Date().getFullYear();
+        const yearStart = new Date(Date.UTC(year, 0, 1));
+        const nextYearStart = new Date(Date.UTC(year + 1, 0, 1));
+
         const totalPHIC = await DialysisSession.countDocuments({
             patient: patient_id,
             payment_type: "PHIC",
+            createdAt: { $gte: yearStart, $lt: nextYearStart },
         });
 
         if (totalPHIC >= 156) {
@@ -343,10 +348,23 @@ export const signAgreement = async (req, res) => {
 
     await session.save();
 
+    // The HD facility representative is shared by every agreement belonging
+    // to the patient. Keep each form's original signing date intact while
+    // synchronizing the representative's edited printed name.
+    if (role === "facilityRepresentative") {
+      await DialysisSession.updateMany(
+        { patient: session.patient, _id: { $ne: session._id } },
+        { $set: { "agreement.signatures.facilityRepresentative.name": name.trim() } }
+      );
+    }
+
     return res.status(200).json({
       success: true,
-      message: "Signature recorded.",
+      message: role === "facilityRepresentative"
+        ? "HD representative updated across all patient agreements."
+        : "Signature recorded.",
       data: session.agreement,
+      scope: role === "facilityRepresentative" ? "patient" : "session",
     });
   } catch (error) {
     console.error("Sign Agreement Error:", error);

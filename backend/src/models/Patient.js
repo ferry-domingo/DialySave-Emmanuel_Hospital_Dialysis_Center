@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { formatPersonName } from "../utils/formatPersonName.js";
 
 const patientSchema = new mongoose.Schema(
   {
@@ -18,17 +19,20 @@ const patientSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      set: formatPersonName,
     },
 
     last_name: {
       type: String,
       required: true,
       trim: true,
+      set: formatPersonName,
     },
 
     middle_name: {
       type: String,
       trim: true,
+      set: formatPersonName,
     },
 
     birthdate: {

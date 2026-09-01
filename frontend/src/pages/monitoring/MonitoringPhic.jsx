@@ -27,7 +27,7 @@ const MonitoringPhic = ({ phic }) => {
 
         {phic.exceeded && (
           <p className="no-print m-3 rounded-2xl bg-red-50 px-4 py-2 text-sm font-semibold text-red-600">
-            PHIC limit of 156 sessions reached.
+            PHIC limit of 156 sessions reached for the selected calendar year.
           </p>
         )}
 

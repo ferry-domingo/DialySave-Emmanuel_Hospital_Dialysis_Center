@@ -72,7 +72,7 @@ const Layout = () => {
         },
         notifications: () => useNotificationStore.getState().fetchNotifications({ silent: true }),
         announcements: () => role === ROLES.ADMIN && path === "/admin-announcements" && useAnnouncementStore.getState().fetchAnnouncements({ silent: true }),
-        "doctor-portal": () => role === ROLES.DOCTOR && path.startsWith("/doctor-") && useDoctorPortalStore.getState().fetchPortal({ silent: true }).catch(() => {}),
+        "doctor-portal": () => role === ROLES.DOCTOR && path.startsWith("/doctor-") && useDoctorPortalStore.getState().fetchPortal({ silent: true }).catch(() => { }),
         profile: () => {
           const currentUser = useAuthStore.getState().user;
           const currentId = currentUser?.id || currentUser?._id;
@@ -103,15 +103,15 @@ const Layout = () => {
         const path = window.location.pathname;
         const routeResources = path === "/dashboard" ? ["dashboard", "patients", "notifications"]
           : path === "/monitoring" ? ["monitoring", "patients", "notifications"]
-          : path === "/sessions" ? ["dialysis-sessions", "notifications"]
-          : path === "/patients" ? ["patients", "notifications"]
-          : path === "/doctors" ? ["doctors", "notifications"]
-          : path === "/admission-report" ? ["admission-report", "notifications"]
-          : path === "/users" ? ["users", "notifications"]
-          : path === "/activity-logs" ? ["activity-logs", "notifications"]
-          : path === "/admin-announcements" ? ["announcements", "notifications"]
-          : path.startsWith("/doctor-") ? ["doctor-portal", "notifications"]
-          : ["notifications"];
+            : path === "/sessions" ? ["dialysis-sessions", "notifications"]
+              : path === "/patients" ? ["patients", "notifications"]
+                : path === "/doctors" ? ["doctors", "notifications"]
+                  : path === "/admission-report" ? ["admission-report", "notifications"]
+                    : path === "/users" ? ["users", "notifications"]
+                      : path === "/activity-logs" ? ["activity-logs", "notifications"]
+                        : path === "/admin-announcements" ? ["announcements", "notifications"]
+                          : path.startsWith("/doctor-") ? ["doctor-portal", "notifications"]
+                            : ["notifications"];
         routeResources.forEach((resource) => queueRefresh(resource, { reconnect: true }));
       }
       hasConnected = true;
@@ -153,7 +153,7 @@ const Layout = () => {
   const isAdmin = normalizeRole(user?.role) === ROLES.ADMIN;
 
   return (
-    <div className={`app-shell min-h-screen w-full max-w-full overflow-x-hidden bg-[#f4f7f5] md:flex ${isAdmin ? "admin-dashboard-shell" : ""}`}>
+    <div className={`app-shell min-h-screen w-full max-w-full overflow-x-hidden bg-[#e4f0ea] md:flex ${isAdmin ? "admin-dashboard-shell" : ""}`}>
       <Sidebar />
 
       <div className="app-main-column min-w-0 max-w-full flex-1 md:h-screen md:overflow-hidden">

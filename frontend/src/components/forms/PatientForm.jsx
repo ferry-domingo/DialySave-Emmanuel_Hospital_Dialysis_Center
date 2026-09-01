@@ -190,6 +190,7 @@ const PatientForm = ({ patient, creationMode = "new", onClose, onCreated }) => {
             label="Birthdate"
             required
             error={errors.birthdate?.message}
+            className="h-9"
             {...register("birthdate", { required: "Birthdate is required" })}
           />
 
@@ -229,7 +230,7 @@ const PatientForm = ({ patient, creationMode = "new", onClose, onCreated }) => {
                   setDoctorSearch(formatDoctorName(selectedDoctor));
                 }}
                 placeholder="Search doctor..."
-                className="h-6 w-full rounded-md border border-slate-200 py-0 pl-6 pr-2 text-xs text-black outline-none focus:border-slate-400"
+                className="h-9 w-full rounded-xl border border-slate-200 py-0 pl-6 pr-2 text-xs text-black outline-none focus:border-slate-400"
                 style={{ fontSize: "12px" }}
               />
               <input type="hidden" {...register("doctor")} />

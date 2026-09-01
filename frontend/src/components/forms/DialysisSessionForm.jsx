@@ -173,8 +173,8 @@ const DialysisSessionForm = ({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
 
       <div className="grid grid-cols-1 gap-2 lg:grid-cols-3">
-      <section className="space-y-1.5 rounded-lg border border-blue-200 bg-blue-50/50 p-2">
-        <SectionHeader icon={Users} title="Session Details" />
+        <section className="space-y-1.5 rounded-lg border border-blue-200 bg-blue-50/50 p-2">
+          <SectionHeader icon={Users} title="Session Details" />
 
           <div className="relative space-y-0.5">
             <label className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Patient</label>
@@ -193,7 +193,7 @@ const DialysisSessionForm = ({
                   setPatientSearch(selectedPatient ? `${selectedPatient.first_name} ${selectedPatient.last_name}` : "");
                 }}
                 placeholder="Search patient name or ID..."
-                className="w-full rounded-md border border-slate-200 py-0.5 pl-6 pr-6 text-xs text-black outline-none transition focus:border-slate-400"
+                className="h-8 w-full rounded-xl border border-slate-200 py-0.5 pl-6 pr-6 text-xs text-black outline-none transition focus:border-slate-400"
                 style={{ fontSize: "12px" }}
               />
               {selectedPatient && !patientSearchOpen && (
@@ -235,7 +235,7 @@ const DialysisSessionForm = ({
 
           <div className="space-y-0.5">
             <label className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Doctor</label>
-            <div className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs">
+            <div className="flex h-8 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs">
               <Stethoscope size={12} className="shrink-0 text-slate-400" />
               <span className={selectedPatient?.doctor ? "font-bold text-black" : "text-slate-400"} style={{ fontSize: "12px" }}>
                 {selectedPatient?.doctor
@@ -249,75 +249,75 @@ const DialysisSessionForm = ({
             options={SESSION_PAYMENT_OPTIONS}
             {...register("payment_type")}
           />
-      </section>
+        </section>
 
-      <section className="space-y-1.5 rounded-lg border border-indigo-200 bg-indigo-50/50 p-2">
-        <SectionHeader icon={Syringe} title="Treatments" />
-        <div className="grid grid-cols-[minmax(0,1fr)_5rem] gap-1.5">
-          <Select
-            label="Injection"
-            options={INJECTIONS.map((item) => ({ value: item, label: item }))}
-            {...register("injections.name")}
-          />
-
-          <Select
-            label="Payment"
-            options={PAYMENT_OPTIONS}
-            {...register("injections.payment_type")}
-          />
-        </div>
-        <div className="grid grid-cols-[minmax(0,1fr)_5rem] gap-1.5">
-          <Select
-            label="Dialyzer"
-            options={DIALYZERS.map((item) => ({ value: item, label: item }))}
-            {...register("dialyzer.name")}
-          />
-
-          <Select
-            label="Payment"
-            options={PAYMENT_OPTIONS}
-            {...register("dialyzer.payment_type")}
-          />
-        </div>
-        <div className="grid grid-cols-[minmax(0,1fr)_5rem] gap-1.5">
-          <Select
-            label="IV Iron"
-            options={IV_IRONS.map((item) => ({ value: item, label: item }))}
-            {...register("intravenous_iron.name")}
-          />
-
-          <Select
-            label="Payment"
-            options={PAYMENT_OPTIONS}
-            {...register("intravenous_iron.payment_type")}
-          />
-        </div>
-      </section>
-
-      <section className="space-y-1.5 rounded-lg border border-emerald-200 bg-emerald-50/50 p-2">
-        <SectionHeader icon={TestTube} title="Laboratory Results" />
-
-        <div className="grid grid-cols-2 gap-1">
-          {LAB_TESTS.map((lab, index) => (
-            <Controller
-              key={lab}
-              control={control}
-              name={`laboratory_results.${index}.done`}
-              render={({ field }) => (
-                <label className="flex cursor-pointer items-center gap-1 rounded border border-emerald-100 bg-white/80 px-1.5 py-0.5">
-                  <input
-                    type="checkbox"
-                    checked={field.value}
-                    onChange={field.onChange}
-                    className="h-3 w-3 accent-slate-950"
-                  />
-                  <span className="truncate text-[9px] font-medium text-slate-700" title={lab}>{lab}</span>
-                </label>
-              )}
+        <section className="space-y-1.5 rounded-lg border border-indigo-200 bg-indigo-50/50 p-2">
+          <SectionHeader icon={Syringe} title="Treatments" />
+          <div className="grid grid-cols-[minmax(0,1fr)_5rem] gap-1.5">
+            <Select
+              label="Injection"
+              options={INJECTIONS.map((item) => ({ value: item, label: item }))}
+              {...register("injections.name")}
             />
-          ))}
-        </div>
-      </section>
+
+            <Select
+              label="Payment"
+              options={PAYMENT_OPTIONS}
+              {...register("injections.payment_type")}
+            />
+          </div>
+          <div className="grid grid-cols-[minmax(0,1fr)_5rem] gap-1.5">
+            <Select
+              label="Dialyzer"
+              options={DIALYZERS.map((item) => ({ value: item, label: item }))}
+              {...register("dialyzer.name")}
+            />
+
+            <Select
+              label="Payment"
+              options={PAYMENT_OPTIONS}
+              {...register("dialyzer.payment_type")}
+            />
+          </div>
+          <div className="grid grid-cols-[minmax(0,1fr)_5rem] gap-1.5">
+            <Select
+              label="IV Iron"
+              options={IV_IRONS.map((item) => ({ value: item, label: item }))}
+              {...register("intravenous_iron.name")}
+            />
+
+            <Select
+              label="Payment"
+              options={PAYMENT_OPTIONS}
+              {...register("intravenous_iron.payment_type")}
+            />
+          </div>
+        </section>
+
+        <section className="space-y-1.5 rounded-lg border border-emerald-200 bg-emerald-50/50 p-2">
+          <SectionHeader icon={TestTube} title="Laboratory Results" />
+
+          <div className="grid grid-cols-2 gap-1.5">
+            {LAB_TESTS.map((lab, index) => (
+              <Controller
+                key={lab}
+                control={control}
+                name={`laboratory_results.${index}.done`}
+                render={({ field }) => (
+                  <label className="flex min-h-[2.1rem] cursor-pointer items-center gap-1.5 rounded border border-emerald-100 bg-white/80 px-1.5 py-1">
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={field.onChange}
+                      className="h-3.5 w-3.5 accent-slate-950"
+                    />
+                    <span className="truncate text-[9px] font-medium text-slate-700" title={lab}>{lab}</span>
+                  </label>
+                )}
+              />
+            ))}
+          </div>
+        </section>
       </div>
 
       <div className="flex justify-end gap-2 border-t border-slate-100 pt-2">

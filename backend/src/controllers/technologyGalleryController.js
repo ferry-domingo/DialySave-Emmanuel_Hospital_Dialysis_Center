@@ -29,7 +29,7 @@ export const getTechnologyPhotoImage = async (req, res) => {
 
 export const createTechnologyPhoto = async (req, res) => {
   try {
-    const name = String(req.body.name || "technology-photo").slice(0, 180);
+    const name = String(req.body.name ?? "").trim().slice(0, 180);
     const mimeType = String(req.body.mimeType || "");
     const dataUrl = String(req.body.dataUrl || "");
     const caption = String(req.body.caption || "").trim().slice(0, 120);
@@ -74,7 +74,7 @@ export const updateTechnologyPhoto = async (req, res) => {
     const photo = await TechnologyPhoto.findById(req.params.id);
     if (!photo) return res.status(404).json({ success: false, message: "Technology photo not found." });
     const category = ALLOWED_CATEGORIES.includes(req.body.category) ? req.body.category : photo.category;
-    photo.name = String(req.body.name || photo.name).trim().slice(0, 180);
+    photo.name = String(req.body.name ?? photo.name).trim().slice(0, 180);
     photo.caption = String(req.body.caption || "").trim().slice(0, 120);
     photo.category = category;
     if (category !== "technology") photo.showOnHome = false;

@@ -46,7 +46,9 @@ const SignatureBlock = ({ sessionId, role, label, defaultName, signature, onSign
           if (returned?.signedAt) onSignatureChange?.(signatureRole, returned);
         });
       } else {
-        onSignatureChange?.(role, nextSignature);
+        onSignatureChange?.(role, nextSignature, {
+          allSessions: response.data?.scope === "patient",
+        });
       }
       setEditing(false);
       toast.success(`${label} signature recorded`);

@@ -2,6 +2,7 @@ import { Doctor } from "../models/Doctor.js";
 import User from "../models/User.js";
 import { Patient } from "../models/Patient.js";
 import DialysisSession from "../models/DialysisSession.js";
+import Notification from "../models/Notification.js";
 import { generateTemporaryPassword, hashPassword } from "../utils/auth.js";
 import { generateDoctorId } from "../utils/generateDoctorId.js";
 
@@ -256,10 +257,21 @@ export const getMyDoctorDashboard = async (req, res) => {
     const sessionScope = patientIds.length
       ? { $or: [{ doctor: doctorId }, { patient: { $in: patientIds } }] }
       : { doctor: doctorId };
-    const sessions = await DialysisSession.find(sessionScope)
-      .populate("patient", "patient_id first_name middle_name last_name birthdate gender blood_type contact_number status")
-      .populate("doctor", "doctor_id first_name middle_name last_name gender")
-      .sort({ createdAt: -1 });
+    const [sessions, upcomingAppointments] = await Promise.all([
+      DialysisSession.find(sessionScope)
+        .populate("patient", "patient_id first_name middle_name last_name birthdate gender blood_type contact_number status")
+        .populate("doctor", "doctor_id first_name middle_name last_name gender")
+        .sort({ createdAt: -1 }),
+      patientIds.length
+        ? Notification.find({
+            patient: { $in: patientIds },
+            type: "Dialysis Schedule",
+            scheduledFor: { $gte: new Date() },
+          })
+            .populate("patient", "patient_id first_name middle_name last_name")
+            .sort({ scheduledFor: 1 })
+        : [],
+    ]);
 
     return res.json({
       success: true,
@@ -267,8 +279,10 @@ export const getMyDoctorDashboard = async (req, res) => {
         doctor,
         patients,
         sessions,
+        upcomingAppointments,
         summary: {
           patientCount: patients.length,
+          upcomingAppointmentCount: upcomingAppointments.length,
           sessionCount: sessions.length,
           sessionsThisMonth: sessions.filter((session) => {
             const date = new Date(session.createdAt);
