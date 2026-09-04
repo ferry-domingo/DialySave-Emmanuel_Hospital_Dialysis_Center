@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import User from "../models/User.js";
 import { generateTemporaryPassword } from "../utils/auth.js";
 import { buildPatientLookupFilter } from "../utils/patientLookup.js";
+import { normalizeRole, ROLES } from "../utils/roles.js";
 
 const patientIdFromParts = (year, number) => {
   if (!/^\d{4}$/.test(String(year || "")) || !/^\d+$/.test(String(number || ""))) return null;
@@ -192,6 +193,11 @@ export const updatePatient = async (req, res) => {
       status,
       info_relayed,
     } = req.body;
+    const ownPatientUpdate = normalizeRole(req.user?.role) === ROLES.PATIENT;
+
+    if (ownPatientUpdate && (patient_id_year !== undefined || patient_id_number !== undefined || doctor !== undefined || status !== undefined || info_relayed !== undefined)) {
+      return res.status(403).json({ success: false, message: "Patient ID, assigned doctor, status, and internal records cannot be changed." });
+    }
 
     if (patient_id_year !== undefined || patient_id_number !== undefined) {
       const updatedPatientId = patientIdFromParts(patient_id_year, patient_id_number);
@@ -218,6 +224,13 @@ export const updatePatient = async (req, res) => {
     patient.info_relayed = info_relayed ?? patient.info_relayed;
     
     await patient.save();
+
+    if (ownPatientUpdate) {
+      await User.updateOne(
+        { patient: patient._id, role: ROLES.PATIENT },
+        { name: [patient.first_name, patient.middle_name, patient.last_name].filter(Boolean).join(" ") }
+      );
+    }
 
     if (patient_id_year !== undefined || patient_id_number !== undefined) {
       await User.updateOne({ patient: patient._id, role: "Patient" }, { username: patient.patient_id });

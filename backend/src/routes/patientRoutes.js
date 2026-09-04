@@ -16,7 +16,7 @@ router.use(protect);
 router.post("/", operationalOnly, createPatient);
 router.get("/", operationalOnly, getPatients);
 router.get("/:id", roleOrOwnPatient(ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER), getPatientById);
-router.put("/:id", operationalOnly, updatePatient);
+router.put("/:id", roleOrOwnPatient(ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER), updatePatient);
 router.delete("/:id", operationalOnly, deletePatient);
 
 export default router;

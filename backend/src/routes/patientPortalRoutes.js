@@ -46,6 +46,7 @@ router.get('/:identifier', protect, roleOrOwnPatient(), async (req, res) => {
 
     const monitoringResult = await runController(getPatientMonitoring, {
       params: { id: patient._id.toString() },
+      query: {},
     });
 
     const admissionResult = await runController(getAdmissionReport, {

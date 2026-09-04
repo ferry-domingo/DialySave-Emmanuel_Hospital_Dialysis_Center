@@ -41,7 +41,7 @@ test("buildPatientPortalData preserves full dialysis session details", () => {
       injections: { name: "EPO" },
       dialyzer: { name: "Low Flux" },
       intravenous_iron: { name: "Iron Sucrose" },
-      laboratory_results: [{ name: "CBC", done: true }],
+      laboratory_request: [{ name: "CBC", done: true }],
     },
   ];
 
@@ -51,5 +51,5 @@ test("buildPatientPortalData preserves full dialysis session details", () => {
   assert.equal(result.sessions[0].payment_type, "CASH");
   assert.equal(result.sessions[0].injections.name, "EPO");
   assert.equal(result.sessions[0].dialyzer.name, "Low Flux");
-  assert.equal(result.sessions[0].laboratory_results[0].name, "CBC");
+  assert.equal(result.sessions[0].laboratory_request[0].name, "CBC");
 });

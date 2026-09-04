@@ -13,7 +13,7 @@ export const createDialysisSession = async (req, res) => {
       injections,
       dialyzer,
       intravenous_iron,
-      laboratory_results,
+      laboratory_request,
     } = req.body;
 
     if (!patient_id || !doctor_id) {
@@ -51,7 +51,7 @@ export const createDialysisSession = async (req, res) => {
       injections,
       dialyzer,
       intravenous_iron,
-      laboratory_results,
+      laboratory_request,
     });
 
     const populatedSession = await DialysisSession.findById(session._id)
@@ -147,7 +147,7 @@ export const updateDialysisSession = async (req, res) => {
       injections,
       dialyzer,
       intravenous_iron,
-      laboratory_results,
+      laboratory_request,
     } = req.body;
 
     session.patient = patient_id ?? session.patient;
@@ -157,8 +157,8 @@ export const updateDialysisSession = async (req, res) => {
     session.dialyzer = dialyzer ?? session.dialyzer;
     session.intravenous_iron =
       intravenous_iron ?? session.intravenous_iron;
-    session.laboratory_results =
-      laboratory_results ?? session.laboratory_results;
+    session.laboratory_request =
+      laboratory_request ?? session.laboratory_request;
 
     await session.save();
 

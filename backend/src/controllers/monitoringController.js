@@ -125,13 +125,13 @@ export const validatePackageWorkbook = (buffer) => {
     if (legacy && !legacyDialyzerMark.valid) rowErrors.push("Dialyzer contains an unsupported mark.");
     if (!legacy && dialyzer && !DIALYZER_OPTIONS.has(dialyzer)) rowErrors.push("Dialyzer must be Low Flux or High Flux.");
     if (!iron.valid) rowErrors.push("Iron contains an unsupported mark.");
-    const laboratory_results = LAB_COLUMNS.map((column) => {
+    const laboratory_request = LAB_COLUMNS.map((column) => {
       const mark = parseMark(values[column]);
       if (!mark.valid) rowErrors.push(`${column} contains an unsupported mark.`);
       return { name: column === "SERUM IRON/FERRITIN" ? "Serum Iron" : column, done: mark.checked };
     });
     if (rowErrors.length) errors.push({ rowNumber, errors: [...new Set(rowErrors)] });
-    else rows.push({ rowNumber, date, epoetin, dialyzer, iron: iron.checked, laboratory_results });
+    else rows.push({ rowNumber, date, epoetin, dialyzer, iron: iron.checked, laboratory_request });
   }
   const years = [...new Set(rows.map((row) => row.date.getUTCFullYear()))];
   if (years.length > 1) errors.push({ rowNumber: null, errors: ["All session dates must be in the same calendar year."] });
@@ -171,7 +171,7 @@ const loadImportPreview = async (patientId, buffer) => {
       rows: validRows.map((row) => ({
         rowNumber: row.rowNumber, date: dateKey(row.date), epoetin: row.epoetin,
         iron: row.iron, dialyzer: row.dialyzer,
-        laboratories: row.laboratory_results.filter((lab) => lab.done).map((lab) => lab.name),
+        laboratories: row.laboratory_request.filter((lab) => lab.done).map((lab) => lab.name),
       })),
     },
   };
@@ -196,12 +196,12 @@ const buildMonitoring = async (patient, requestedYear) => {
   allSessions.forEach((session) => {
     if (session.payment_type === "PHIC") phicSessions.push(session.createdAt);
     if (session.dialyzer?.name?.trim()) dialyzerSessions.push({ date: session.createdAt, name: session.dialyzer.name });
-    packageSessions.push({ _id: session._id, date: session.createdAt, epoetin: session.injections?.name || "", iron: session.intravenous_iron?.name || "", dialyzer: session.dialyzer?.name || "", laboratory_results: session.laboratory_results || [] });
+    packageSessions.push({ _id: session._id, date: session.createdAt, epoetin: session.injections?.name || "", iron: session.intravenous_iron?.name || "", dialyzer: session.dialyzer?.name || "", laboratory_request: session.laboratory_request || [] });
     agreementSessions.push({
       sessionNo: agreementSessions.length + 1, sessionId: session._id, date: session.createdAt, payment_type: session.payment_type,
       patient: { _id: session.patient._id, patient_id: session.patient.patient_id, first_name: session.patient.first_name, middle_name: session.patient.middle_name, last_name: session.patient.last_name, full_name: [session.patient.first_name, session.patient.middle_name, session.patient.last_name].filter(Boolean).join(" ") },
       injection: session.injections, iron: session.intravenous_iron, dialyzer: session.dialyzer,
-      laboratories: session.laboratory_results, agreement: session.agreement,
+      laboratories: session.laboratory_request, agreement: session.agreement,
     });
   });
   sessions.forEach((session) => {
@@ -245,7 +245,7 @@ export const importPackage = async (req, res) => {
       injections: row.epoetin ? { name: row.epoetin, payment_type: "PHIC" } : undefined,
       dialyzer: row.dialyzer ? { name: row.dialyzer, payment_type: "PHIC" } : undefined,
       intravenous_iron: row.iron ? { name: STANDARD_IRON, payment_type: "PHIC" } : undefined,
-      laboratory_results: row.laboratory_results, createdAt: row.date, updatedAt: new Date(),
+      laboratory_request: row.laboratory_request, createdAt: row.date, updatedAt: new Date(),
     }));
     await DialysisSession.insertMany(documents);
     const monitoring = await buildMonitoring(result.patient, result.preview.year);

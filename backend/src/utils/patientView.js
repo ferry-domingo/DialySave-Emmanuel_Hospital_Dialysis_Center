@@ -25,6 +25,6 @@ export const buildPatientPortalData = (patient, sessions = []) => ({
     injections: session.injections || null,
     dialyzer: session.dialyzer || null,
     intravenous_iron: session.intravenous_iron || null,
-    laboratory_results: session.laboratory_results || [],
+    laboratory_request: session.laboratory_request || [],
   })),
 });

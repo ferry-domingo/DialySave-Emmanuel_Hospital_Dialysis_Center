@@ -299,7 +299,7 @@ export const getDashboardSummary = async (req, res) => {
 
     const todaySessions = await DialysisSession.find({
       createdAt: { $gte: todayStart, $lt: todayEnd },
-    }).select("payment_type laboratory_results");
+    }).select("payment_type laboratory_request");
 
     const weekStart = new Date(todayStart.getTime() - 6 * DAY_MS);
     const [
@@ -342,7 +342,7 @@ export const getDashboardSummary = async (req, res) => {
       ]),
       DialysisSession.countDocuments({ createdAt: { $gte: yearStart, $lt: todayEnd } }),
       DialysisSession.find({ createdAt: { $gte: monthStart, $lt: todayEnd } })
-        .select("payment_type laboratory_results createdAt")
+        .select("payment_type laboratory_request createdAt")
         .lean(),
       DialysisSession.find({ createdAt: { $gte: yearStart, $lt: todayEnd } })
         .select("payment_type createdAt")
@@ -380,7 +380,7 @@ export const getDashboardSummary = async (req, res) => {
         : "Unknown patient",
     }));
     const completedLabsToday = todaySessions.reduce((total, session) =>
-      total + (session.laboratory_results || []).filter((result) => result.done).length, 0);
+      total + (session.laboratory_request || []).filter((result) => result.done).length, 0);
 
     const byPaymentType = Object.fromEntries(PAYMENT_TYPES.map((type) => [type, 0]));
     todaySessions.forEach((session) => {
@@ -394,7 +394,7 @@ export const getDashboardSummary = async (req, res) => {
     let monthlyLabsCompleted = 0;
     monthlySessionDetails.forEach((session) => {
       if (session.payment_type in monthlyPaymentMix) monthlyPaymentMix[session.payment_type] += 1;
-      (session.laboratory_results || []).forEach((result) => {
+      (session.laboratory_request || []).forEach((result) => {
         monthlyLabChecks += 1;
         if (result.done) monthlyLabsCompleted += 1;
       });

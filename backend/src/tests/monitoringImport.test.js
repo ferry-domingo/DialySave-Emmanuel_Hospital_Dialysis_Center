@@ -24,7 +24,7 @@ test("normalizes a valid historical package row", () => {
   assert.equal(result.year, 2025);
   assert.equal(result.rows[0].iron, true);
   assert.equal(result.rows[0].dialyzer, "Low Flux");
-  assert.deepEqual(result.rows[0].laboratory_results.filter((lab) => lab.done).map((lab) => lab.name), ["CBC", "Serum Iron"]);
+  assert.deepEqual(result.rows[0].laboratory_request.filter((lab) => lab.done).map((lab) => lab.name), ["CBC", "Serum Iron"]);
 });
 
 test("rejects mixed years and unsupported values", () => {
@@ -57,5 +57,5 @@ test("accepts the consolidated legacy PACKAGE sheet layout", () => {
   assert.equal(result.year, 2025);
   assert.equal(result.rows[0].epoetin, "Pre-filled");
   assert.equal(result.rows[0].dialyzer, "High Flux");
-  assert.equal(result.rows[0].laboratory_results[0].done, true);
+  assert.equal(result.rows[0].laboratory_request[0].done, true);
 });

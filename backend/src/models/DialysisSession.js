@@ -70,7 +70,7 @@ const DialysisSessionSchema = new mongoose.Schema(
       },
     },
 
-    laboratory_results: [
+    laboratory_request: [
       {
         name: {
           type: String,
