@@ -250,7 +250,7 @@ const AgreementItemsCovered = ({ session, onHeparinChange, onCopaymentsChange })
         <div>
 
           <h3 className="mb-1.5 text-xs font-bold text-slate-900">
-            Laboratory Tests
+            Laboratory Request
           </h3>
 
           <table className="w-full text-[10px]">

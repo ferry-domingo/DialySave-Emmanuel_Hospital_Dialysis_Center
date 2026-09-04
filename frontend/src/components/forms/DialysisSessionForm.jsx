@@ -62,7 +62,7 @@ const DEFAULT_VALUES = {
   injections: { name: "", payment_type: "PHIC" },
   dialyzer: { name: "", payment_type: "PHIC" },
   intravenous_iron: { name: "", payment_type: "PHIC" },
-  laboratory_results: DEFAULT_LAB_RESULTS,
+  laboratory_request: DEFAULT_LAB_RESULTS,
 };
 
 const SectionHeader = ({ icon: Icon, title }) => (
@@ -141,8 +141,8 @@ const DialysisSessionForm = ({
         injections: session.injections,
         dialyzer: session.dialyzer,
         intravenous_iron: session.intravenous_iron,
-        laboratory_results: session.laboratory_results?.length
-          ? session.laboratory_results
+        laboratory_request: session.laboratory_request?.length
+          ? session.laboratory_request
           : DEFAULT_LAB_RESULTS,
       });
       setPatientSearch(session.patient ? `${session.patient.first_name} ${session.patient.last_name}` : "");
@@ -295,14 +295,14 @@ const DialysisSessionForm = ({
         </section>
 
         <section className="space-y-1.5 rounded-lg border border-emerald-200 bg-emerald-50/50 p-2">
-          <SectionHeader icon={TestTube} title="Laboratory Results" />
+          <SectionHeader icon={TestTube} title="Laboratory Request" />
 
           <div className="grid grid-cols-2 gap-1.5">
             {LAB_TESTS.map((lab, index) => (
               <Controller
                 key={lab}
                 control={control}
-                name={`laboratory_results.${index}.done`}
+                name={`laboratory_request.${index}.done`}
                 render={({ field }) => (
                   <label className="flex min-h-[2.1rem] cursor-pointer items-center gap-1.5 rounded border border-emerald-100 bg-white/80 px-1.5 py-1">
                     <input

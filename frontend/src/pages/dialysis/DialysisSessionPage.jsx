@@ -57,7 +57,7 @@ const DialysisSessionPage = () => {
       session.injections,
       session.dialyzer,
       session.intravenous_iron,
-      session.laboratory_results?.filter((result) => result.done).map((result) => result.name),
+      session.laboratory_request?.filter((result) => result.done).map((result) => result.name),
     ]).toLowerCase().includes(term);
   });
 

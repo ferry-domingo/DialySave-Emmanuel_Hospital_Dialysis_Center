@@ -53,7 +53,7 @@ const Sidebar = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const role = normalizeRole(user?.role);
   const items = role === ROLES.PATIENT
-    ? [{ name: "My Portal", icon: Users, path: "/patient-portal" }, { name: "My Sessions", icon: Activity, path: "/patient-sessions" }, alertsMenu, messageMenu]
+    ? [{ name: "Dashboard", icon: Users, path: "/patient-portal" }, { name: "My Dialysis Sessions", icon: Activity, path: "/patient-sessions" }, { name: "Treatment Monitoring", icon: UserRoundSearch, path: "/patient-phic-monitoring" }, alertsMenu, messageMenu]
     : role === ROLES.DOCTOR
       ? [
         { name: "My Dashboard", icon: LayoutDashboard, path: "/doctor-dashboard" },
@@ -62,11 +62,11 @@ const Sidebar = () => {
         alertsMenu,
         messageMenu,
       ]
-    : role === ROLES.ADMIN
-      ? [...adminMenus, announcementsMenu, technologyGalleryMenu, messageMenu, alertsMenu]
-      : [ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER].includes(role)
-        ? [...operationalMenus, admissionMenu, alertsMenu, messageMenu]
-        : [messageMenu];
+      : role === ROLES.ADMIN
+        ? [...adminMenus, announcementsMenu, technologyGalleryMenu, messageMenu, alertsMenu]
+        : [ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER].includes(role)
+          ? [...operationalMenus, admissionMenu, alertsMenu, messageMenu]
+          : [messageMenu];
 
   const handleLogout = async () => {
     setProfileOpen(false);

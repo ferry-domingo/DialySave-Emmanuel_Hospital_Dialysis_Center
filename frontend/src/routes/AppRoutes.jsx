@@ -15,6 +15,7 @@ import MonitoringPage from "../pages/monitoring/MonitoringPage";
 import AdmissionReportPage from "../pages/admissionReport/admissionReportPage";
 import PatientPortalPage from "../pages/patients/PatientPortalPage";
 import PatientSessionsPage from "../pages/patients/PatientSessionsPage";
+import PatientPhicMonitoringPage from "../pages/patients/PatientPhicMonitoringPage";
 import UsersPage from "../pages/users/UsersPage";
 import ActivityLogsPage from "../pages/activityLogs/ActivityLogsPage";
 import SettingsPage from "../pages/settings/SettingsPage";
@@ -56,6 +57,7 @@ const AppRoutes = () => {
           <Route path="/patients" element={<RoleRoute allowedRoles={[ROLES.PHILHEALTH_OFFICER, ROLES.CASHIER]}><PatientPage /></RoleRoute>} />
           <Route path="/patient-portal" element={<RoleRoute allowedRoles={[ROLES.PATIENT]}><PatientPortalPage /></RoleRoute>} />
           <Route path="/patient-sessions" element={<RoleRoute allowedRoles={[ROLES.PATIENT]}><PatientSessionsPage /></RoleRoute>} />
+          <Route path="/patient-phic-monitoring" element={<RoleRoute allowedRoles={[ROLES.PATIENT]}><PatientPhicMonitoringPage /></RoleRoute>} />
           <Route path="/doctor-dashboard" element={<RoleRoute allowedRoles={[ROLES.DOCTOR]}><DoctorDashboardPage /></RoleRoute>} />
           <Route path="/doctor-patients" element={<RoleRoute allowedRoles={[ROLES.DOCTOR]}><DoctorPatientsPage /></RoleRoute>} />
           <Route path="/doctor-sessions" element={<RoleRoute allowedRoles={[ROLES.DOCTOR]}><DoctorSessionsPage /></RoleRoute>} />

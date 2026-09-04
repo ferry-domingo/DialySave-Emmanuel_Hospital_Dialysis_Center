@@ -1,3 +1,19 @@
+.patient-monitoring-view {
+  scrollbar-width: none;
+}
+
+.patient-monitoring-view::-webkit-scrollbar {
+  display: none;
+}
+
+.patient-monitoring-view .app-main-content {
+  scrollbar-width: none;
+}
+
+.patient-monitoring-view .app-main-content::-webkit-scrollbar {
+  display: none;
+}
+
 @import "tailwindcss";
 
 .audit-activity-scroll {
@@ -222,22 +238,41 @@ button {
   width: min(100%, 28rem);
 }
 
-.settings-field > label {
+.settings-field > label,
+.settings-field > span {
   display: inline-block;
   margin-bottom: 0.35rem;
   font-size: 0.72rem;
+  font-weight: 600;
+  color: #334155;
   line-height: 1.2;
 }
 
-.settings-field > input {
+.settings-field > input,
+.settings-field > select {
+  width: 100%;
   height: 2.75rem;
+  border: 1px solid #e2e8f0;
   border-radius: 0.6rem;
+  background: #fff;
   padding-inline: 0.8rem;
   font-size: 0.9rem;
+  color: #0f172a;
   line-height: 1.4;
+  outline: none;
+}
+
+.settings-field > input:focus,
+.settings-field > select:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 /* Facebook-inspired settings layout: section directory + focused content feed. */
+.settings-page > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 1.5rem;
+}
+
 .settings-facebook-shell {
   display: grid;
   min-height: calc(100dvh - 7rem);
@@ -278,6 +313,12 @@ button {
   display: grid;
   gap: 2px;
   padding: 4px 8px 12px;
+}
+.settings-mobile-section-picker {
+  display: none;
+}
+.settings-mobile-back {
+  display: none;
 }
 .settings-facebook-nav nav button {
   display: grid;
@@ -479,27 +520,351 @@ button {
 }
 
 @media (max-width: 600px) {
+  .settings-page {
+    min-width: 0;
+  }
+  .settings-page > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 4px;
+  }
+  .settings-facebook-shell {
+    min-height: calc(100dvh - 9.5rem);
+    gap: 10px;
+    padding: 0;
+  }
+  .settings-facebook-nav {
+    position: relative;
+    z-index: 50;
+    min-height: calc(100dvh - 9.5rem);
+    margin-top: 0;
+    overflow: visible;
+    border-radius: 12px;
+  }
   .settings-nav-heading {
-    padding: 16px 14px 10px;
+    padding: 12px 12px 7px;
   }
   .settings-nav-heading h1 {
-    font-size: 1.25rem;
+    font-size: 1rem;
+  }
+  .settings-nav-heading p {
+    margin-top: 2px;
+    font-size: 0.68rem;
+  }
+  .settings-mobile-section-picker {
+    position: relative;
+    display: block;
+    padding: 3px 10px 12px;
+  }
+  .settings-mobile-section-picker > span {
+    display: block;
+    margin-bottom: 5px;
+    color: #64748b;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .settings-mobile-section-trigger {
+    display: grid;
+    width: 100%;
+    min-height: 52px;
+    grid-template-columns: 34px minmax(0, 1fr) 18px;
+    align-items: center;
+    gap: 9px;
+    border: 1px solid #a7f3d0;
+    border-radius: 11px;
+    padding: 7px 10px;
+    color: #064e3b;
+    background-color: #ecfdf5;
+    text-align: left;
+    outline: none;
+    transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  }
+  .settings-mobile-section-trigger:focus-visible,
+  .settings-mobile-section-trigger.open {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+    background: #f0fdf4;
+  }
+  .settings-mobile-section-icon {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: 9px;
+    color: #047857;
+    background: #d1fae5;
+  }
+  .settings-mobile-section-current,
+  .settings-mobile-section-menu button > span:nth-child(2) {
+    min-width: 0;
+  }
+  .settings-mobile-section-current strong,
+  .settings-mobile-section-current small,
+  .settings-mobile-section-menu strong,
+  .settings-mobile-section-menu small {
+    display: block;
+  }
+  .settings-mobile-section-current strong,
+  .settings-mobile-section-menu strong {
+    color: #0f172a;
+    font-size: 0.75rem;
+    line-height: 1.2;
+  }
+  .settings-mobile-section-current small,
+  .settings-mobile-section-menu small {
+    margin-top: 2px;
+    overflow: hidden;
+    color: #64748b;
+    font-size: 0.62rem;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .settings-mobile-section-chevron {
+    color: #059669;
+    transition: transform 200ms ease;
+  }
+  .settings-mobile-section-trigger.open .settings-mobile-section-chevron {
+    transform: rotate(180deg);
+  }
+  .settings-mobile-section-menu {
+    position: absolute;
+    z-index: 60;
+    top: calc(100% - 7px);
+    right: 10px;
+    left: 10px;
+    overflow: hidden;
+    border: 1px solid #dbe4ea;
+    border-radius: 12px;
+    padding: 5px;
+    background: #fff;
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.16);
+    transform-origin: top;
+    animation: settings-dropdown-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .settings-mobile-section-menu button {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 34px minmax(0, 1fr) 18px;
+    align-items: center;
+    gap: 9px;
+    min-height: 48px;
+    border: 0;
+    border-radius: 9px;
+    padding: 6px 8px;
+    background: transparent;
+    text-align: left;
+    transition: background 140ms ease;
+  }
+  .settings-mobile-section-menu button:hover,
+  .settings-mobile-section-menu button:focus-visible {
+    background: #f1f5f9;
+    outline: none;
+  }
+  .settings-mobile-section-menu button.active {
+    background: #ecfdf5;
+  }
+  .settings-mobile-section-menu button > svg {
+    color: #059669;
+  }
+  .settings-facebook-nav nav {
+    display: grid;
+    gap: 3px;
+    padding: 4px 10px 12px;
+    overflow: visible;
+  }
+  .settings-facebook-nav nav button {
+    width: 100%;
+    min-width: 0;
+    min-height: 58px;
+    grid-template-columns: 40px minmax(0, 1fr) 18px;
+    gap: 10px;
+    border-radius: 10px;
+    padding: 8px;
+    background: transparent;
+  }
+  .settings-facebook-nav nav button > span {
+    width: 40px;
+    height: 40px;
+  }
+  .settings-facebook-nav nav button > span svg {
+    width: 19px;
+    height: 19px;
+  }
+  .settings-facebook-nav nav strong {
+    font-size: 0.82rem;
+    line-height: 1.2;
+  }
+  .settings-facebook-nav nav small {
+    display: block;
+    font-size: 0.66rem;
+  }
+  .settings-facebook-nav nav button > svg {
+    display: block;
+  }
+  .settings-facebook-nav.settings-mobile-hidden {
+    display: none;
+  }
+  .settings-facebook-nav nav button {
+    min-width: 138px;
+    min-height: 48px;
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 8px;
+    border-radius: 9px;
+    padding: 7px;
+  }
+  .settings-facebook-nav nav button > span {
+    width: 32px;
+    height: 32px;
+  }
+  .settings-facebook-nav nav button > span svg {
+    width: 16px;
+    height: 16px;
+  }
+  .settings-facebook-nav nav strong {
+    font-size: 0.72rem;
+    line-height: 1.15;
+  }
+  .settings-facebook-nav nav small,
+  .settings-facebook-nav nav button > svg {
+    display: none;
+  }
+  .settings-facebook-content {
+    position: relative;
+    z-index: 1;
+    display: none;
+    min-height: auto;
+  }
+  .settings-facebook-content.settings-mobile-detail.open {
+    display: block;
+    overflow: hidden;
+    margin-top: 0;
+    border: 1px solid #dfe3e8;
+    border-radius: 12px;
+    padding: 10px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    animation: settings-detail-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .settings-mobile-back {
+    display: inline-flex;
+    height: 34px;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 8px;
+    border: 0;
+    border-radius: 8px;
+    padding: 0 9px;
+    color: #047857;
+    background: #ecfdf5;
+    font-size: 0.75rem;
+    font-weight: 700;
+    transition: background 150ms ease;
+  }
+  .settings-mobile-back:hover,
+  .settings-mobile-back:focus-visible {
+    background: #d1fae5;
+    outline: none;
+  }
+  .settings-facebook-content.settings-mobile-detail.open .settings-card {
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .settings-facebook-content #password-security {
+    margin-top: 8px;
+  }
+  .settings-facebook-content .settings-grid,
+  .settings-card-stack {
+    gap: 10px;
   }
   .settings-facebook-content .settings-card {
-    padding: 18px;
+    padding: 14px;
     border-radius: 12px;
   }
   .settings-facebook-content .settings-card-header {
     align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+  }
+  .settings-facebook-content .settings-card-header > span {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    border-radius: 10px;
+  }
+  .settings-facebook-content .settings-card-header h2 {
+    font-size: 0.88rem;
+  }
+  .settings-facebook-content .settings-card-header p {
+    margin-top: 2px;
+    font-size: 0.72rem;
+    line-height: 1.35;
   }
   .settings-facebook-content .settings-profile-row {
+    gap: 12px;
+    padding: 12px;
     align-items: center;
     text-align: center;
+  }
+  .settings-facebook-content .settings-avatar {
+    width: 72px;
+    height: 72px;
+    font-size: 1.1rem;
   }
   .settings-facebook-content .settings-profile-row > div {
     width: 100%;
   }
   .settings-facebook-content .settings-profile-row .flex {
+    justify-content: center;
+  }
+  .settings-field {
+    width: 100%;
+    max-width: none;
+  }
+  .settings-field > input,
+  .settings-field > select {
+    min-width: 0;
+    height: 42px;
+    font-size: 16px;
+  }
+  .settings-facebook-content .settings-notice {
+    padding: 14px;
+  }
+  .settings-facebook-content .settings-notice p {
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+}
+
+@keyframes settings-dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes settings-detail-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 380px) {
+  .settings-facebook-content .settings-profile-row .flex > * {
+    width: 100%;
     justify-content: center;
   }
 }
@@ -1538,7 +1903,7 @@ section:has(a[href="/messages"]) > div:last-child::-webkit-scrollbar {
   font-size: 1.2rem;
 }
 .public-hero-stats span {
-  margin-top: 4px;
+    margin-top: 0;
   color: rgba(255, 255, 255, 0.66);
   font-size: 0.7rem;
 }

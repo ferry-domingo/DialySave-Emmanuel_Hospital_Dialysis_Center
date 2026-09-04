@@ -41,7 +41,7 @@ const TableHeader = ({ printFirstOnly = false }) => (
           {category.label}
         </th>
       ))}
-      <th colSpan={LAB_TESTS.length} className="border border-slate-500 bg-emerald-50 px-1 py-1 text-center text-emerald-950">Laboratory</th>
+      <th colSpan={LAB_TESTS.length} className="border border-slate-500 bg-emerald-50 px-1 py-1 text-center text-emerald-950">Laboratory Request</th>
       <th rowSpan={2} className="no-print border-b border-slate-400 bg-slate-50 px-1 py-1 text-center align-bottom">Actions</th>
     </tr>
     <tr className="bg-white text-[7px] font-bold uppercase tracking-tight text-slate-700">
@@ -80,7 +80,7 @@ const DialysisSessionTable = ({ sessions, loading, onEdit }) => {
     (session) => session?.[categoryKey]?.payment_type === type && session[categoryKey]?.name
   ).length;
   const countLab = (source, labKey) => source.filter((session) =>
-    session?.laboratory_results?.some((result) => result.name === labKey && result.done)
+    session?.laboratory_request?.some((result) => result.name === labKey && result.done)
   ).length;
 
   if (loading) return <div className="rounded-3xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">Loading...</div>;
@@ -133,7 +133,7 @@ const DialysisSessionTable = ({ sessions, loading, onEdit }) => {
         </td>
       )))}
       {LAB_TESTS.map((lab, index) => {
-        const done = session.laboratory_results?.some((result) => result.name === lab.key && result.done);
+        const done = session.laboratory_request?.some((result) => result.name === lab.key && result.done);
         return <td key={lab.key} className={`px-0.5 py-0 text-center ${index === 0 ? "border-l border-slate-200" : ""}`}><span className="text-[8px] font-bold text-black">{done ? "✓" : ""}</span></td>;
       })}
       <td className="no-print px-1 py-0.5"><div className="flex justify-center gap-0.5">

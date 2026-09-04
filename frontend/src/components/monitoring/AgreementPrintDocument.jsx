@@ -163,7 +163,7 @@ const AgreementPrintDocument = ({ session }) => {
             <tr><td className="border border-black py-px pl-[12%] pr-1.5 text-left">3. Heparin sodium 1000 IU/mL, 30 mL vial</td><td className="border border-black text-center"><Mark ok={heparin("Heparin sodium 1000 IU/mL, 30 mL vial")} /></td></tr>
             <tr><td className="border border-black py-px pl-[12%] pr-1.5 text-left">4. Heparin sodium 5000 IU/mL, 30 mL vial</td><td className="border border-black text-center"><Mark ok={heparin("Heparin sodium 5000 IU/mL, 30 mL vial")} /></td></tr>
 
-            <tr><td colSpan={2} className="border border-black py-px pl-[2pt] pr-1.5 font-semibold">Laboratory tests</td></tr>
+            <tr><td colSpan={2} className="border border-black py-px pl-[2pt] pr-1.5 font-semibold">Laboratory Request</td></tr>
             <tr className="agreement-lab-row"><td className="border border-black px-1.5 py-px pl-3">1. Complete blood count</td><td className="border border-black text-center"><Mark ok={hasLab("CBC")} /></td></tr>
             <tr className="agreement-lab-row"><td className="border border-black px-1.5 py-px pl-3">2. Serum creatinine</td><td className="border border-black text-center"><Mark ok={hasLab("CREA")} /></td></tr>
             <tr className="agreement-lab-row"><td className="border border-black px-1.5 py-px pl-3">3. BUN</td><td className="border border-black text-center"><Mark ok={hasLab("BUN")} /></td></tr>

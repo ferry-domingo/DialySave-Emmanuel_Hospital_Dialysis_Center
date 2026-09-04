@@ -194,17 +194,17 @@ const DoctorSessionsPage = () => {
             </div>
 
             <div className="mt-2 min-h-0 flex-1 rounded-xl border border-blue-100/70 bg-gradient-to-br from-blue-50/50 to-slate-50 p-3">
-              <div className="flex items-center justify-between"><h3 className="flex items-center gap-1.5 text-xs font-bold text-slate-900"><FlaskConical size={13} className="text-blue-600" />Laboratory results</h3><span className="rounded-full bg-blue-100 px-2 py-0.5 text-[9px] font-semibold text-blue-700">{displayedSession.laboratory_results?.length || 0} test(s)</span></div>
-              {displayedSession.laboratory_results?.length ? (
+              <div className="flex items-center justify-between"><h3 className="flex items-center gap-1.5 text-xs font-bold text-slate-900"><FlaskConical size={13} className="text-blue-600" />Laboratory request</h3><span className="rounded-full bg-blue-100 px-2 py-0.5 text-[9px] font-semibold text-blue-700">{displayedSession.laboratory_request?.length || 0} test(s)</span></div>
+              {displayedSession.laboratory_request?.length ? (
                 <div className="mt-2 grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
-                  {displayedSession.laboratory_results.map((result, index) => (
+                  {displayedSession.laboratory_request.map((result, index) => (
                     <div key={`${displayedSession._id}-lab-${index}`} className="flex items-center gap-2 rounded-lg bg-white px-2.5 py-1.5 text-[10px]">
                       <span className="font-medium text-slate-700">{result.name}</span>
                       <span className="ml-auto text-sm font-bold text-black">{result.done ? "✓" : "✕"}</span>
                     </div>
                   ))}
                 </div>
-              ) : <p className="mt-3 text-sm text-slate-500">No laboratory results recorded for this session.</p>}
+              ) : <p className="mt-3 text-sm text-slate-500">No laboratory request recorded for this session.</p>}
             </div>
           </div>
         </article>

@@ -54,7 +54,7 @@ const MonitoringPackage = ({ patientId, patientHasDoctor, onImported }) => {
 
   const hasLab = (session, lab) => {
     const expected = lab === "SERUM IRON/FERRITIN" ? "SERUM IRON" : lab;
-    return session.laboratory_results?.some((x) =>
+    return session.laboratory_request?.some((x) =>
       String(x.name || "").trim().toUpperCase() === expected && x.done
     );
   };
@@ -230,7 +230,7 @@ const MonitoringPackage = ({ patientId, patientHasDoctor, onImported }) => {
                 <thead>
                   <tr>
                     <th rowSpan={2}>No.</th><th rowSpan={2}>Date of Session</th><th rowSpan={2}>Epoetin</th>
-                    <th rowSpan={2}>Iron</th><th rowSpan={2}>Dialyzer</th><th colSpan={LAB_COLUMNS.length}>Laboratory</th>
+                    <th rowSpan={2}>Iron</th><th rowSpan={2}>Dialyzer</th><th colSpan={LAB_COLUMNS.length}>Laboratory Request</th>
                   </tr>
                   <tr>{LAB_COLUMNS.map((lab) => <th key={lab.key}>{lab.label}</th>)}</tr>
                 </thead>

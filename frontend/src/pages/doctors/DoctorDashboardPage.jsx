@@ -129,8 +129,8 @@ const DoctorDashboardPage = () => {
   const activityChartData = treatmentActivity.periods[activityPeriod];
   const activityTotal = activityChartData.reduce((total, item) => total + item.count, 0);
   const recentSessions = sessions.slice(0, 7);
-  const completedLabs = (data?.sessions || []).reduce((total, session) => total + (session.laboratory_results || []).filter((lab) => lab.done).length, 0);
-  const totalLabs = (data?.sessions || []).reduce((total, session) => total + (session.laboratory_results?.length || 0), 0);
+  const completedLabs = (data?.sessions || []).reduce((total, session) => total + (session.laboratory_request || []).filter((lab) => lab.done).length, 0);
+  const totalLabs = (data?.sessions || []).reduce((total, session) => total + (session.laboratory_request?.length || 0), 0);
   const activePatients = (data?.patients || []).filter((patient) => patient.status === "Active").length;
   const latestSession = data?.sessions?.[0];
 
@@ -174,7 +174,7 @@ const DoctorDashboardPage = () => {
 
             <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">
               <PanelHeader icon={Activity} title={selectedPatient ? "Patient Sessions" : "Recent Sessions"} subtitle="Latest dialysis treatments" tone="bg-cyan-50 text-cyan-600" to="/doctor-sessions" />
-              <div className="divide-y divide-slate-100 px-3">{recentSessions.slice(0, 5).map((session) => <Link key={session._id} to="/doctor-sessions" className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-2"><span className="min-w-0"><b className="block truncate text-[10px] text-slate-800">{session.session_id} · {patientName(session.patient)}</b><small className="block truncate text-[8px] text-slate-400">{session.patient?.patient_id} · {session.payment_type || "N/A"} · Labs {session.laboratory_results?.filter((lab) => lab.done).length || 0}/{session.laboratory_results?.length || 0}</small></span><time className="text-[8px] text-slate-400">{formatDate(session.createdAt)}</time></Link>)}{!recentSessions.length && <p className="py-8 text-center text-[9px] text-slate-400">No sessions found</p>}</div>
+              <div className="divide-y divide-slate-100 px-3">{recentSessions.slice(0, 5).map((session) => <Link key={session._id} to="/doctor-sessions" className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-2"><span className="min-w-0"><b className="block truncate text-[10px] text-slate-800">{session.session_id} · {patientName(session.patient)}</b><small className="block truncate text-[8px] text-slate-400">{session.patient?.patient_id} · {session.payment_type || "N/A"} · Labs {session.laboratory_request?.filter((lab) => lab.done).length || 0}/{session.laboratory_request?.length || 0}</small></span><time className="text-[8px] text-slate-400">{formatDate(session.createdAt)}</time></Link>)}{!recentSessions.length && <p className="py-8 text-center text-[9px] text-slate-400">No sessions found</p>}</div>
             </section>
 
             <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">
