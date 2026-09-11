@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Filter, KeyRound, Plus, Search, Settings } from "lucide-react";
+import { Filter, KeyRound, Plus, Search, Settings, X } from "lucide-react";
 import toast from "react-hot-toast";
 import Topbar from "../../components/layout/Topbar";
 import Modal from "../../components/common/Modal";
@@ -45,7 +45,7 @@ const UsersPage = () => {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("Active");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
   const [newUser, setNewUser] = useState(EMPTY_USER);
@@ -53,6 +53,7 @@ const UsersPage = () => {
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
   const term = search.trim().toLowerCase();
   const availableRoles = [...new Set(users.map((user) => user.role).filter(Boolean))].sort();
+  const availableStatuses = [...new Set(users.map((user) => user.status).filter(Boolean))].sort();
   const filteredUsers = users.filter((user) => {
     const createdDate = new Date(user.createdAt);
     const searchableValues = [
@@ -149,17 +150,12 @@ const UsersPage = () => {
             <Search size={16} className="text-slate-400" />
             <input placeholder="Search any table detail..." value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} className="w-full bg-transparent text-[10px] text-black outline-none placeholder:text-slate-400" />
           </div>
-          <details className="group relative sm:w-48">
-            <summary className="flex h-9 cursor-pointer list-none items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-[11px] font-semibold text-slate-700 [&::-webkit-details-marker]:hidden"><Filter size={15} className="shrink-0 text-slate-400" /><span className="truncate">Filter users</span></summary>
-            <div className="absolute left-0 top-full z-30 mt-1.5 w-56 rounded-lg border border-slate-200 bg-white p-3 shadow-lg">
-              <p className="mb-1 text-[9px] font-bold uppercase text-slate-400">Role</p>
-              <select value={roleFilter} onChange={(event) => { setRoleFilter(event.target.value); setPage(1); }} className="mb-2 w-full rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-semibold text-slate-700 outline-none" aria-label="Filter users by role"><option value="all">All roles</option>{availableRoles.map((role) => <option key={role} value={role}>{role}</option>)}</select>
-              <fieldset>
-                <legend className="mb-1 text-[9px] font-bold uppercase text-slate-400">Status</legend>
-                {[{ value: "Active", label: "Active" }, { value: "Inactive", label: "Inactive" }].map((option) => <label key={option.value} className="flex cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-[10px] text-slate-700 hover:bg-slate-50"><input type="radio" name="user-status-filter" value={option.value} checked={statusFilter === option.value} onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }} className="accent-emerald-600" />{option.label}</label>)}
-              </fieldset>
-            </div>
-          </details>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Filter size={15} className="shrink-0 text-slate-400" />
+            <select value={roleFilter} onChange={(event) => { setRoleFilter(event.target.value); setPage(1); }} className="h-9 min-w-32 rounded-md border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-700 outline-none" aria-label="Filter users by role"><option value="all">All roles</option>{availableRoles.map((role) => <option key={role} value={role}>{role}</option>)}</select>
+            <select value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }} className="h-9 min-w-32 rounded-md border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-700 outline-none" aria-label="Filter users by status"><option value="all">All statuses</option>{availableStatuses.map((status) => <option key={status} value={status}>{status}</option>)}</select>
+            {(roleFilter !== "all" || statusFilter !== "all") && <button type="button" onClick={() => { setRoleFilter("all"); setStatusFilter("all"); setPage(1); }} className="flex h-9 items-center gap-1 rounded-md px-2 text-[10px] font-semibold text-slate-500 hover:bg-slate-100"><X size={12} /> Clear</button>}
+          </div>
         </div>
         <Button onClick={() => { setNewUser(EMPTY_USER); setCreateOpen(true); }} className="inline-flex items-center justify-center gap-1.5 !px-3 !py-1.5 !text-[11px]">
           <Plus size={15} /> Create User

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Search } from "lucide-react";
+import { Filter, Plus, Search, X } from "lucide-react";
 import toast from "react-hot-toast";
 
 import Modal from "../../components/common/Modal";
@@ -21,6 +21,8 @@ const DoctorPage = () => {
   } = useDoctorStore();
 
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [expertiseFilter, setExpertiseFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [openModal, setOpenModal] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
@@ -32,9 +34,14 @@ const DoctorPage = () => {
 
   const filteredDoctors = doctors.filter((doctor) => {
     const term = search.trim().toLowerCase();
-    if (!term) return true;
-    return JSON.stringify(doctor).toLowerCase().includes(term);
+    const matchesTerm = !term || JSON.stringify(doctor).toLowerCase().includes(term);
+    const matchesStatus = statusFilter === "all" || doctor.status === statusFilter;
+    const matchesExpertise = expertiseFilter === "all" || (doctor.medical_expertise || "") === expertiseFilter;
+    return matchesTerm && matchesStatus && matchesExpertise;
   });
+  const statuses = [...new Set(doctors.map((doctor) => doctor.status).filter(Boolean))].sort();
+  const expertiseOptions = [...new Set(doctors.map((doctor) => doctor.medical_expertise).filter(Boolean))].sort();
+  const hasFilters = statusFilter !== "all" || expertiseFilter !== "all";
   const totalPages = Math.max(1, Math.ceil(filteredDoctors.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const paginatedDoctors = filteredDoctors.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -67,14 +74,21 @@ const DoctorPage = () => {
 
       <div className="flex flex-col gap-2 rounded-xl bg-white p-2 shadow-sm sm:flex-row sm:items-center sm:justify-between">
 
-        <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 sm:w-52">
-          <Search size={16} className="text-slate-400" />
-          <input
-            placeholder="Search doctor..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full bg-transparent text-[10px] text-black outline-none placeholder:text-slate-400"
-          />
+        <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 sm:w-52">
+            <Search size={16} className="text-slate-400" />
+            <input placeholder="Search doctor..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="w-full bg-transparent text-[10px] text-black outline-none placeholder:text-slate-400" />
+          </div>
+          <Filter size={14} className="text-slate-400" />
+          <select value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }} aria-label="Filter doctors by status" className="h-7 rounded-md border border-slate-200 bg-white px-2 text-[10px] text-slate-700">
+            <option value="all">All statuses</option>
+            {statuses.map((status) => <option key={status} value={status}>{status}</option>)}
+          </select>
+          <select value={expertiseFilter} onChange={(event) => { setExpertiseFilter(event.target.value); setPage(1); }} aria-label="Filter doctors by expertise" className="h-7 max-w-48 rounded-md border border-slate-200 bg-white px-2 text-[10px] text-slate-700">
+            <option value="all">All expertise</option>
+            {expertiseOptions.map((expertise) => <option key={expertise} value={expertise}>{expertise}</option>)}
+          </select>
+          {hasFilters && <button type="button" onClick={() => { setStatusFilter("all"); setExpertiseFilter("all"); setPage(1); }} className="flex h-7 items-center gap-1 rounded-md px-2 text-[10px] font-semibold text-slate-500 hover:bg-slate-100"><X size={12} /> Clear</button>}
         </div>
 
         <button

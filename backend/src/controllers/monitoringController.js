@@ -3,8 +3,10 @@ import XLSX from "xlsx";
 
 import DialysisSession from "../models/DialysisSession.js";
 import { Patient } from "../models/Patient.js";
+import { Doctor } from "../models/Doctor.js";
 
 const PHIC_LIMIT = 156;
+const MAX_BULK_AGREEMENT_SESSION = 1000;
 const STANDARD_IRON = "Iron Sucrose 20 mg/mL, 5mL ampule";
 const LAB_COLUMNS = ["CBC", "CREA", "BUN", "HEPA PROFILE", "ALKALINE", "POTASSIUM", "PHOSPHORUS", "CALCIUM", "SODIUM", "ALBUMIN", "SERUM IRON/FERRITIN"];
 const REQUIRED_COLUMNS = ["SESSION DATE", "EPOETIN", "IRON", "DIALYZER", ...LAB_COLUMNS];
@@ -216,6 +218,97 @@ const buildMonitoring = async (patient, requestedYear) => {
     package: { total: packageSessions.length, sessions: packageSessions, cumulative: true },
     agreement: { total: agreementSessions.length, sessions: agreementSessions, cumulative: true },
   };
+};
+
+export const buildBulkAgreementSessions = (patients, sessions, startSession, endSession) => {
+  const sessionsByPatient = new Map();
+  sessions.forEach((session) => {
+    const patientId = String(session.patient?._id || session.patient);
+    const patientSessions = sessionsByPatient.get(patientId) || [];
+    patientSessions.push(session);
+    sessionsByPatient.set(patientId, patientSessions);
+  });
+
+  const printableSessions = [];
+  let patientsWithSessions = 0;
+  let patientsWithoutSessions = 0;
+
+  patients.forEach((patient) => {
+    const patientSessions = sessionsByPatient.get(String(patient._id)) || [];
+    const selectedSessions = patientSessions.slice(startSession - 1, endSession);
+    if (selectedSessions.length) patientsWithSessions += 1;
+    else patientsWithoutSessions += 1;
+
+    selectedSessions.forEach((session, index) => {
+      printableSessions.push({
+        sessionNo: startSession + index,
+        sessionId: session._id,
+        date: session.createdAt,
+        payment_type: session.payment_type,
+        patient: {
+          _id: patient._id,
+          patient_id: patient.patient_id,
+          first_name: patient.first_name,
+          middle_name: patient.middle_name,
+          last_name: patient.last_name,
+          full_name: [patient.first_name, patient.middle_name, patient.last_name].filter(Boolean).join(" "),
+        },
+        injection: session.injections,
+        iron: session.intravenous_iron,
+        dialyzer: session.dialyzer,
+        laboratories: session.laboratory_request,
+        agreement: session.agreement,
+      });
+    });
+  });
+
+  return { printableSessions, patientsWithSessions, patientsWithoutSessions };
+};
+
+export const getDoctorAgreementBulk = async (req, res) => {
+  try {
+    const { doctorId } = req.query;
+    const startSession = Number(req.query.startSession);
+    const endSession = Number(req.query.endSession);
+    if (!doctorId || !Doctor.db.base.Types.ObjectId.isValid(doctorId)) {
+      return res.status(400).json({ success: false, message: "Choose a valid doctor." });
+    }
+    if (!Number.isInteger(startSession) || !Number.isInteger(endSession) || startSession < 1 || endSession < startSession || endSession > MAX_BULK_AGREEMENT_SESSION) {
+      return res.status(400).json({ success: false, message: `Session range must be between 1 and ${MAX_BULK_AGREEMENT_SESSION}, with the ending session not lower than the starting session.` });
+    }
+
+    const doctor = await Doctor.findById(doctorId).select("doctor_id first_name middle_name last_name gender").lean();
+    if (!doctor) return res.status(404).json({ success: false, message: "Doctor not found." });
+
+    const patients = await Patient.find({ doctor: doctorId })
+      .select("patient_id first_name middle_name last_name")
+      .sort({ last_name: 1, first_name: 1, middle_name: 1 })
+      .lean();
+    if (!patients.length) {
+      return res.json({
+        success: true, doctor, requestedRange: { startSession, endSession },
+        totalAssignedPatients: 0, patientsWithSessions: 0, patientsWithoutSessions: 0,
+        totalAgreementForms: 0, sessions: [],
+      });
+    }
+
+    const sessions = await DialysisSession.find({ patient: { $in: patients.map((patient) => patient._id) } })
+      .sort({ patient: 1, createdAt: 1, _id: 1 })
+      .lean();
+    const result = buildBulkAgreementSessions(patients, sessions, startSession, endSession);
+    return res.json({
+      success: true,
+      doctor,
+      requestedRange: { startSession, endSession },
+      totalAssignedPatients: patients.length,
+      patientsWithSessions: result.patientsWithSessions,
+      patientsWithoutSessions: result.patientsWithoutSessions,
+      totalAgreementForms: result.printableSessions.length,
+      sessions: result.printableSessions,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message || "Unable to prepare Agreement Form bulk printing." });
+  }
 };
 
 export const getPatientMonitoring = async (req, res) => {

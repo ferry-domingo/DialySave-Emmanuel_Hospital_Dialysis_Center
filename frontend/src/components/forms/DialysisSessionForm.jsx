@@ -9,24 +9,18 @@ import Select from "../common/Select";
 import { usePatientStore } from "../../store/patientStore";
 import { useDialysisSessionStore } from "../../store/dialysisSessionStore";
 import { formatDoctorName } from "../../utils/doctorName";
+import { useAuthStore } from "../../store/authStore";
+import { ROLES } from "../../utils/roles";
 
 const INJECTIONS = [
-  "2000 IU / 0.5 mL pre-filled syringe",
-  "4000 IU / 0.4 mL pre-filled syringe",
-  "4000 IU / mL, 1mL vial",
-  "4000 IU / mL solution for injection in 1mL pre-filled syringe",
-  "10000 IU / mL pre-filled syringe",
-
-  "2000 IU / 0.3 mL pre-filled syringe",
-  "5000 IU / 0.3 mL pre-filled syringe",
-  "10000 IU / 0.6 mL pre-filled syringe",
-  "Eposino",
-  "Flu-vaccine",
+  "EPOKINE",
+  "EPORIFE",
+  "RECORMON",
 ];
 
-const DIALYZERS = ["Low Flux", "High Flux"];
+const DIALYZERS = ["Nipro Elisio 19H", "Amical Dia 19H"];
 
-const IV_IRONS = ["Iron Sucrose 20 mg/mL, 5mL ampule"];
+const IV_IRONS = ["Encifer"];
 
 const PAYMENT_OPTIONS = [
   { value: "PHIC", label: "PHIC" },
@@ -78,6 +72,7 @@ const DialysisSessionForm = ({
   session,
   onClose,
 }) => {
+  const role = useAuthStore((state) => state.user?.role);
 
   const {
     patients,
@@ -246,7 +241,7 @@ const DialysisSessionForm = ({
           </div>
           <Select
             label="Payment Type"
-            options={SESSION_PAYMENT_OPTIONS}
+            options={role === ROLES.PHILHEALTH_OFFICER ? PAYMENT_OPTIONS : SESSION_PAYMENT_OPTIONS}
             {...register("payment_type")}
           />
         </section>

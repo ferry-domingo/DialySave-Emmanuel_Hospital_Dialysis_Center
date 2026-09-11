@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal, flushSync } from "react-dom";
 import { CalendarDays, IdCard, Printer, Search, UserRound } from "lucide-react";
 
 import AgreementItemsCovered from "../../components/monitoring/AgreementItemsCovered";
@@ -24,10 +25,15 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
   const [selectedSession, setSelectedSession] = useState(0);
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const { setAgreementHeparin, setAgreementSignature, setAgreementCopayments } = useMonitoringStore();
+  const [printMode, setPrintMode] = useState("single");
+  const [rangeStart, setRangeStart] = useState(1);
+  const [rangeEnd, setRangeEnd] = useState(1);
+  const [printSessions, setPrintSessions] = useState([]);
+  const { setAgreementHeparin, setAgreementTreatment, setAgreementSignature, setAgreementCopayments } = useMonitoringStore();
   const user = useAuthStore((state) => state.user);
 
-  const handlePrint = () => {
+  const openPrintDialog = (sessions) => {
+    flushSync(() => setPrintSessions(sessions));
     const pageStyle = document.createElement("style");
     pageStyle.dataset.agreementPrint = "true";
     pageStyle.textContent = "@media print { @page { size: A4 portrait; margin: 0 0.80in; } }";
@@ -35,13 +41,17 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
 
     const cleanup = () => pageStyle.remove();
     window.addEventListener("afterprint", cleanup, { once: true });
-    window.print();
-    window.setTimeout(cleanup, 1000);
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+      window.print();
+      window.setTimeout(cleanup, 1000);
+    }));
   };
 
   useEffect(() => {
     if (agreement?.sessions?.length) {
       setSelectedSession(agreement.sessions.length - 1);
+      setRangeStart(1);
+      setRangeEnd(agreement.sessions.length);
     }
     setSearch("");
     setSearchOpen(false);
@@ -57,6 +67,10 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
 
   const handleHeparinChange = (sessionId, heparin) => {
     setAgreementHeparin(sessionId, heparin);
+  };
+
+  const handleTreatmentChange = (sessionId, type, name) => {
+    setAgreementTreatment(sessionId, type, name);
   };
 
   const handleSignatureChange = (role, signature, options) => {
@@ -84,6 +98,25 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
     setSelectedSession(index);
     setSearch("");
     setSearchOpen(false);
+  };
+
+  const handlePrint = async () => {
+    if (printMode === "single") {
+      openPrintDialog([session]);
+      return;
+    }
+
+    if (printMode === "range") {
+      const start = Math.max(1, Math.min(Number(rangeStart) || 1, agreement.sessions.length));
+      const end = Math.max(start, Math.min(Number(rangeEnd) || start, agreement.sessions.length));
+      openPrintDialog(agreement.sessions.slice(start - 1, end));
+      return;
+    }
+
+  };
+
+  const handlePrintAllSessions = () => {
+    openPrintDialog(agreement.sessions);
   };
 
   return (
@@ -127,6 +160,29 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
         </div>
 
         <div className="flex items-center gap-2">
+
+          <button
+            type="button"
+            onClick={handlePrintAllSessions}
+            title={`Print Agreement Forms for sessions 1-${agreement.sessions.length}`}
+            className="flex h-8 items-center gap-1.5 rounded-lg bg-emerald-600 px-3 text-[10px] font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Printer size={16} />
+            Print All Sessions (1-{agreement.sessions.length})
+          </button>
+
+          <select value={printMode} onChange={(event) => setPrintMode(event.target.value)} aria-label="Agreement print mode" className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold text-slate-700">
+            <option value="single">Selected session</option>
+            <option value="range">Patient session range</option>
+          </select>
+
+          {printMode === "range" && (
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-slate-500">
+              <input type="number" min="1" max={agreement.sessions.length} value={rangeStart} onChange={(event) => setRangeStart(event.target.value)} aria-label="First session number" className="h-8 w-14 rounded-lg border border-slate-200 px-2 text-black" />
+              <span>to</span>
+              <input type="number" min="1" max={agreement.sessions.length} value={rangeEnd} onChange={(event) => setRangeEnd(event.target.value)} aria-label="Last session number" className="h-8 w-14 rounded-lg border border-slate-200 px-2 text-black" />
+            </div>
+          )}
 
           <div className="relative">
             <div className="flex h-8 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 focus-within:border-slate-400">
@@ -190,13 +246,18 @@ const MonitoringAgreement = ({ agreement, patientId }) => {
       </div>
 
       <div className="no-print space-y-3">
-        <AgreementItemsCovered session={session} onHeparinChange={handleHeparinChange} onCopaymentsChange={handleCopaymentsChange} />
+        <AgreementItemsCovered session={session} onHeparinChange={handleHeparinChange} onTreatmentChange={handleTreatmentChange} onCopaymentsChange={handleCopaymentsChange} />
         <AgreementSignature session={session} onSignatureChange={handleSignatureChange} />
       </div>
 
-      <div className="print-page agreement-monitoring-print">
-        <AgreementPrintDocument session={session} />
-      </div>
+      {createPortal(
+        <div className="print-page agreement-monitoring-print">
+          {(printSessions.length ? printSessions : [session]).map((printSession) => (
+            <AgreementPrintDocument key={printSession.sessionId} session={printSession} />
+          ))}
+        </div>,
+        document.body
+      )}
 
     </div>
 

@@ -109,6 +109,25 @@ export const useMonitoringStore = create((set, get) => ({
       };
     }),
 
+  setAgreementTreatment: (sessionId, type, name) =>
+    set((state) => {
+      if (!state.monitoring?.agreement?.sessions) return state;
+      const field = type === "injection" ? "injection" : type === "iron" ? "iron" : "dialyzer";
+      return {
+        monitoring: {
+          ...state.monitoring,
+          agreement: {
+            ...state.monitoring.agreement,
+            sessions: state.monitoring.agreement.sessions.map((session) =>
+              session.sessionId === sessionId
+                ? { ...session, [field]: { ...session[field], name } }
+                : session
+            ),
+          },
+        },
+      };
+    }),
+
   setAgreementSignature: (sessionId, role, signature, options = {}) =>
     set((state) => {
       if (!state.monitoring?.agreement?.sessions) return state;

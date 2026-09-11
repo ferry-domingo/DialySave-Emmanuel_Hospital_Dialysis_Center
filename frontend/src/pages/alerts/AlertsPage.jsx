@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Archive, BellRing, CalendarClock, CheckCheck, List, Pencil, Search, Send, Trash2, X } from "lucide-react";
+import { Archive, BellRing, CalendarClock, CheckCheck, Filter, List, Pencil, Search, Send, Trash2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import Topbar from "../../components/layout/Topbar";
 import Button from "../../components/common/Button";
@@ -48,6 +48,8 @@ const AlertsPage = () => {
   );
   const { notifications, unreadCount, loading, fetchNotifications, sendNotification, updateNotification, deleteNotification, markRead, markAllRead } = useNotificationStore();
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [readFilter, setReadFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [sending, setSending] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
@@ -118,7 +120,9 @@ const AlertsPage = () => {
     archiveCutoff.setMonth(archiveCutoff.getMonth() - 1);
     return notifications.filter((item) => {
       const isArchived = new Date(item.createdAt) < archiveCutoff;
-      return isArchived === showArchived && matchesSearch(search, [
+      const matchesType = typeFilter === "all" || item.type === typeFilter;
+      const matchesRead = readFilter === "all" || (readFilter === "read" ? item.isRead : !item.isRead);
+      return isArchived === showArchived && matchesType && matchesRead && matchesSearch(search, [
         item.title,
         item.message,
         item.type,
@@ -132,7 +136,7 @@ const AlertsPage = () => {
         JSON.stringify(item),
       ]);
     });
-  }, [notifications, search, showArchived]);
+  }, [notifications, readFilter, search, showArchived, typeFilter]);
   const patientMatches = useMemo(() => {
     return patients
       .filter((patient) =>
@@ -230,6 +234,18 @@ const AlertsPage = () => {
           <Search size={13} className="text-slate-400" /><input placeholder="Search alerts..." value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} className="w-full bg-transparent text-[10px] outline-none" />
         </div>
         <div className="flex flex-wrap items-center gap-1">
+          <Filter size={13} className="text-slate-400" />
+          <select value={typeFilter} onChange={(event) => { setTypeFilter(event.target.value); setPage(1); }} aria-label="Filter alerts by type" className="h-7 rounded-md border border-slate-200 bg-white px-2 text-[10px] text-slate-700">
+            <option value="all">All types</option>
+            <option value="Dialysis Schedule">Dialysis Schedule</option>
+            <option value="General Alert">General Alert</option>
+          </select>
+          <select value={readFilter} onChange={(event) => { setReadFilter(event.target.value); setPage(1); }} aria-label="Filter alerts by read status" className="h-7 rounded-md border border-slate-200 bg-white px-2 text-[10px] text-slate-700">
+            <option value="all">All read statuses</option>
+            <option value="unread">Unread</option>
+            <option value="read">Read</option>
+          </select>
+          {(typeFilter !== "all" || readFilter !== "all") && <button type="button" onClick={() => { setTypeFilter("all"); setReadFilter("all"); setPage(1); }} className="flex h-7 items-center gap-1 rounded-md px-2 text-[10px] font-semibold text-slate-500 hover:bg-slate-100"><X size={12} /> Clear</button>}
           <Button variant="secondary" onClick={() => { setShowArchived((value) => !value); setPage(1); }}><span className="inline-flex items-center gap-1">{showArchived ? <List size={12} /> : <Archive size={12} />}{showArchived ? "Active Alerts" : "Archive"}</span></Button>
           {isManager && <Button onClick={() => { setEditingId(""); setPatientSearch(""); setForm({ patientId: "", type: "Dialysis Schedule", title: "Next dialysis session", message: "", scheduledFor: "" }); setComposerOpen(true); }}><span className="inline-flex items-center gap-1"><Send size={12} /> Send Alert</span></Button>}
         </div>

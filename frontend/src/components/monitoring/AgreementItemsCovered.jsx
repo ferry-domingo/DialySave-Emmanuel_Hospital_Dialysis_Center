@@ -3,6 +3,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { updateAgreementCopayments, updateAgreementHeparin } from "../../api/dialysisSessionApi";
 import { agreementInjectionMatches } from "../../utils/agreementInjection";
+import { agreementDialyzerMatches, agreementIronMatches } from "../../utils/agreementTreatmentMappings";
 import Modal from "../common/Modal";
 import Input from "../common/Input";
 
@@ -211,7 +212,7 @@ const AgreementItemsCovered = ({ session, onHeparinChange, onCopaymentsChange })
               <tr>
                 <td className="py-1.5 pt-3 text-slate-600">Iron Sucrose 20mg/mL</td>
                 <td className="w-8 py-1.5 pt-3 text-right">
-                  <CheckBadge covered={session.iron.name === "Iron Sucrose 20 mg/mL, 5mL ampule"} />
+                  <CheckBadge covered={agreementIronMatches(session.iron?.name)} />
                 </td>
               </tr>
 
@@ -332,12 +333,12 @@ const AgreementItemsCovered = ({ session, onHeparinChange, onCopaymentsChange })
 
               <tr>
                 <td className="py-1.5 text-slate-600">Dialyzer, low-flux</td>
-                <td className="w-8 py-1.5 text-right"><CheckBadge covered={session.dialyzer.name === "Low Flux"} /></td>
+                <td className="w-8 py-1.5 text-right"><CheckBadge covered={agreementDialyzerMatches(session.dialyzer?.name, "Low Flux")} /></td>
               </tr>
 
               <tr>
                 <td className="py-1.5 text-slate-600">Dialyzer, high-flux</td>
-                <td className="w-8 py-1.5 text-right"><CheckBadge covered={session.dialyzer.name === "High Flux"} /></td>
+                <td className="w-8 py-1.5 text-right"><CheckBadge covered={agreementDialyzerMatches(session.dialyzer?.name, "High Flux")} /></td>
               </tr>
 
               <tr>

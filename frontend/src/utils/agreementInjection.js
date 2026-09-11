@@ -1,3 +1,5 @@
+import { agreementInjectionEquivalent } from "./agreementTreatmentMappings";
+
 const normalize = (value) => String(value || "")
   .toLowerCase()
   .replace(/,/g, "")
@@ -12,7 +14,7 @@ const LEGACY_EQUIVALENTS = {
 };
 
 export const agreementInjectionMatches = (savedValue, agreementValue) => {
-  const saved = normalize(savedValue);
+  const saved = agreementInjectionEquivalent(savedValue);
   const expected = normalize(agreementValue);
   return saved === expected || LEGACY_EQUIVALENTS[saved] === expected;
 };

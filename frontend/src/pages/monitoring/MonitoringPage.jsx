@@ -7,6 +7,7 @@ import MonitoringCash from "./MonitoringCash";
 import MonitoringDialyzer from "./MonitoringDialyzer";
 import MonitoringPackage from "./MonitoringPackage";
 import MonitoringAgreement from "./MonitoringAgreement";
+import DoctorAgreementBulkPrint from "../../components/monitoring/DoctorAgreementBulkPrint";
 
 import { usePatientStore } from "../../store/patientStore";
 import { useMonitoringStore } from "../../store/monitoringStore";
@@ -204,6 +205,8 @@ const MonitoringPage = () => {
         </div>
 
       </div>
+
+      {activeTab === "agreement" && <DoctorAgreementBulkPrint patients={patients} />}
 
       {
 

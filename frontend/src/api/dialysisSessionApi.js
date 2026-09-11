@@ -31,6 +31,9 @@ export const signAgreement = (id, data) =>
 export const updateAgreementHeparin = (id, heparin) =>
   api.patch(`/dialysis-sessions/${id}/agreement/heparin`, { heparin });
 
+export const updateAgreementTreatment = (id, type, name) =>
+  api.patch(`/dialysis-sessions/${id}/agreement/treatment`, { type, name });
+
 export const updateAgreementCopayments = (id, items) =>
   api.patch(`/dialysis-sessions/${id}/agreement/copayments`, { items });
 

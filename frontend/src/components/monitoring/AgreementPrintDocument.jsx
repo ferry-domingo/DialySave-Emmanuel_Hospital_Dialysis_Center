@@ -1,5 +1,6 @@
 import { useAuthStore } from "../../store/authStore";
 import { agreementInjectionMatches } from "../../utils/agreementInjection";
+import { agreementDialyzerMatches, agreementIronMatches } from "../../utils/agreementTreatmentMappings";
 import { patientName, signatureDate, signatureName, userName } from "../../utils/agreementSignatures";
 
 const properName = (value) => value
@@ -59,8 +60,8 @@ const AgreementPrintDocument = ({ session }) => {
 
   const hasLab = (lab) => session.laboratories?.some((x) => x.name === lab && x.done);
   const injection = (name) => agreementInjectionMatches(session.injection?.name, name);
-  const iron = session.iron?.name === "Iron Sucrose 20 mg/mL, 5mL ampule";
-  const dialyzer = (name) => session.dialyzer?.name === name;
+  const iron = agreementIronMatches(session.iron?.name);
+  const dialyzer = (name) => agreementDialyzerMatches(session.dialyzer?.name, name);
   const heparin = (name) =>
     (session.agreement?.heparin || "Heparin sodium 5000 IU/mL, 5 mL vial") === name;
 
@@ -74,7 +75,7 @@ const AgreementPrintDocument = ({ session }) => {
   const representativeSignatureName = signatureName(signatures.facilityRepresentative, representativeDisplayName);
 
   return (
-    <div className="mx-auto max-w-[850px] bg-white font-serif text-black">
+    <div className="agreement-print-document mx-auto max-w-[850px] bg-white font-serif text-black">
 
       {/* ================= PAGE 1 ================= */}
       <div className="agreement-print-page agreement-print-page-first space-y-1">

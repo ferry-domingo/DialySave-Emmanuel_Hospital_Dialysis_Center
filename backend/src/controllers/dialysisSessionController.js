@@ -189,6 +189,32 @@ const HEPARIN_OPTIONS = new Set([
   "Heparin sodium 5000 IU/mL, 30 mL vial",
 ]);
 
+const AGREEMENT_TREATMENT_OPTIONS = {
+  injection: new Set(["EPOKINE", "EPORIFE", "RECORMON"]),
+  dialyzer: new Set(["Nipro Elisio 19H", "Amical Dia 19H"]),
+  iron: new Set(["Encifer"]),
+};
+
+export const updateAgreementTreatment = async (req, res) => {
+  try {
+    const type = String(req.body.type || "");
+    const name = String(req.body.name || "").trim();
+    if (!AGREEMENT_TREATMENT_OPTIONS[type]?.has(name)) {
+      return res.status(400).json({ success: false, message: "Choose a valid Agreement Form treatment option." });
+    }
+
+    const session = await DialysisSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ success: false, message: "Session not found." });
+
+    const field = type === "injection" ? "injections" : type === "iron" ? "intravenous_iron" : "dialyzer";
+    session[field] = { name, payment_type: session[field]?.payment_type || "PHIC" };
+    await session.save();
+    return res.json({ success: true, message: "Agreement Form treatment updated.", data: { type, name } });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to update Agreement Form treatment." });
+  }
+};
+
 export const updateAgreementHeparin = async (req, res) => {
   try {
     const heparin = String(req.body.heparin || "");
